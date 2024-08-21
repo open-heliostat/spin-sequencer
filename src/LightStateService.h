@@ -22,6 +22,7 @@
 #include <MqttEndpoint.h>
 #include <EventEndpoint.h>
 #include <WebSocketServer.h>
+#include <FeaturesService.h>
 
 #define DEFAULT_LED_STATE false
 #define OFF_STATE "OFF"
@@ -99,7 +100,8 @@ public:
                       EventSocket *socket,
                       SecurityManager *securityManager,
                       PsychicMqttClient *mqttClient,
-                      LightMqttSettingsService *lightMqttSettingsService);
+                      LightMqttSettingsService *lightMqttSettingsService,
+                      FeaturesService *featuresService);
 
     void begin();
 
@@ -110,6 +112,7 @@ private:
     WebSocketServer<LightState> _webSocketServer;
     PsychicMqttClient *_mqttClient;
     LightMqttSettingsService *_lightMqttSettingsService;
+    FeaturesService *_featuresService;
 
     void registerConfig();
     void onConfigUpdated();

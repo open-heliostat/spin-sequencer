@@ -19,6 +19,8 @@
 
 	let lightOn = false;
 
+	let rgb_enabled = $page.data.features.rgb;
+
 	async function getLightstate() {
 		try {
 			const response = await fetch('/rest/lightState', {
@@ -108,9 +110,11 @@
 		</div>
 		<GridForm>
 			<Checkbox bind:value={lightState.led_on} label="Light State" onChange={setLightState}></Checkbox>
-			<Slider bind:value={lightState.red} label="Red" onChange={setLightState}></Slider>
-			<Slider bind:value={lightState.green} label="Green" onChange={setLightState}></Slider>
-			<Slider bind:value={lightState.blue} label="Blue" onChange={setLightState}></Slider>
+			{#if $page.data.features.rgb}
+				<Slider bind:value={lightState.red} label="Red" onChange={setLightState}></Slider>
+				<Slider bind:value={lightState.green} label="Green" onChange={setLightState}></Slider>
+				<Slider bind:value={lightState.blue} label="Blue" onChange={setLightState}></Slider>
+			{/if}
 		</GridForm>
 	</div>
 </SettingsCard>

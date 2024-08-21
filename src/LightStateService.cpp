@@ -18,7 +18,8 @@ LightStateService::LightStateService(PsychicHttpServer *server,
                                      EventSocket *socket,
                                      SecurityManager *securityManager,
                                      PsychicMqttClient *mqttClient,
-                                     LightMqttSettingsService *lightMqttSettingsService) : _httpEndpoint(LightState::read,
+                                     LightMqttSettingsService *lightMqttSettingsService,
+                                     FeaturesService *featuresService) :                   _httpEndpoint(LightState::read,
                                                                                                          LightState::update,
                                                                                                          this,
                                                                                                          server,
@@ -42,10 +43,16 @@ LightStateService::LightStateService(PsychicHttpServer *server,
                                                                                                             securityManager,
                                                                                                             AuthenticationPredicates::IS_AUTHENTICATED),
                                                                                            _mqttClient(mqttClient),
-                                                                                           _lightMqttSettingsService(lightMqttSettingsService)
+                                                                                           _lightMqttSettingsService(lightMqttSettingsService),
+                                                                                           _featuresService(featuresService)
 {
+#ifdef RGB_BUILTIN
+    _featuresService->addFeature("rgb", true);
+#else
     // configure led to be output
     pinMode(LED_BUILTIN, OUTPUT);
+    _featuresService->addFeature("rgb", false);
+#endif
 
     // configure MQTT callback
     _mqttClient->onConnect(std::bind(&LightStateService::registerConfig, this));
@@ -71,11 +78,11 @@ void LightStateService::begin()
 
 void LightStateService::onConfigUpdated()
 {
-#ifndef RGB_BUILTIN
-    digitalWrite(LED_BUILTIN, _state.ledOn ? 1 : 0);
-#else
+#ifdef RGB_BUILTIN
     if (_state.ledOn) neopixelWrite(RGB_BUILTIN,_state.red*255.,_state.green*255.,_state.blue*255.);
     else neopixelWrite(RGB_BUILTIN,0,0,0);
+#else
+    digitalWrite(LED_BUILTIN, _state.ledOn ? 1 : 0);
 #endif
 }
 
