@@ -31,7 +31,8 @@ LightStateService lightStateService = LightStateService(&server,
                                                         esp32sveltekit.getSocket(),
                                                         esp32sveltekit.getSecurityManager(),
                                                         esp32sveltekit.getMqttClient(),
-                                                        &lightMqttSettingsService);
+                                                        &lightMqttSettingsService,
+                                                        esp32sveltekit.getFeatureService());
 
 void setup()
 {
