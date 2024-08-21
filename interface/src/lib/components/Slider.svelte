@@ -4,7 +4,7 @@
     export let min = 0;
     export let max = 1;
     export let step = 0.01;
-    export let onChange: () => void;
+    export let onChange = () => {};
 </script>
 
 <label class="label cursor-pointer" for={label}>
@@ -18,5 +18,5 @@
     class="range range-primary"
     id={label}
     bind:value={value}
-    on:change={onChange}
+    on:input={onChange}
 />

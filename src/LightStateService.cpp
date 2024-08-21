@@ -74,7 +74,8 @@ void LightStateService::onConfigUpdated()
 #ifndef RGB_BUILTIN
     digitalWrite(LED_BUILTIN, _state.ledOn ? 1 : 0);
 #else
-    neopixelWrite(RGB_BUILTIN,0,0,_state.ledOn ? RGB_BRIGHTNESS : 0);
+    if (_state.ledOn) neopixelWrite(RGB_BUILTIN,_state.red*255.,_state.green*255.,_state.blue*255.);
+    else neopixelWrite(RGB_BUILTIN,0,0,0);
 #endif
 }
 

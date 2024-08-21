@@ -181,20 +181,38 @@
 			</span>
 		</div>
 		<GridForm>
-			<Checkbox value={stepperControl.isEnabled} label="Enable" onChange={onChange}></Checkbox>
-			<Checkbox value={stepperControl.direction} label="Direction" onChange={onChange}></Checkbox>
-			<Slider value={stepperControl.speed} label="Speed" onChange={onChange}></Slider>
-			<Slider value={stepperControl.move} label="Move" onChange={onChange}></Slider>
-			<Slider value={stepperControl.acceleration} label="Acceleration" onChange={onChange}></Slider>
+			<Checkbox 
+				value={stepperControl.isEnabled} 
+				label="Enable" 
+				onChange={onChange}>
+			</Checkbox>
+			<Checkbox 
+				value={stepperControl.direction} 
+				label="Direction" 
+				onChange={onChange}>
+			</Checkbox>
+			<Slider 
+				value={stepperControl.speed} 
+				label="Speed" 
+				onChange={onChange}>
+			</Slider>
+			<Slider 
+				value={stepperControl.move} 
+				label="Move" 
+				onChange={onChange}>
+			</Slider>
+			<Slider 
+				value={stepperControl.acceleration} 
+				label="Acceleration" 
+				onChange={onChange}>
+			</Slider>
 		</GridForm>
 		<div class="flex flex-row flex-wrap justify-between gap-x-2">
 			<div class="flex-grow"></div>
 			<div>
-				<div>
-					<button class="btn btn-primary inline-flex items-center" on:click={() => {stepperControl.speed=0; onChange();}}>
-						<Stop class="mr-2 h-5 w-5" /><span>Stop</span>
-					</button>
-				</div>
+				<button class="btn btn-primary inline-flex items-center" on:click={() => {stepperControl.speed=0; onChange();}}>
+					<Stop class="mr-2 h-5 w-5" /><span>Stop</span>
+				</button>
 			</div>
 		</div>
 		<!-- {:else}
