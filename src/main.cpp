@@ -18,6 +18,7 @@
 #include <PsychicHttpServer.h>
 #include <StepperControlService.h>
 #include <StepperSettingsService.h>
+#include <gpsneo.h>
 
 #define SERIAL_BAUD_RATE 115200
 
@@ -61,7 +62,7 @@ void setup()
 {
     // start serial and filesystem
     Serial.begin(SERIAL_BAUD_RATE);
-    
+
     esp32sveltekit.getFeatureService()->addFeature("stepper", true);
 
     // start ESP32-SvelteKit
@@ -77,10 +78,13 @@ void setup()
 
     stepperSettingsService.begin();
     stepperControlService.begin();
+
+    setConfigGPS();
 }
 
 void loop()
 {
     // Delete Arduino loop task, as it is not needed in this example
-    vTaskDelete(NULL);
+    // vTaskDelete(NULL);
+    updateGPS();
 }
