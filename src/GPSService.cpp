@@ -1,0 +1,62 @@
+#include <GPSService.h>
+
+GPSStateService::GPSStateService(EventSocket *socket,
+                                 GPSSettingsService *gpsSettingsService,
+                                 SerialGPS *gps) :
+                                                    _eventEndpoint(GPSState::read,
+                                                                    GPSState::update,
+                                                                    this,
+                                                                    socket,
+                                                                    GPS_STATE_EVENT),
+                                                    _gpsSettingsService(gpsSettingsService),
+                                                    _GPS(gps)
+{
+}
+
+void GPSStateService::begin()
+{
+    _eventEndpoint.begin();
+    updateState();
+}
+
+void GPSStateService::loop() {
+    _GPS->update();
+}
+
+void GPSStateService::updateState() {
+    JsonDocument json;
+    JsonObject jsonObject = json.to<JsonObject>();
+    _state.readState(_GPS, jsonObject);
+    update(jsonObject, _state.update, "driver");
+}
+
+GPSSettingsService::GPSSettingsService(PsychicHttpServer *server,
+                                        FS *fs,
+                                        SecurityManager *securityManager,
+                                        SerialGPS *gps) :                  
+                                                _httpEndpoint(GPSSettings::read,
+                                                                GPSSettings::update,
+                                                                this,
+                                                                server,
+                                                                GPS_SETTINGS_ENDPOINT,
+                                                                securityManager,
+                                                                AuthenticationPredicates::IS_AUTHENTICATED),
+                                                _fsPersistence(GPSSettings::read, GPSSettings::update, this, fs, GPS_SETTINGS_FILE),
+                                                _GPS(gps)
+{
+    // configure settings service update handler to update LED state
+    addUpdateHandler([&](const String &originId)
+                     { onConfigUpdated(); },
+                     false);
+}
+
+void GPSSettingsService::begin()
+{
+    _httpEndpoint.begin();
+    _fsPersistence.readFromFS();
+    onConfigUpdated();
+}
+
+void GPSSettingsService::onConfigUpdated()
+{
+}

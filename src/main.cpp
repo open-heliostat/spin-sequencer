@@ -19,6 +19,7 @@
 #include <StepperControlService.h>
 #include <StepperSettingsService.h>
 #include <gpsneo.h>
+#include <GPSService.h>
 
 #define SERIAL_BAUD_RATE 115200
 
@@ -59,6 +60,17 @@ StepperControlService stepperControlService = StepperControlService(
 
 SerialGPS gpsneo = SerialGPS();
 
+GPSSettingsService gpsSettingsService = GPSSettingsService(
+    &server,
+    esp32sveltekit.getFS(),
+    esp32sveltekit.getSecurityManager(),
+    &gpsneo);
+
+GPSStateService gpsStateService =  GPSStateService(
+    esp32sveltekit.getSocket(),
+    &gpsSettingsService,
+    &gpsneo);
+
 
 void setup()
 {
@@ -81,12 +93,13 @@ void setup()
     stepperSettingsService.begin();
     stepperControlService.begin();
 
-    gpsneo.init();
+    gpsSettingsService.begin();
+    gpsStateService.begin();
 }
 
 void loop()
 {
     // Delete Arduino loop task, as it is not needed in this example
     // vTaskDelete(NULL);
-    gpsneo.update();
+    gpsStateService.loop();
 }
