@@ -57,6 +57,8 @@ StepperControlService stepperControlService = StepperControlService(
     &stepperSettingsService,
     &stepper1);
 
+SerialGPS gpsneo = SerialGPS();
+
 
 void setup()
 {
@@ -79,12 +81,12 @@ void setup()
     stepperSettingsService.begin();
     stepperControlService.begin();
 
-    setConfigGPS();
+    gpsneo.init();
 }
 
 void loop()
 {
     // Delete Arduino loop task, as it is not needed in this example
     // vTaskDelete(NULL);
-    updateGPS();
+    gpsneo.update();
 }

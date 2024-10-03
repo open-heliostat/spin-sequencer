@@ -7,6 +7,38 @@
 #include <TinyGPS++.h>
 #include "TimeLib.h"
 
+struct GeoCoords {
+    double longitude;
+    double latitude;
+    double altitude;
+};
+
+class SerialGPS {
+private:
+    const uint8_t TX;
+    const uint8_t RX;
+    GeoCoords coords;
+    HardwareSerial &serial;
+    TinyGPSPlus gps;
+
+public:
+    SerialGPS(HardwareSerial &serial_ = Serial1, uint8_t RX_ = 25, uint8_t TX_ = 33) : serial(serial_), RX(RX_), TX(TX_) {}
+    void init() {
+        serial.begin(9600, SERIAL_8N1, RX, TX);
+    }
+    void update() {
+        while (serial.available() > 0) {
+            gps.encode(serial.read());
+        }
+        if (gps.location.isUpdated()){
+            coords.latitude = gps.location.lat();
+            coords.longitude = gps.location.lng();
+            coords.altitude = gps.altitude.meters();
+            Serial.println(coords.latitude);
+        }
+    }
+};
+
 // #define NMEAGPS_DERIVED_TYPES
 // #define NMEAGPS_PARSE_PROPRIETARY
 // #define NMEAGPS_PARSE_MFR_ID
@@ -459,7 +491,7 @@ void updateGPS() {
         sprintf(timeStr, "%i:%i:%i", hour(), minute(), second());
         sprintf(timeStr, "%i:%i:%i", hour(), minute(), second());
         sprintf(dateStr, "%i/%i/%i", day(), month(), year());
-        Serial.println(timeStr);
+        // Serial.println(timeStr);
         // sprintf(dateStr, "%s %s %i %i", dayStr(day()), monthStr(month()), day(), year());
         // Serial.print(">Latitude:"); 
         // Serial.println(latitudeAverage*1000., 6);
