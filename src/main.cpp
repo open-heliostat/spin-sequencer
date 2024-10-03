@@ -16,6 +16,8 @@
 #include <LightMqttSettingsService.h>
 #include <LightStateService.h>
 #include <PsychicHttpServer.h>
+#include <StepperControlService.h>
+#include <StepperSettingsService.h>
 
 #define SERIAL_BAUD_RATE 115200
 
@@ -23,15 +25,35 @@ PsychicHttpServer server;
 
 ESP32SvelteKit esp32sveltekit(&server, 120);
 
-LightMqttSettingsService lightMqttSettingsService = LightMqttSettingsService(&server,
-                                                                             esp32sveltekit.getFS(),
-                                                                             esp32sveltekit.getSecurityManager());
+FastAccelStepperEngine engine = FastAccelStepperEngine();
 
-LightStateService lightStateService = LightStateService(&server,
-                                                        esp32sveltekit.getSocket(),
-                                                        esp32sveltekit.getSecurityManager(),
-                                                        esp32sveltekit.getMqttClient(),
-                                                        &lightMqttSettingsService);
+TMC5160Stepper driver1(5, R_SENSE, MOSI, MISO, SCK);
+
+TMC5160Controller stepper1 = {driver1, engine, 21, 17, EN_PIN};
+
+LightMqttSettingsService lightMqttSettingsService = LightMqttSettingsService(
+    &server,
+    esp32sveltekit.getFS(),
+    esp32sveltekit.getSecurityManager());
+
+LightStateService lightStateService = LightStateService(
+    &server,
+    esp32sveltekit.getSocket(),
+    esp32sveltekit.getSecurityManager(),
+    esp32sveltekit.getMqttClient(),
+    &lightMqttSettingsService);
+
+StepperSettingsService stepperSettingsService = StepperSettingsService(
+    &server, 
+    esp32sveltekit.getFS(), 
+    esp32sveltekit.getSecurityManager(), 
+    &stepper1);
+
+StepperControlService stepperControlService = StepperControlService(
+    esp32sveltekit.getSocket(),
+    &stepperSettingsService,
+    &stepper1);
+
 
 void setup()
 {

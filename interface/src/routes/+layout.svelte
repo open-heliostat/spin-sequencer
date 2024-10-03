@@ -20,7 +20,7 @@
 	import type { Battery } from '$lib/types/models';
 	import type { DownloadOTA } from '$lib/types/models';
 
-	export let data: LayoutData;
+	// export let data: LayoutData;
 
 	onMount(async () => {
 		if ($user.bearer_token !== '') {
@@ -149,6 +149,8 @@
 <Modals>
 	<!-- svelte-ignore a11y-click-events-have-key-events -->
 	<div
+		role="button"
+		tabindex="0"
 		slot="backdrop"
 		class="fixed inset-0 z-40 max-h-full max-w-full bg-black/20 backdrop-blur"
 		transition:fade

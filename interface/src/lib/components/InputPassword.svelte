@@ -14,6 +14,8 @@
 	<div class="absolute inset-y-0 right-0 flex items-center pr-1">
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<svg
+			role=button
+			tabindex="0"
 			xmlns="http://www.w3.org/2000/svg"
 			class="text-base-content/50 h-6 {show ? 'block' : 'hidden'}"
 			on:click={() => (show = false)}
@@ -36,6 +38,8 @@
 
 		<!-- svelte-ignore a11y-click-events-have-key-events -->
 		<svg
+			role=button
+			tabindex="0"
 			xmlns="http://www.w3.org/2000/svg"
 			class="text-base-content/50 h-6 {show ? 'hidden' : 'block'}"
 			on:click={() => (show = true)}
