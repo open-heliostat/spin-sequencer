@@ -23,6 +23,7 @@ StepperControlService::StepperControlService(EventSocket *socket,
 
 void StepperControlService::begin()
 {
+    _eventEndpoint.begin();
     updateState();
     onConfigUpdated("begin");
 }
@@ -52,7 +53,7 @@ void StepperControlService::onConfigUpdated(const String &originId)
 }
 
 void StepperControlService::updateState() {
-    DynamicJsonDocument json(1024);
+    JsonDocument json;
     JsonObject jsonObject = json.to<JsonObject>();
     _state.readState(_stepper, _stepperSettingsService, jsonObject);
     update(jsonObject, _state.update, "driver");
