@@ -18,7 +18,7 @@
 	import { load } from '../+layout';
 	import { socket } from '$lib/stores/socket';
 
-	const stepperControlEvent = "stepperControl"
+	const stepperControlEvent = "steppercontrol"
 
 	type StepperControl = {
 		isEnabled: boolean;
@@ -94,13 +94,11 @@
 	async function getStepperSettings() {
 		try {
 			const response = await fetch('/rest/stepperSettings', {
-				method: 'GET',
-				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
-					'Content-Type': 'application/json'
-				}
+				method: 'GET'
 			});
-			stepperSettings = await response.json();
+			const settings = await response.json();
+			console.log(settings)
+			stepperSettings = settings;
 		} catch (error) {
 			console.error('Error:', error);
 		}

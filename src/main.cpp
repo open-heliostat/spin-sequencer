@@ -61,6 +61,8 @@ void setup()
 {
     // start serial and filesystem
     Serial.begin(SERIAL_BAUD_RATE);
+    
+    esp32sveltekit.getFeatureService()->addFeature("stepper", true);
 
     // start ESP32-SvelteKit
     esp32sveltekit.begin();
@@ -69,6 +71,7 @@ void setup()
     lightStateService.begin();
     // start the light service
     lightMqttSettingsService.begin();
+
 
     stepper1.init();
 

@@ -51,6 +51,13 @@
 			
 		},
 		{
+			title: 'Stepper',
+			icon: Control,
+			href: '/stepper',
+			feature: $page.data.features.stepper,
+			active: false
+		},
+		{
 			title: 'Connections',
 			icon: Remote,
 			feature: $page.data.features.mqtt || $page.data.features.ntp,

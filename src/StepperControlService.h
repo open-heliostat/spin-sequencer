@@ -6,7 +6,7 @@
 #include <EventEndpoint.h>
 #include <tmcdriver.h>
 
-#define STEPPER_CONTROL_EVENT "stepperControl"
+#define STEPPER_CONTROL_EVENT "steppercontrol"
 
 class StepperControl
 {
