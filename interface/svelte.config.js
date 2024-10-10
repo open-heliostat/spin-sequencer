@@ -14,7 +14,12 @@ const config = {
 			fallback: 'index.html',
 			precompress: false,
 			strict: true
-		})
+		}),
+        csp: {
+			directives: {
+				'frame-ancestors': ['self', 'https://maps.google.com']
+			}
+		}
 		//prerender: { default: true },
 	}
 };

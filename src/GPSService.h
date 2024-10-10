@@ -9,7 +9,7 @@
 
 #define GPS_STATE_EVENT "gps"
 #define GPS_SETTINGS_ENDPOINT "/rest/gpsSettings"
-#define GPS_SETTINGS_FILE "/config/stepperSettings.json"
+#define GPS_SETTINGS_FILE "/config/gpsSettings.json"
 
 class GPSSettings
 {

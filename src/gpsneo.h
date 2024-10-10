@@ -26,16 +26,17 @@ public:
     void init() {
         serial.begin(9600, SERIAL_8N1, RX, TX);
     }
-    void update() {
+    bool update() {
         while (serial.available() > 0) {
             gps.encode(serial.read());
         }
-        if (gps.location.isUpdated()){
+        bool updated = gps.location.isUpdated();
+        if (updated) {
             coords.latitude = gps.location.lat();
             coords.longitude = gps.location.lng();
             coords.altitude = gps.altitude.meters();
-            Serial.println(coords.latitude);
         }
+        return updated;
     }
 };
 

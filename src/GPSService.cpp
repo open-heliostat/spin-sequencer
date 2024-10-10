@@ -20,7 +20,7 @@ void GPSStateService::begin()
 }
 
 void GPSStateService::loop() {
-    _GPS->update();
+    if (_GPS->update()) updateState();
 }
 
 void GPSStateService::updateState() {

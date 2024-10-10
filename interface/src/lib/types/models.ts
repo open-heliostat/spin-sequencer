@@ -81,6 +81,16 @@ export type NTPSettings = {
 	tz_format: string;
 };
 
+export type GPSSettings = {
+	enabled: boolean;
+}
+
+export type GPSStatus = {
+	latitude: number;
+	longitude: number;
+	altitude: number;
+}
+
 export type Analytics = {
 	max_alloc_heap: number;
 	psram_size: number;

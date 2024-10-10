@@ -78,6 +78,7 @@ void setup()
     Serial.begin(SERIAL_BAUD_RATE);
 
     esp32sveltekit.getFeatureService()->addFeature("stepper", true);
+    esp32sveltekit.getFeatureService()->addFeature("gps", true);
 
     // start ESP32-SvelteKit
     esp32sveltekit.begin();
@@ -93,6 +94,7 @@ void setup()
     stepperSettingsService.begin();
     stepperControlService.begin();
 
+    gpsneo.init();
     gpsSettingsService.begin();
     gpsStateService.begin();
 }
