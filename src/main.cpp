@@ -29,10 +29,10 @@ ESP32SvelteKit esp32sveltekit(&server, 120);
 
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 
-TMC5160Stepper driver1(5, R_SENSE, MOSI, MISO, SCK);
+TMC5160Stepper driver1(10, R_SENSE, MOSI, MISO, SCK);
 // TMC5160Stepper driver2(16, R_SENSE, MOSI, MISO, SCK);
 
-TMC5160Controller stepper1 = {driver1, engine, 21, 17, EN_PIN};
+TMC5160Controller stepper1 = {driver1, engine, 1, 2, 48};
 // TMC5160Controller stepper2 = {driver2, engine, STEP_PIN, DIR_PIN, EN_PIN};
 
 LightMqttSettingsService lightMqttSettingsService = LightMqttSettingsService(
@@ -58,18 +58,18 @@ StepperControlService stepperControlService = StepperControlService(
     &stepperSettingsService,
     &stepper1);
 
-SerialGPS gpsneo = SerialGPS();
+// SerialGPS gpsneo = SerialGPS();
 
-GPSSettingsService gpsSettingsService = GPSSettingsService(
-    &server,
-    esp32sveltekit.getFS(),
-    esp32sveltekit.getSecurityManager(),
-    &gpsneo);
+// GPSSettingsService gpsSettingsService = GPSSettingsService(
+//     &server,
+//     esp32sveltekit.getFS(),
+//     esp32sveltekit.getSecurityManager(),
+//     &gpsneo);
 
-GPSStateService gpsStateService =  GPSStateService(
-    esp32sveltekit.getSocket(),
-    &gpsSettingsService,
-    &gpsneo);
+// GPSStateService gpsStateService =  GPSStateService(
+//     esp32sveltekit.getSocket(),
+//     &gpsSettingsService,
+//     &gpsneo);
 
 
 void setup()
@@ -94,14 +94,14 @@ void setup()
     stepperSettingsService.begin();
     stepperControlService.begin();
 
-    gpsneo.init();
-    gpsSettingsService.begin();
-    gpsStateService.begin();
+//     gpsneo.init();
+//     gpsSettingsService.begin();
+//     gpsStateService.begin();
 }
 
 void loop()
 {
     // Delete Arduino loop task, as it is not needed in this example
-    // vTaskDelete(NULL);
-    gpsStateService.loop();
+    vTaskDelete(NULL);
+    // gpsStateService.loop();
 }
