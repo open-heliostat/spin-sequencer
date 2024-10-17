@@ -79,6 +79,11 @@
 				class="flex w-full flex-col space-y-1"
 				transition:slide|local={{ duration: 300, easing: cubicOut }}
 			>
+			{#if gpsStatus}
+			Latitude : {gpsStatus.latitude},
+			Longitude : {gpsStatus.longitude},
+			Altitude : {gpsStatus.altitude}
+			{/if}
 			</div>
 	</div>
 
