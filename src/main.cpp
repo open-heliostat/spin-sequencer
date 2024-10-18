@@ -20,6 +20,7 @@
 #include <StepperSettingsService.h>
 #include <gpsneo.h>
 #include <GPSService.h>
+#include <EncoderService.h>
 
 #define SERIAL_BAUD_RATE 115200
 
@@ -32,8 +33,8 @@ FastAccelStepperEngine engine = FastAccelStepperEngine();
 TMC5160Stepper driver1(10, R_SENSE, MOSI, MISO, SCK);
 // TMC5160Stepper driver2(16, R_SENSE, MOSI, MISO, SCK);
 
-TMC5160Controller stepper1 = {driver1, engine, 1, 2, 9};
-// TMC5160Controller stepper2 = {driver2, engine, STEP_PIN, DIR_PIN, EN_PIN};
+TMC5160Controller stepper1 = {driver1, engine, 9, 8};
+// TMC5160Controller stepper2 = {driver2, engine, STEP_PIN, DIR_PIN};
 
 LightMqttSettingsService lightMqttSettingsService = LightMqttSettingsService(
     &server,
@@ -72,6 +73,12 @@ GPSStateService gpsStateService =  GPSStateService(
     &gpsSettingsService,
     &gpsneo);
 
+Encoder encoder = Encoder(2, 1);
+
+EncoderStateService encoderService = EncoderStateService(
+    esp32sveltekit.getSocket(),
+    &encoder);
+
 
 void setup()
 {
@@ -98,6 +105,8 @@ void setup()
     gpsneo.init();
     gpsSettingsService.begin();
     gpsStateService.begin();
+
+    encoderService.begin();
 }
 
 void loop()
@@ -105,4 +114,5 @@ void loop()
     // Delete Arduino loop task, as it is not needed in this example
     // vTaskDelete(NULL);
     gpsStateService.loop();
+    encoderService.loop();
 }
