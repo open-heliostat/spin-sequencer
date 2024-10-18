@@ -2,10 +2,6 @@
 #define TMCDRIVER_h
 
 #define R_SENSE 0.075f
-#define EN_PIN           22 // Enable
-#define STEP_PIN         4 // Step
-#define DIR_PIN          15 // Dir
-#define CS_PIN           16 // Chip select
 
 #include <TMCStepper.h>
 #include "FastAccelStepper.h"
@@ -25,16 +21,13 @@ struct TMC5160Controller {
     const char* msteps;
     const char* pwmfr;
     const char* freewh;
-    const int EN;
     const int DIR;
     const int STEP;
 
-    TMC5160Controller(TMC5160Stepper &driver, FastAccelStepperEngine &engine, const int STEP, const int DIR, const int EN) : driver {driver}, engine {engine}, STEP {STEP}, DIR {DIR}, EN {EN} {}
+    TMC5160Controller(TMC5160Stepper &driver, FastAccelStepperEngine &engine, const int STEP, const int DIR) : driver {driver}, engine {engine}, STEP {STEP}, DIR {DIR} {}
 
     void init() {
-        pinMode(EN, OUTPUT);
         pinMode(STEP, OUTPUT);
-        digitalWrite(EN, LOW);      // Enable driver in hardware
         driver.begin();                 //  SPI: Init CS pins and possible SW SPI pins
         if (driver.version() == 0xFF || driver.version() == 0) Serial.println("Driver communication error");
         Serial.print("Driver firmware version: ");
@@ -69,49 +62,7 @@ struct TMC5160Controller {
         driver.bbmclks(2);
         driver.shaft(true);
         disable();
-        loadSettings();
         // stepper->attachToPulseCounter(6, -200*microsteps, 200*microsteps);
-    }
-
-    void loadSettings() {
-        // String driverName = "drv" + String(STEP);
-        // preferences.begin(driverName.c_str(), false);
-        // driver.shaft(preferences.getBool("shaft", false));
-        // driver.en_pwm_mode(preferences.getBool("stchp", true));
-        // driver.GLOBAL_SCALER(preferences.getInt("scaler", 128));
-        // driver.ihold(preferences.getInt("ihold", 8));
-        // driver.irun(preferences.getInt("irun", 16));
-        // driver.s2vs_level(preferences.getInt("s2vs_level", 9));
-        // driver.s2g_level(preferences.getInt("s2g_level", 9));
-        // driver.bbmclks(preferences.getInt("bbmclks", 3));
-        // stepsPerRotation = preferences.getInt("stpr", stepsPerRotation);
-        // if (stepper) {
-        //     Serial.println(preferences.getInt("maxspd", stepper->getSpeedInMilliHz()/1000));
-        //     stepper->setSpeedInHz(preferences.getInt("maxspd", stepper->getSpeedInMilliHz()/1000));
-        //     stepper->setAcceleration(preferences.getInt("maxaccel", stepper->getAcceleration()));
-        // }
-        // preferences.end();
-    }
-
-    void saveSettings() {
-        // String driverName = "drv" + String(STEP);
-        // if (driver.version() == 0xFF || driver.version() == 0) Serial.println("Driver communication error");
-        // else {
-        //     preferences.begin(driverName.c_str(), false);
-        //     preferences.putBool("shaft", driver.shaft());
-        //     preferences.putBool("stchp", driver.en_pwm_mode());
-        //     preferences.putInt("scaler", driver.GLOBAL_SCALER());
-        //     preferences.putInt("ihold", driver.ihold());
-        //     preferences.putInt("irun", driver.irun());
-        //     preferences.putInt("s2vs_level", driver.s2vs_level());
-        //     preferences.putInt("s2g_level", driver.s2g_level());
-        //     preferences.putInt("bbmclks", driver.bbmclks());
-        // }
-        // preferences.putInt("stpr", stepsPerRotation);
-        // preferences.putInt("maxspd", stepper->getSpeedInMilliHz()/1000);
-        // Serial.println(stepper->getSpeedInMilliHz()/1000);
-        // preferences.putInt("maxaccel", stepper->getAcceleration());
-        // preferences.end();
     }
 
     void setMaxSpeed(uint32_t sp) {
@@ -193,7 +144,6 @@ struct TMC5160Controller {
     }
 
     void enable() {
-        // digitalWrite(ST_EN, LOW);
         driver.toff(3);
         enabled = true;
     }
@@ -203,7 +153,6 @@ struct TMC5160Controller {
     }
 
     void disable() {
-        // digitalWrite(ST_EN, HIGH);
         driver.toff(0);
         enabled = false;
     }
