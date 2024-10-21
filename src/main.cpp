@@ -55,7 +55,7 @@ StepperSettingsService stepperSettingsService = StepperSettingsService(
     &server, 
     esp32sveltekit.getFS(), 
     esp32sveltekit.getSecurityManager(), 
-    &stepper1);
+    steppers);
 
 StepperControlService stepperControlService = StepperControlService(
     esp32sveltekit.getSocket(),

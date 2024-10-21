@@ -98,7 +98,7 @@
 		current: number;
 	};
 
-	let stepperSettings: StepperSettings;
+	let stepperSettings: {steppers: StepperSettings[]};
 
 	async function getStepperSettings() {
 		try {
@@ -303,154 +303,155 @@
 		</form>
 	</Collapsible>
 {/if} -->
+
+	<Collapsible open={false}>
+		<Settings slot="icon" class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
+		<span slot="title">Stepper Settings</span>
+		<div class="w-full overflow-x-auto">
+			{#await getStepperSettings()}
+				<Spinner />
+			{:then nothing}
+				<form
+					on:submit|preventDefault={postStepperSettings}
+					novalidate
+					bind:this={formField}
+					transition:slide|local={{ duration: 300, easing: cubicOut }}
+				>
+					<div class="w-full">
+						<div class="w-full grid grid-flow-row grid-form items-center">
+							<label class="label cursor-pointer" for="enableonstart">
+								<span class="">Enable on Start</span>
+							</label>
+							<input
+								type="checkbox"
+								class="toggle toggle-primary"
+								id="enableonstart"
+								bind:checked={stepperSettings.steppers[i].enableOnStart}
+							/>
+							<label class="label cursor-pointer" for="invdirection">
+								<span class="">Invert Direction</span>
+							</label>
+							<input
+								type="checkbox"
+								class="toggle toggle-primary"
+								id="invdirection"
+								bind:checked={stepperSettings.steppers[i].invertDirection}
+							/>
+							<label class="label cursor-pointer" for="maxSpeed">
+								<span class="mr-4">Max Speed </span>
+							</label>
+							<input 
+								type="range"
+								min="0" 
+								max="400" 
+								class="range range-primary"
+								id="maxSpeed"
+								bind:value={stepperSettings.steppers[i].maxSpeed}
+							/>
+							<label class="label cursor-pointer" for="maxAcceleration">
+								<span class="mr-4">Max Acceleration </span>
+							</label>
+							<input 
+								type="range"
+								min="0" 
+								max="200" 
+								class="range range-primary"
+								id="maxAcceleration"
+								bind:value={stepperSettings.steppers[i].maxAcceleration}
+							/>
+							<label class="label cursor-pointer" for="current">
+								<span class="mr-4">Driver Current </span>
+							</label>
+							<input 
+								type="range"
+								min="0" 
+								max="4000" 
+								class="range range-primary"
+								id="current"
+								bind:value={stepperSettings.steppers[i].current}
+							/>
+						</div>
+					</div>
+					<!-- <div class="alert alert-info my-2 shadow-lg">
+						<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
+						<span
+							>The LED is controllable via MQTT with the demo project designed to work with Home
+							Assistant's auto discovery feature.</span
+						>
+					</div>
+					<div class="grid w-full grid-cols-1 content-center gap-x-4 px-4">
+						<div>
+							<label class="label" for="uid">
+								<span class="label-text text-md">Unique ID</span>
+							</label>
+							<input
+								type="text"
+								class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.uid
+									? 'border-error border-2'
+									: ''}"
+								bind:value={stepperSettings.unique_id}
+								id="uid"
+								min="3"
+								max="32"
+								required
+							/>
+							<label class="label" for="uid">
+								<span class="label-text-alt text-error {formErrors.uid ? '' : 'hidden'}"
+									>Unique ID must be between 3 and 32 characters long</span
+								>
+							</label>
+						</div>
+						<div>
+							<label class="label" for="name">
+								<span class="label-text text-md">Name</span>
+							</label>
+							<input
+								type="text"
+								class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.name
+									? 'border-error border-2'
+									: ''}"
+								bind:value={stepperSettings.name}
+								id="name"
+								min="3"
+								max="32"
+								required
+							/>
+							<label class="label" for="name">
+								<span class="label-text-alt text-error {formErrors.name ? '' : 'hidden'}"
+									>Name must be between 3 and 32 characters long</span
+								>
+							</label>
+						</div>
+						<div>
+							<label class="label" for="path">
+								<span class="label-text text-md">MQTT Path</span>
+							</label>
+							<input
+								type="text"
+								class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.path
+									? 'border-error border-2'
+									: ''}"
+								bind:value={stepperSettings.mqtt_path}
+								id="path"
+								min="0"
+								max="64"
+								required
+							/>
+							<label class="label" for="path">
+								<span class="label-text-alt text-error {formErrors.path ? '' : 'hidden'}"
+									>MQTT path is limited to 64 characters</span
+								>
+							</label>
+						</div>
+					</div> -->
+					<div class="divider mb-2 mt-0" />
+					<div class="mx-4 flex flex-wrap justify-end gap-2">
+						<button class="btn btn-primary" type="submit">Apply Settings</button>
+					</div>
+				</form>
+			{/await}
+		</div>
+	</Collapsible>
+
 </SettingsCard>
 {/each}
-
-<SettingsCard collapsible={true} open={false}>
-	<Settings slot="icon" class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">Stepper Settings</span>
-	<div class="w-full overflow-x-auto">
-		{#await getStepperSettings()}
-			<Spinner />
-		{:then nothing}
-			<form
-				on:submit|preventDefault={postStepperSettings}
-				novalidate
-				bind:this={formField}
-				transition:slide|local={{ duration: 300, easing: cubicOut }}
-			>
-				<div class="w-full">
-					<div class="w-full grid grid-flow-row grid-form items-center">
-						<label class="label cursor-pointer" for="enableonstart">
-							<span class="">Enable on Start</span>
-						</label>
-						<input
-							type="checkbox"
-							class="toggle toggle-primary"
-							id="enableonstart"
-							bind:checked={stepperSettings.enableOnStart}
-						/>
-						<label class="label cursor-pointer" for="invdirection">
-							<span class="">Invert Direction</span>
-						</label>
-						<input
-							type="checkbox"
-							class="toggle toggle-primary"
-							id="invdirection"
-							bind:checked={stepperSettings.invertDirection}
-						/>
-						<label class="label cursor-pointer" for="maxSpeed">
-							<span class="mr-4">Max Speed </span>
-						</label>
-						<input 
-							type="range"
-							min="0" 
-							max="400" 
-							class="range range-primary"
-							id="maxSpeed"
-							bind:value={stepperSettings.maxSpeed}
-						/>
-						<label class="label cursor-pointer" for="maxAcceleration">
-							<span class="mr-4">Max Acceleration </span>
-						</label>
-						<input 
-							type="range"
-							min="0" 
-							max="200" 
-							class="range range-primary"
-							id="maxAcceleration"
-							bind:value={stepperSettings.maxAcceleration}
-						/>
-						<label class="label cursor-pointer" for="current">
-							<span class="mr-4">Driver Current </span>
-						</label>
-						<input 
-							type="range"
-							min="0" 
-							max="4000" 
-							class="range range-primary"
-							id="current"
-							bind:value={stepperSettings.current}
-						/>
-					</div>
-				</div>
-				<!-- <div class="alert alert-info my-2 shadow-lg">
-					<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
-					<span
-						>The LED is controllable via MQTT with the demo project designed to work with Home
-						Assistant's auto discovery feature.</span
-					>
-				</div>
-				<div class="grid w-full grid-cols-1 content-center gap-x-4 px-4">
-					<div>
-						<label class="label" for="uid">
-							<span class="label-text text-md">Unique ID</span>
-						</label>
-						<input
-							type="text"
-							class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.uid
-								? 'border-error border-2'
-								: ''}"
-							bind:value={stepperSettings.unique_id}
-							id="uid"
-							min="3"
-							max="32"
-							required
-						/>
-						<label class="label" for="uid">
-							<span class="label-text-alt text-error {formErrors.uid ? '' : 'hidden'}"
-								>Unique ID must be between 3 and 32 characters long</span
-							>
-						</label>
-					</div>
-					<div>
-						<label class="label" for="name">
-							<span class="label-text text-md">Name</span>
-						</label>
-						<input
-							type="text"
-							class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.name
-								? 'border-error border-2'
-								: ''}"
-							bind:value={stepperSettings.name}
-							id="name"
-							min="3"
-							max="32"
-							required
-						/>
-						<label class="label" for="name">
-							<span class="label-text-alt text-error {formErrors.name ? '' : 'hidden'}"
-								>Name must be between 3 and 32 characters long</span
-							>
-						</label>
-					</div>
-					<div>
-						<label class="label" for="path">
-							<span class="label-text text-md">MQTT Path</span>
-						</label>
-						<input
-							type="text"
-							class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.path
-								? 'border-error border-2'
-								: ''}"
-							bind:value={stepperSettings.mqtt_path}
-							id="path"
-							min="0"
-							max="64"
-							required
-						/>
-						<label class="label" for="path">
-							<span class="label-text-alt text-error {formErrors.path ? '' : 'hidden'}"
-								>MQTT path is limited to 64 characters</span
-							>
-						</label>
-					</div>
-				</div> -->
-				<div class="divider mb-2 mt-0" />
-				<div class="mx-4 flex flex-wrap justify-end gap-2">
-					<button class="btn btn-primary" type="submit">Apply Settings</button>
-				</div>
-			</form>
-		{/await}
-	</div>
-</SettingsCard>
