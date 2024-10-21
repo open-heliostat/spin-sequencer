@@ -2,14 +2,16 @@
 
 StepperControlService::StepperControlService(EventSocket *socket,
                                              StepperSettingsService *stepperSettingsService,
-                                             TMC5160Controller *stepper) :
+                                             TMC5160Controller *stepper,
+                                             FeaturesService *featuresService) :
                                                     _eventEndpoint(StepperControl::read,
                                                                     StepperControl::update,
                                                                     this,
                                                                     socket,
                                                                     STEPPER_CONTROL_EVENT),
                                                     _stepperSettingsService(stepperSettingsService),
-                                                    _stepper(stepper)
+                                                    _stepper(stepper),
+                                                    _featuresService(featuresService)
 {
     // configure update handler for when the stepper settings change
     // _stepperSettingsService->addUpdateHandler([&](const String &originId)
@@ -19,6 +21,8 @@ StepperControlService::StepperControlService(EventSocket *socket,
     addUpdateHandler([&](const String &originId)
                      { onConfigUpdated(originId); },
                      false);
+    
+    _featuresService->addFeature("stepper", true);
 }
 
 void StepperControlService::begin()

@@ -4,6 +4,7 @@
 #include <HttpEndpoint.h>
 #include <EventEndpoint.h>
 #include <FSPersistence.h>
+#include <FeaturesService.h>
 
 #include <gpsneo.h>
 
@@ -89,7 +90,8 @@ class GPSStateService : public StatefulService<GPSState>
 public:
     GPSStateService( EventSocket *socket,
                      GPSSettingsService *gpsSettingsService,
-                     SerialGPS *gps);
+                     SerialGPS *gps,
+                     FeaturesService *featuresService);
     void begin();
     void updateState();
     void loop();
@@ -98,6 +100,7 @@ private:
     EventEndpoint<GPSState> _eventEndpoint;
     GPSSettingsService *_gpsSettingsService;
     SerialGPS *_GPS;
+    FeaturesService *_featuresService;
 
     void onConfigUpdated();
 };

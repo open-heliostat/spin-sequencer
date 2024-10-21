@@ -2,15 +2,18 @@
 
 GPSStateService::GPSStateService(EventSocket *socket,
                                  GPSSettingsService *gpsSettingsService,
-                                 SerialGPS *gps) :
+                                 SerialGPS *gps,
+                                 FeaturesService *featuresService) :
                                                     _eventEndpoint(GPSState::read,
                                                                     GPSState::update,
                                                                     this,
                                                                     socket,
                                                                     GPS_STATE_EVENT),
                                                     _gpsSettingsService(gpsSettingsService),
-                                                    _GPS(gps)
+                                                    _GPS(gps),
+                                                    _featuresService(featuresService)
 {
+    _featuresService->addFeature("gps", true);
 }
 
 void GPSStateService::begin()

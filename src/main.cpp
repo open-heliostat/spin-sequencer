@@ -58,7 +58,8 @@ StepperSettingsService stepperSettingsService = StepperSettingsService(
 StepperControlService stepperControlService = StepperControlService(
     esp32sveltekit.getSocket(),
     &stepperSettingsService,
-    &stepper1);
+    &stepper1,
+    esp32sveltekit.getFeatureService());
 
 SerialGPS gpsneo = SerialGPS(Serial1, TX, RX);
 
@@ -71,7 +72,8 @@ GPSSettingsService gpsSettingsService = GPSSettingsService(
 GPSStateService gpsStateService =  GPSStateService(
     esp32sveltekit.getSocket(),
     &gpsSettingsService,
-    &gpsneo);
+    &gpsneo,
+    esp32sveltekit.getFeatureService());
 
 Encoder encoder = Encoder(2, 1);
 
@@ -84,9 +86,6 @@ void setup()
 {
     // start serial and filesystem
     Serial.begin(SERIAL_BAUD_RATE);
-
-    esp32sveltekit.getFeatureService()->addFeature("stepper", true);
-    esp32sveltekit.getFeatureService()->addFeature("gps", true);
 
     // start ESP32-SvelteKit
     esp32sveltekit.begin();
