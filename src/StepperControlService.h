@@ -4,6 +4,8 @@
 #include <StepperSettingsService.h>
 
 #include <EventEndpoint.h>
+#include <FeaturesService.h>
+
 #include <tmcdriver.h>
 
 #define STEPPER_CONTROL_EVENT "steppercontrol"
@@ -91,7 +93,8 @@ class StepperControlService : public StatefulService<StepperControl>
 public:
     StepperControlService(EventSocket *socket,
                           StepperSettingsService *stepperSettingsService,
-                          TMC5160Controller *stepper);
+                          TMC5160Controller *stepper,
+                          FeaturesService *featuresService);
     void begin();
     void loop();
 
@@ -99,6 +102,7 @@ private:
     EventEndpoint<StepperControl> _eventEndpoint;
     StepperSettingsService *_stepperSettingsService;
     TMC5160Controller *_stepper;
+    FeaturesService *_featuresService;
 
     unsigned long lastUpdate = 0;
 
