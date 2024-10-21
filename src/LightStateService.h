@@ -104,6 +104,7 @@ public:
                       FeaturesService *featuresService);
 
     void begin();
+    void updateState(LightState lightState);
 
 private:
     HttpEndpoint<LightState> _httpEndpoint;

@@ -21,7 +21,7 @@ public:
     }
 
     static StateUpdateResult update(JsonObject &root, GPSSettings &settings) {
-        if (root.containsKey("enabled") & settings.enabled != root["enabled"]) {
+        if (root["enabled"].is<bool>() & settings.enabled != root["enabled"]) {
             settings.enabled = root["enabled"];
             return StateUpdateResult::CHANGED;
         }
@@ -61,15 +61,15 @@ public:
 
     static StateUpdateResult update(JsonObject &root, GPSState &state) {
         bool changed = false;
-        if (root.containsKey("latitude") & state.latitude != root["latitude"]) {
+        if (root["latitude"].is<double>() & state.latitude != root["latitude"]) {
             state.latitude = root["latitude"];
             changed = true;
         }
-        if (root.containsKey("longitude") & state.longitude != root["longitude"]) {
+        if (root["longitude"].is<double>() & state.longitude != root["longitude"]) {
             state.longitude = root["longitude"];
             changed = true;
         }
-        if (root.containsKey("altitude") & state.altitude != root["altitude"]) {
+        if (root["altitude"].is<double>() & state.altitude != root["altitude"]) {
             state.altitude = root["altitude"];
             changed = true;
         }
