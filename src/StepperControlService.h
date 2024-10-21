@@ -124,7 +124,7 @@ class StepperControlService : public StatefulService<StepperControllers>
 public:
     StepperControlService(EventSocket *socket,
                           StepperSettingsService *stepperSettingsService,
-                          std::vector<TMC5160Controller*>& stepper,
+                          std::vector<TMC5160Controller*>& steppers,
                           FeaturesService *featuresService);
     void begin();
     void loop();
@@ -132,7 +132,7 @@ public:
 private:
     EventEndpoint<StepperControllers> _eventEndpoint;
     StepperSettingsService *_stepperSettingsService;
-    std::vector<TMC5160Controller*>& _stepper;
+    std::vector<TMC5160Controller*>& _steppers;
     FeaturesService *_featuresService;
 
     unsigned long lastUpdate = 0;

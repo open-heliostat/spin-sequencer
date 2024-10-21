@@ -2,7 +2,7 @@
 
 StepperControlService::StepperControlService(EventSocket *socket,
                                              StepperSettingsService *stepperSettingsService,
-                                             std::vector<TMC5160Controller*>& stepper,
+                                             std::vector<TMC5160Controller*>& steppers,
                                              FeaturesService *featuresService) :
                                                     _eventEndpoint(StepperControllers::read,
                                                                     StepperControllers::update,
@@ -10,7 +10,7 @@ StepperControlService::StepperControlService(EventSocket *socket,
                                                                     socket,
                                                                     STEPPER_CONTROL_EVENT),
                                                     _stepperSettingsService(stepperSettingsService),
-                                                    _stepper(stepper),
+                                                    _steppers(steppers),
                                                     _featuresService(featuresService)
 {
     // configure update handler for when the stepper settings change
@@ -18,7 +18,7 @@ StepperControlService::StepperControlService(EventSocket *socket,
     //                                             { onConfigUpdated(originId); },
     //                                             false);
 
-    for (TMC5160Controller *s : stepper) {
+    for (TMC5160Controller *s : steppers) {
         StepperControl state = StepperControl();
         _state.steppers.push_back(state);
     }
@@ -48,8 +48,8 @@ void StepperControlService::loop() {
 void StepperControlService::onConfigUpdated(const String &originId)
 {
     if (originId != "driver") {
-        for (int i = 0; i < _stepper.size(); i++) {
-            TMC5160Controller *stepper = _stepper[i];
+        for (int i = 0; i < _steppers.size(); i++) {
+            TMC5160Controller *stepper = _steppers[i];
             StepperControl state = _state.steppers[i];
             if (state.isEnabled & !stepper->enabled) stepper->enable();
             else if(!state.isEnabled & stepper->enabled) stepper->disable();
@@ -66,6 +66,6 @@ void StepperControlService::onConfigUpdated(const String &originId)
 void StepperControlService::updateState() {
     JsonDocument json;
     JsonObject jsonObject = json.to<JsonObject>();
-    _state.readState(_stepper, jsonObject);
+    _state.readState(_steppers, jsonObject);
     update(jsonObject, _state.update, "driver");
 }
