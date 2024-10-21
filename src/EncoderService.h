@@ -18,7 +18,7 @@ public:
 
     static StateUpdateResult update(JsonObject &root, EncoderState &state) {
         bool changed = false;
-        if (root.containsKey("angle") & state.angle != root["angle"]) {
+        if (root["angle"].is<double>() & state.angle != root["angle"]) {
             state.angle = root["angle"];
             changed = true;
         }

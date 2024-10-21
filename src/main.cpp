@@ -109,10 +109,21 @@ void setup()
     encoderService.begin();
 }
 
+unsigned long lastTick = 0;
+
 void loop()
 {
     // Delete Arduino loop task, as it is not needed in this example
     // vTaskDelete(NULL);
+    auto now = millis();
     gpsStateService.loop();
     encoderService.loop();
+    if (now - lastTick > 100) {
+        if (WiFi.status() == WL_CONNECTED) {
+            lightStateService.updateState(LightState{true, 0, 0.2, 0.1});
+        }
+        else {
+            lightStateService.updateState(LightState{true, 0.2, 0.1, 0});
+        }
+    }
 }
