@@ -31,48 +31,57 @@
 		socketConnected: boolean;
 	};
 
-	let stepperControl: StepperControl = { isEnabled: false, direction: false, speed: 128, move: 0, acceleration: 30, status:0, version: 0, socketConnected: true};
+	type SteppersControl = {
+		steppers: StepperControl[];
+	};
 
-	type StepperStatus = {
-		stst: boolean;
-		olb: boolean;
-		ola: boolean;
-		s2gb: boolean;
-		s2ga: boolean;
-		s2vsb: boolean;
-		s2vsa: boolean;
-		otpw: boolean;
-		ot: boolean;
-		connected: boolean;
+	let steppersControl: SteppersControl = {steppers:[]};
+
+	class StepperStatus {
+		stst: boolean = false;
+		olb: boolean = false;
+		ola: boolean = false;
+		s2gb: boolean = false;
+		s2ga: boolean = false;
+		s2vsb: boolean = false;
+		s2vsa: boolean = false;
+		otpw: boolean = false;
+		ot: boolean = false;
+		connected: boolean = false;
+		infoclass: string = "";
 	}
 
 	let formField: any;
 
-	let stepperStatus: StepperStatus = {stst: false, olb: false, ola: false, s2gb: false, s2ga: false, s2vsb: false, s2vsa: false, otpw: false, ot: false, connected: false};
+	let stepperStatus: StepperStatus[];
+	$: stepperStatus = readStatus(steppersControl);
 
-	let statusInfoClass: string;
-	$: statusInfoClass = stepperStatus.connected ? ((stepperStatus.ola || stepperStatus.olb || stepperStatus.otpw || stepperStatus.ot || stepperStatus.s2ga || stepperStatus.s2gb || stepperStatus.s2vsa || stepperStatus.s2vsb) ? 'alert-warning' : 'alert-info') : 'alert-warning';
-
-	function readStatus() {
-		let mainFlags = stepperControl.status >>> 24;
-		stepperStatus.stst = (mainFlags & 0b10000000) > 0;
-		stepperStatus.olb = (mainFlags & 0b01000000) > 0;
-		stepperStatus.ola = (mainFlags & 0b00100000) > 0;
-		stepperStatus.s2gb = (mainFlags & 0b00010000) > 0;
-		stepperStatus.s2ga = (mainFlags & 0b00001000) > 0;
-		stepperStatus.otpw = (mainFlags & 0b00000100) > 0;
-		let otherFlags = stepperControl.status >>> 24;
-		stepperStatus.s2vsb = (otherFlags & 0b10) > 0;
-		stepperStatus.s2vsa = (otherFlags & 0b01) > 0;
-		stepperStatus.connected = !(stepperControl.version == 0 || stepperControl.version == 255);
-		// console.log(stepperStatus);
+	function readStatus(steppers: SteppersControl) {
+		let statuses = [];
+		for (var stepper of steppers.steppers) {
+			let stepperStatus = new StepperStatus;
+			let mainFlags = stepper.status >>> 24;
+			stepperStatus.stst = (mainFlags & 0b10000000) > 0;
+			stepperStatus.olb = (mainFlags & 0b01000000) > 0;
+			stepperStatus.ola = (mainFlags & 0b00100000) > 0;
+			stepperStatus.s2gb = (mainFlags & 0b00010000) > 0;
+			stepperStatus.s2ga = (mainFlags & 0b00001000) > 0;
+			stepperStatus.otpw = (mainFlags & 0b00000100) > 0;
+			let otherFlags = stepper.status >>> 24;
+			stepperStatus.s2vsb = (otherFlags & 0b10) > 0;
+			stepperStatus.s2vsa = (otherFlags & 0b01) > 0;
+			stepperStatus.connected = !(stepper.version == 0 || stepper.version == 255);
+			stepperStatus.infoclass = stepperStatus.connected ? ((stepperStatus.ola || stepperStatus.olb || stepperStatus.otpw || stepperStatus.ot || stepperStatus.s2ga || stepperStatus.s2gb || stepperStatus.s2vsa || stepperStatus.s2vsb) ? 'alert-warning' : 'alert-info') : 'alert-warning';
+			statuses.push(stepperStatus);
+		}
+		return statuses;
 	}
 
 	onMount(() => {
-		socket.on<StepperControl>(stepperControlEvent, (data) => {
-			stepperControl = data;
+		socket.on<SteppersControl>(stepperControlEvent, (data) => {
+			console.log(data)
+			steppersControl = data;
 			socketConnected = true;
-			readStatus();
 		});
 		getStepperSettings();
 	});
@@ -149,30 +158,31 @@
 	} */
 </style>
 
+{#each steppersControl.steppers as stepper, i}
 <SettingsCard collapsible={true} open={true}>
 	<Stepper slot="icon" class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">Stepper Control</span>
 	<div class="w-full">
 		{#if socketConnected}
-		<div class="alert {statusInfoClass} my-2 shadow-lg">
+		<div class="alert {stepperStatus[i].infoclass} my-2 shadow-lg">
 			<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
 			<span>
-				Stepper driver {stepperStatus.connected ? 'connected and ' + stepperControl.isEnabled ? 'enabled' : 'disabled' : 'disconnected'} !
-				{#if !stepperStatus.connected}
+				Stepper driver {stepperStatus[i].connected ? 'connected and ' + stepper.isEnabled ? 'enabled' : 'disabled' : 'disconnected'} !
+				{#if !stepperStatus[i].connected}
 				<br> Communication error, check the driver and power supply connexions.
 				{:else}
-					{#if stepperStatus.ola || stepperStatus.olb}
+					{#if stepperStatus[i].ola || stepperStatus[i].olb}
 					<br> Open load detected, check motor connexions.
 					{/if}
-					{#if stepperStatus.s2ga || stepperStatus.s2gb}
+					{#if stepperStatus[i].s2ga || stepperStatus[i].s2gb}
 					<br> Short circuit to ground detected, check motor connexions.
 					{/if}
-					{#if stepperStatus.s2vsa || stepperStatus.s2vsb}
+					{#if stepperStatus[i].s2vsa || stepperStatus[i].s2vsb}
 					<br> Short circuit to supply detected, check motor connexions.
 					{/if}
-					{#if stepperStatus.ot}
+					{#if stepperStatus[i].ot}
 					<br> Driver is too hot, let it cool down and retry.
-					{:else if stepperStatus.otpw}
+					{:else if stepperStatus[i].otpw}
 					<br> Driver temperature pre-warning, you may want to try lowering the current and/or reducing the load.
 					{/if}
 				{/if}
@@ -186,9 +196,9 @@
 				type="checkbox"
 				class="toggle toggle-primary"
 				id="enable"
-				bind:checked={stepperControl.isEnabled}
+				bind:checked={stepper.isEnabled}
 				on:change={() => {
-					socket.sendEvent(stepperControlEvent, stepperControl);
+					socket.sendEvent(stepperControlEvent, steppersControl);
 				}}
 			/>
 			<label class="label cursor-pointer" for="direction">
@@ -198,9 +208,9 @@
 				type="checkbox"
 				class="toggle toggle-primary"
 				id="direction"
-				bind:checked={stepperControl.direction}
+				bind:checked={stepper.direction}
 				on:change={() => {
-					socket.sendEvent(stepperControlEvent, stepperControl);
+					socket.sendEvent(stepperControlEvent, steppersControl);
 				}}
 			/>
 			<label class="label cursor-pointer" for="speed">
@@ -213,10 +223,10 @@
 				step="0.01"
 				class="range range-primary"
 				id="speed"
-				bind:value={stepperControl.speed}
+				bind:value={stepper.speed}
 				on:change={() => {
-					socket.sendEvent(stepperControlEvent, {speed:stepperControl.speed});
-					// console.log(JSON.stringify({speed:stepperControl.speed}));
+					socket.sendEvent(stepperControlEvent, steppersControl);
+					// console.log(JSON.stringify({speed:stepper.speed}));
 				}}
 			/>
 			<label class="label cursor-pointer" for="move">
@@ -229,9 +239,9 @@
 				step="0.01"
 				class="range range-primary"
 				id="move"
-				bind:value={stepperControl.move}
+				bind:value={stepper.move}
 				on:input={() => {
-					socket.sendEvent(stepperControlEvent, stepperControl);
+					socket.sendEvent(stepperControlEvent, steppersControl);
 				}}
 			/>
 			<label class="label cursor-pointer" for="acceleration">
@@ -244,9 +254,9 @@
 				step="0.01"
 				class="range range-primary"
 				id="acceleration"
-				bind:value={stepperControl.acceleration}
+				bind:value={stepper.acceleration}
 				on:change={() => {
-					socket.sendEvent(stepperControlEvent, stepperControl);
+					socket.sendEvent(stepperControlEvent, steppersControl);
 				}}
 			/>
 			<!-- <label class="label cursor-pointer" for="current">
@@ -258,7 +268,7 @@
 				max="4000" 
 				class="range range-primary"
 				id="current"
-				bind:value={stepperControl.current}
+				bind:value={stepper.current}
 				on:change={() => {
 					socket.sendEvent(stepperControlEvent, stepperControl);
 				}}
@@ -268,7 +278,7 @@
 			<div class="flex-grow"></div>
 			<div>
 				<div>
-					<button class="btn btn-primary inline-flex items-center" on:click={() => {stepperControl.speed=0; socket.sendEvent(stepperControlEvent, stepperControl);}}
+					<button class="btn btn-primary inline-flex items-center" on:click={() => {stepper.speed=0; socket.sendEvent(stepperControlEvent, steppersControl);}}
 						><Stop class="mr-2 h-5 w-5" /><span>Stop</span></button
 					>
 				</div>
@@ -294,6 +304,7 @@
 	</Collapsible>
 {/if} -->
 </SettingsCard>
+{/each}
 
 <SettingsCard collapsible={true} open={false}>
 	<Settings slot="icon" class="flex-shrink-0 mr-2 h-6 w-6 self-end" />

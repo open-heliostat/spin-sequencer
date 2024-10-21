@@ -36,6 +36,8 @@ TMC5160Stepper driver1(10, R_SENSE, MOSI, MISO, SCK);
 TMC5160Controller stepper1 = {driver1, engine, 9, 8};
 // TMC5160Controller stepper2 = {driver2, engine, STEP_PIN, DIR_PIN};
 
+std::vector<TMC5160Controller*> steppers = {&stepper1};
+
 LightMqttSettingsService lightMqttSettingsService = LightMqttSettingsService(
     &server,
     esp32sveltekit.getFS(),
@@ -58,7 +60,7 @@ StepperSettingsService stepperSettingsService = StepperSettingsService(
 StepperControlService stepperControlService = StepperControlService(
     esp32sveltekit.getSocket(),
     &stepperSettingsService,
-    &stepper1,
+    steppers,
     esp32sveltekit.getFeatureService());
 
 SerialGPS gpsneo = SerialGPS(Serial1, TX, RX);
