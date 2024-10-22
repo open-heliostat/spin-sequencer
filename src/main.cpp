@@ -31,12 +31,12 @@ ESP32SvelteKit esp32sveltekit(&server, 120);
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 
 TMC5160Stepper driver1(10, R_SENSE, MOSI, MISO, SCK);
-// TMC5160Stepper driver2(16, R_SENSE, MOSI, MISO, SCK);
+TMC5160Stepper driver2(7, R_SENSE, MOSI, MISO, SCK);
 
 TMC5160Controller stepper1 = {driver1, engine, 9, 8};
-// TMC5160Controller stepper2 = {driver2, engine, STEP_PIN, DIR_PIN};
+TMC5160Controller stepper2 = {driver2, engine, 6, 5};
 
-std::vector<TMC5160Controller*> steppers = {&stepper1};
+std::vector<TMC5160Controller*> steppers = {&stepper1, &stepper2};
 
 LightMqttSettingsService lightMqttSettingsService = LightMqttSettingsService(
     &server,
@@ -77,11 +77,12 @@ GPSStateService gpsStateService =  GPSStateService(
     &gpsneo,
     esp32sveltekit.getFeatureService());
 
-Encoder encoder = Encoder(2, 1);
+Encoder encoder1 = Encoder(2, 1);
+Encoder encoder2 = Encoder(4, 3, Wire1);
 
 EncoderStateService encoderService = EncoderStateService(
     esp32sveltekit.getSocket(),
-    &encoder);
+    &encoder1);
 
 
 void setup()
@@ -97,8 +98,9 @@ void setup()
     // start the light service
     lightMqttSettingsService.begin();
 
-
+    engine.init();
     stepper1.init();
+    stepper2.init();
 
     stepperSettingsService.begin();
     stepperControlService.begin();
@@ -126,5 +128,6 @@ void loop()
         else {
             lightStateService.updateState(LightState{true, 0.2, 0.1, 0});
         }
+        if (encoder2.update()) Serial.println(encoder2.angle);
     }
 }
