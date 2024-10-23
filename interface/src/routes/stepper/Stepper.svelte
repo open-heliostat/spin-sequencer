@@ -79,7 +79,6 @@
 
 	onMount(() => {
 		socket.on<SteppersControl>(stepperControlEvent, (data) => {
-			console.log(data)
 			steppersControl = data;
 			socketConnected = true;
 		});
@@ -106,7 +105,6 @@
 				method: 'GET'
 			});
 			const settings = await response.json();
-			console.log(settings)
 			stepperSettings = settings;
 		} catch (error) {
 			console.error('Error:', error);
