@@ -11,13 +11,17 @@ public:
     Encoder(int SDA = SDA, int SCL = SCL, TwoWire &I2C_ = Wire) : I2C(I2C_) {
         I2C.begin(SDA, SCL);
     }
+    double getAngle() {
+        update();
+        return angle;
+    }
     bool update() {
         uint32_t now = millis();
         if (now - lastPoll >= maxPollInterval) {
             int value = readEncoder();
             lastPoll = now;
             if (value) {
-                angle = value*360./4096.;
+                angle = value*360./16384.;
                 return true;
             }
         }
@@ -31,7 +35,7 @@ public:
             I2C.write(0x02);  // set register for read
             I2C.endTransmission();
             I2C.readBytes(buff, 3);
-            int value = ((256 * buff[1] + buff[2]))/4;
+            int value = (256 * buff[1] + buff[2])/4;
             return value;
         }
         else return -1;
