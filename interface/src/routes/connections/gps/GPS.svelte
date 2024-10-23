@@ -16,6 +16,8 @@
 	import Stopwatch from '~icons/tabler/24-hours';
 	import type { GPSSettings, GPSStatus } from '$lib/types/models';
 	import { socket } from '$lib/stores/socket';
+	import Info from '~icons/tabler/info-circle';
+	import { Warning } from 'postcss';
 
 	let gpsSettings: GPSSettings;
 	let gpsStatus: GPSStatus;
@@ -74,17 +76,18 @@
 <SettingsCard collapsible={false}>
 	<Satellite slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">GPS</span>
-	<div class="w-full overflow-x-auto">
-			<div
-				class="flex w-full flex-col space-y-1"
-				transition:slide|local={{ duration: 300, easing: cubicOut }}
-			>
+
+	<div class="alert {gpsStatus?.fixQuality == 49 ? 'alert-info' : 'alert-warning'} my-2 shadow-lg">
+		<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
+		<span>
 			{#if gpsStatus}
-			Latitude : {gpsStatus.latitude},
-			Longitude : {gpsStatus.longitude},
-			Altitude : {gpsStatus.altitude}
+			Number of satellites: {gpsStatus.numSats} <br>
+			Latitude : {gpsStatus.latitude.toFixed(5)},
+			Longitude : {gpsStatus.longitude.toFixed(5)},
+			Altitude : {gpsStatus.altitude.toFixed(1)} <br>
+			Date : {gpsStatus.dateStr}, Time : {gpsStatus.timeStr}
 			{/if}
-			</div>
+		</span>
 	</div>
 
 	{#if !$page.data.features.security || $user.admin}

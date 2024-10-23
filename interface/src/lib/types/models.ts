@@ -89,6 +89,11 @@ export type GPSStatus = {
 	latitude: number;
 	longitude: number;
 	altitude: number;
+	numSats: number;
+	timeStr: string;
+	dateStr: string;
+	fixQuality: number;
+	lastUpdate: number;
 }
 
 export type Analytics = {
@@ -154,3 +159,4 @@ export type MQTTSettings = {
 	keep_alive: number;
 	clean_session: boolean;
 };
+
