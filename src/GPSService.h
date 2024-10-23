@@ -53,11 +53,21 @@ public:
     double latitude;
     double longitude;
     double altitude;
+    int numSats;
+    int fixQuality;
+    char timeStr[16];
+    char dateStr[16];
+    uint32_t lastUpdate;
 
     static void read(GPSState &state, JsonObject &root) {
         root["latitude"] = state.latitude;
         root["longitude"] = state.longitude;
         root["altitude"] = state.altitude;
+        root["numSats"] = state.numSats;
+        root["fixQuality"] = state.fixQuality;
+        root["timeStr"] = state.timeStr;
+        root["dateStr"] = state.dateStr;
+        root["lastUpdate"] = state.lastUpdate;
     }
 
     static StateUpdateResult update(JsonObject &root, GPSState &state) {
@@ -74,6 +84,26 @@ public:
             state.altitude = root["altitude"];
             changed = true;
         }
+        if (root["numSats"].is<int>() & state.numSats != root["numSats"]) {
+            state.numSats = root["numSats"];
+            changed = true;
+        }
+        if (root["fixQuality"].is<int>() & state.fixQuality != root["fixQuality"]) {
+            state.fixQuality = root["fixQuality"];
+            changed = true;
+        }
+        if (root["timeStr"].is<const char*>() & strcmp(state.timeStr, root["timeStr"]) != 0) {
+            strcpy(state.timeStr, root["timeStr"]);
+            changed = true;
+        }
+        if (root["dateStr"].is<const char*>() & strcmp(state.dateStr, root["dateStr"]) != 0) {
+            strcpy(state.dateStr, root["dateStr"]);
+            changed = true;
+        }
+        if (root["lastUpdate"].is<int>() & state.lastUpdate != root["lastUpdate"]) {
+            state.lastUpdate = root["lastUpdate"];
+            changed = true;
+        }
         if (changed) return StateUpdateResult::CHANGED;
         else return StateUpdateResult::UNCHANGED;
     }
@@ -82,6 +112,11 @@ public:
         root["latitude"] = gps->coords.latitude;
         root["longitude"] = gps->coords.longitude;
         root["altitude"] = gps->coords.altitude;
+        root["numSats"] = gps->numSats;
+        root["fixQuality"] = gps->fixQuality;
+        root["timeStr"] = gps->timeStr;
+        root["dateStr"] = gps->dateStr;
+        root["lastUpdate"] = gps->lastUpdate;
     }
 };
 
