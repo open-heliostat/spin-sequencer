@@ -53,8 +53,8 @@
 
 	let formField: any;
 
-	let stepperStatus: StepperStatus[];
-	$: stepperStatus = readStatus(steppersControl);
+	let stepperStatuses: StepperStatus[];
+	$: stepperStatuses = readStatus(steppersControl);
 
 	function readStatus(steppers: SteppersControl) {
 		let statuses = [];
@@ -90,6 +90,7 @@
 	let socketConnected = false;
 
 	type StepperSettings = {
+		name: string;
 		enableOnStart: boolean;
 		invertDirection: boolean;
 		maxSpeed: number;
@@ -106,6 +107,7 @@
 			});
 			const settings = await response.json();
 			stepperSettings = settings;
+			console.log(stepperSettings)
 		} catch (error) {
 			console.error('Error:', error);
 		}
@@ -159,28 +161,28 @@
 {#each steppersControl.steppers as stepper, i}
 <SettingsCard collapsible={true} open={true}>
 	<Stepper slot="icon" class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">Stepper Control</span>
+	<span slot="title">{stepperSettings.steppers[i].name}</span>
 	<div class="w-full">
 		{#if socketConnected}
-		<div class="alert {stepperStatus[i].infoclass} my-2 shadow-lg">
+		<div class="alert {stepperStatuses[i].infoclass} my-2 shadow-lg">
 			<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
 			<span>
-				Stepper driver {stepperStatus[i].connected ? 'connected and ' + stepper.isEnabled ? 'enabled' : 'disabled' : 'disconnected'} !
-				{#if !stepperStatus[i].connected}
+				Stepper driver {stepperStatuses[i].connected ? (stepper.isEnabled ? 'enabled' : 'disabled') : 'disconnected'} !
+				{#if !stepperStatuses[i].connected}
 				<br> Communication error, check the driver and power supply connexions.
 				{:else}
-					{#if stepperStatus[i].ola || stepperStatus[i].olb}
+					{#if stepperStatuses[i].ola || stepperStatuses[i].olb}
 					<br> Open load detected, check motor connexions.
 					{/if}
-					{#if stepperStatus[i].s2ga || stepperStatus[i].s2gb}
+					{#if stepperStatuses[i].s2ga || stepperStatuses[i].s2gb}
 					<br> Short circuit to ground detected, check motor connexions.
 					{/if}
-					{#if stepperStatus[i].s2vsa || stepperStatus[i].s2vsb}
+					{#if stepperStatuses[i].s2vsa || stepperStatuses[i].s2vsb}
 					<br> Short circuit to supply detected, check motor connexions.
 					{/if}
-					{#if stepperStatus[i].ot}
+					{#if stepperStatuses[i].ot}
 					<br> Driver is too hot, let it cool down and retry.
-					{:else if stepperStatus[i].otpw}
+					{:else if stepperStatuses[i].otpw}
 					<br> Driver temperature pre-warning, you may want to try lowering the current and/or reducing the load.
 					{/if}
 				{/if}
@@ -304,7 +306,7 @@
 
 	<Collapsible open={false}>
 		<Settings slot="icon" class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
-		<span slot="title">Stepper Settings</span>
+		<span slot="title">Settings</span>
 		<div class="w-full overflow-x-auto">
 			{#await getStepperSettings()}
 				<Spinner />
@@ -317,6 +319,15 @@
 				>
 					<div class="w-full">
 						<div class="w-full grid grid-flow-row grid-form items-center">
+							<label class="label cursor-pointer" for="steppername">
+								<span class="">Name</span>
+							</label>
+							<input
+								type="text"
+								class="input"
+								id="steppername"
+								bind:value={stepperSettings.steppers[i].name}
+							/>
 							<label class="label cursor-pointer" for="enableonstart">
 								<span class="">Enable on Start</span>
 							</label>
