@@ -38,6 +38,7 @@ public:
                         SecurityManager *securityManager,
                         SerialGPS *gps);
     void begin();
+    bool isEnabled();
 
 private:
     HttpEndpoint<GPSSettings> _httpEndpoint;
@@ -57,7 +58,8 @@ public:
     int fixQuality;
     char timeStr[16];
     char dateStr[16];
-    uint32_t lastUpdate;
+    uint32_t sinceLastUpdate;
+    bool hasSerial;
 
     static void read(GPSState &state, JsonObject &root) {
         root["latitude"] = state.latitude;
@@ -67,7 +69,8 @@ public:
         root["fixQuality"] = state.fixQuality;
         root["timeStr"] = state.timeStr;
         root["dateStr"] = state.dateStr;
-        root["lastUpdate"] = state.lastUpdate;
+        root["sinceLastUpdate"] = state.sinceLastUpdate;
+        root["hasSerial"] = state.hasSerial;
     }
 
     static StateUpdateResult update(JsonObject &root, GPSState &state) {
@@ -100,8 +103,12 @@ public:
             strcpy(state.dateStr, root["dateStr"]);
             changed = true;
         }
-        if (root["lastUpdate"].is<int>() & state.lastUpdate != root["lastUpdate"]) {
-            state.lastUpdate = root["lastUpdate"];
+        if (root["sinceLastUpdate"].is<int>() & state.sinceLastUpdate != root["sinceLastUpdate"]) {
+            state.sinceLastUpdate = root["sinceLastUpdate"];
+            changed = true;
+        }
+        if (root["hasSerial"].is<bool>() & state.hasSerial != root["hasSerial"]) {
+            state.hasSerial = root["hasSerial"];
             changed = true;
         }
         if (changed) return StateUpdateResult::CHANGED;
@@ -116,7 +123,8 @@ public:
         root["fixQuality"] = gps->fixQuality;
         root["timeStr"] = gps->timeStr;
         root["dateStr"] = gps->dateStr;
-        root["lastUpdate"] = gps->lastUpdate;
+        root["sinceLastUpdate"] = gps->sinceLastUpdate;
+        root["hasSerial"] = gps->hasSerial;
     }
 };
 

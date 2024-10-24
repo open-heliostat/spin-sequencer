@@ -23,7 +23,7 @@ void GPSStateService::begin()
 }
 
 void GPSStateService::loop() {
-    if (_GPS->update()) updateState();
+    if (_gpsSettingsService->isEnabled() && _GPS->update()) updateState();
 }
 
 void GPSStateService::updateState() {
@@ -58,6 +58,10 @@ void GPSSettingsService::begin()
     _httpEndpoint.begin();
     _fsPersistence.readFromFS();
     onConfigUpdated();
+}
+
+bool GPSSettingsService::isEnabled() {
+    return _state.enabled;
 }
 
 void GPSSettingsService::onConfigUpdated()
