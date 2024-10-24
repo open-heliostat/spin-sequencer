@@ -96,7 +96,7 @@ export type GPSStatus = {
 	timeStr: string;
 	dateStr: string;
 	fixQuality: number;
-	lastUpdate: number;
+	hasSerial: boolean;
 }
 
 export type Analytics = {

@@ -23,6 +23,9 @@
 	let gpsStatus: GPSStatus;
 	const gpsStatusEvent = "gps";
 
+	let infoClass;
+	$: infoClass = (gpsSettings?.enabled && gpsStatus?.fixQuality == 49 && gpsStatus.hasSerial) ? "alert-info" : "alert-warning";
+
 	onMount(() => {
 		socket.on<GPSStatus>(gpsStatusEvent, (data) => {
 			gpsStatus = data;
@@ -77,22 +80,32 @@
 	<Satellite slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">GPS</span>
 
-	<div class="alert {gpsStatus?.fixQuality == 49 ? 'alert-info' : 'alert-warning'} my-2 shadow-lg">
+	<div class="alert {infoClass} my-2 shadow-lg">
 		<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
 		<span>
 			{#if gpsStatus}
-			Number of satellites: {gpsStatus.numSats} <br>
-			Latitude : {gpsStatus.latitude.toFixed(5)},
-			Longitude : {gpsStatus.longitude.toFixed(5)},
-			Altitude : {gpsStatus.altitude.toFixed(1)} <br>
-			Date : {gpsStatus.dateStr}, Time : {gpsStatus.timeStr}
+				{#if gpsSettings?.enabled}
+					{#if gpsStatus?.hasSerial && gpsStatus?.numSats > 0}
+						Number of satellites: {gpsStatus.numSats} <br>
+						Latitude : {gpsStatus.latitude.toFixed(5)},
+						Longitude : {gpsStatus.longitude.toFixed(5)},
+						Altitude : {gpsStatus.altitude.toFixed(1)} <br>
+						Date : {gpsStatus.dateStr}, Time : {gpsStatus.timeStr}
+					{:else if gpsStatus?.hasSerial}
+						No GPS reception !
+					{:else}
+						GPS module seems disconnected !
+					{/if}
+				{:else}
+					GPS Disabled
+				{/if}
 			{/if}
 		</span>
 	</div>
 
 	{#if !$page.data.features.security || $user.admin}
 		<Collapsible open={false} class="shadow-lg" on:closed={getGPSSettings}>
-			<span slot="title">Change GPS Settings</span>
+			<span slot="title">Settings</span>
 			<form
 				class="form-control w-full"
 				on:submit|preventDefault={() => postGPSSettings(gpsSettings)}
