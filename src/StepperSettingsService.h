@@ -12,6 +12,7 @@
 class StepperSettings
 {
 public:
+    String name;
     bool enableOnStart;
     bool invertDirection;
     int32_t maxSpeed;
@@ -20,6 +21,7 @@ public:
 
     static void read(StepperSettings &settings, JsonObject &root)
     {
+        root["name"] = settings.name;
         root["enableOnStart"] = settings.enableOnStart;
         root["invertDirection"] = settings.invertDirection;
         root["maxSpeed"] = settings.maxSpeed;
@@ -29,22 +31,14 @@ public:
 
     static StateUpdateResult update(JsonObject &root, StepperSettings &settings)
     {   
-        settings.enableOnStart = root["enableOnStart"];
-        settings.invertDirection = root["invertDirection"];
-        settings.maxSpeed = root["maxSpeed"];
-        settings.maxAcceleration = root["maxAcceleration"];
-        settings.current = root["current"];
+        settings.name = root["name"] | "Stepper";
+        settings.enableOnStart = root["enableOnStart"] | false;
+        settings.invertDirection = root["invertDirection"] | false;
+        settings.maxSpeed = root["maxSpeed"] | 50;
+        settings.maxAcceleration = root["maxAcceleration"] | 50;
+        settings.current = root["current"] | 350;
         return StateUpdateResult::CHANGED;
     }
-
-    // static void readState(TMC5160Controller *stepper, JsonObject &root) {
-    //     root["enableOnStart"] = stepper->enabled;
-    //     root["invertDirection"] = stepper->invertDirection;
-    //     // root["move"] = stepper->move();
-    //     root["maxSpeed"] = stepper->getSpeed();
-    //     root["maxAcceleration"] = stepper->getAcceleration();
-    //     root["current"] = stepper->driver.rms_current();
-    // }
 };
 
 class MultiStepperSettings
