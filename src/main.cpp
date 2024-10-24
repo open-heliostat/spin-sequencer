@@ -17,10 +17,9 @@
 #include <LightStateService.h>
 #include <PsychicHttpServer.h>
 #include <StepperControlService.h>
-#include <StepperSettingsService.h>
-#include <gpsneo.h>
 #include <GPSService.h>
 #include <EncoderService.h>
+#include <ClosedLoopControllerService.h>
 
 #define SERIAL_BAUD_RATE 115200
 
@@ -84,6 +83,10 @@ EncoderStateService encoderService = EncoderStateService(
     esp32sveltekit.getSocket(),
     &encoder1);
 
+ClosedLoopController closedLoopController = {stepper1, encoder1};
+ClosedLoopControllerStateService closedLoopControllerService = ClosedLoopControllerStateService(
+    esp32sveltekit.getSocket(),
+    &closedLoopController);
 
 void setup()
 {
@@ -110,6 +113,7 @@ void setup()
     gpsStateService.begin();
 
     encoderService.begin();
+    closedLoopControllerService.begin();
 }
 
 unsigned long lastTick = 0;
@@ -121,6 +125,7 @@ void loop()
     auto now = millis();
     gpsStateService.loop();
     encoderService.loop();
+    closedLoopControllerService.loop();
     if (now - lastTick > 100) {
         if (WiFi.status() == WL_CONNECTED) {
             lightStateService.updateState(LightState{true, 0, 0.2, 0.1});
@@ -128,6 +133,6 @@ void loop()
         else {
             lightStateService.updateState(LightState{true, 0.2, 0.1, 0});
         }
-        if (encoder2.update()) Serial.println(encoder2.angle);
+        // if (encoder2.update()) Serial.println(encoder2.angle);
     }
 }
