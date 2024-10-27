@@ -13,11 +13,12 @@ public:
     uint32_t maxPollInterval = 1000;
     bool enabled;
     double targetAngle;
+    double curAngle;
     double tolerance = 0.1;
     ClosedLoopController(TMC5160Controller &stepper, Encoder &encoder) : stepper(stepper), encoder(encoder) {}
     void setAngle(double angle) {
         targetAngle = angle;
-        double curAngle = encoder.getAngle();
+        curAngle = encoder.getAngle();
         double toGo = targetAngle - curAngle;
         if (abs(toGo) > tolerance) stepper.move(toGo);
     }
