@@ -16,6 +16,9 @@ public:
         update();
         return angle;
     }
+    bool hasNewData() {
+        return newData && millis() - lastPoll <= maxPollInterval;
+    }
     bool update() {
         uint32_t now = millis();
         if (now - lastPoll >= maxPollInterval) {
@@ -23,10 +26,15 @@ public:
             lastPoll = now;
             if (value >= 0) {
                 angle = value*360./16384.;
+                newData = true;
                 return true;
             }
+            else {
+                Serial.printf("Bad I2C Data : %d\n", value);
+                newData = false;
+            }
         }
-        return false;
+        return newData;
     }
     int readEncoder() {
         int available = I2C.requestFrom(0x06, 3);
@@ -43,7 +51,8 @@ public:
     }
 private:
     TwoWire &I2C;
-    uint32_t maxPollInterval = 100;
+    uint32_t maxPollInterval = 20;
     uint32_t lastPoll = 0;
+    bool newData = false;
 };
 #endif
