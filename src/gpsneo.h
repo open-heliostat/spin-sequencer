@@ -38,8 +38,6 @@ public:
         unsigned long now = millis();
         bool updated = false;
         if (serial.available() > 0) {
-            if (!hasSerial) updated = true;
-            hasSerial = true;
             while (serial.available() > 0) {
                 int s = serial.read();
                 gps.encode(s);
@@ -59,6 +57,10 @@ public:
                 coords.altitude = gps.altitude.meters();
                 fixQuality = gps.location.FixQuality();
                 updated = true;
+            }
+            if (!hasSerial) {
+                updated = true;
+                hasSerial = true;
             }
             lastUpdate = now;
         }
