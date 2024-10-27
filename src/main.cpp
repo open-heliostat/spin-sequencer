@@ -91,6 +91,11 @@ ClosedLoopControllerStateService closedLoopControllerService = ClosedLoopControl
     esp32sveltekit.getSocket(),
     closedLoopControllers);
 
+ClosedLoopControllerSettingsService closedLoopSettingsService = ClosedLoopControllerSettingsService(
+    esp32sveltekit.getSocket(),
+    esp32sveltekit.getFS(),
+    closedLoopControllers);
+
 void setup()
 {
     // start serial and filesystem
@@ -117,6 +122,7 @@ void setup()
 
     encoderService.begin();
     closedLoopControllerService.begin();
+    closedLoopSettingsService.begin();
 }
 
 unsigned long lastTick = 0;

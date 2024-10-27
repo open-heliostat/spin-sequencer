@@ -17,9 +17,10 @@
 	import { error } from '@sveltejs/kit';
 	import { load } from '../+layout';
 	import { socket } from '$lib/stores/socket';
+	import Slider from '$lib/components/Slider.svelte';
+	import Checkbox from '$lib/components/Checkbox.svelte';
 
 	const stepperControlEvent = "steppercontrol"
-	const closedLoopControllerEvent = "closedloopcontroller"
 
 	type StepperControl = {
 		isEnabled: boolean;
@@ -52,17 +53,6 @@
 		infoclass: string = "";
 	}
 
-	type ClosedLoopController = {
-		targetAngle: number;
-		curAngle: number;
-		tolerance: number;
-		enabled: boolean;
-	}
-	type ClosedLoopControllers = {
-		controllers: ClosedLoopController[];
-	}
-	let closedLoopControllers: ClosedLoopControllers = {controllers: []};
-
 	let formField: any;
 
 	let stepperStatuses: StepperStatus[];
@@ -94,15 +84,11 @@
 			steppersControl = data;
 			socketConnected = true;
 		});
-		socket.on<ClosedLoopControllers>(closedLoopControllerEvent, (data) => {
-			closedLoopControllers = data;
-		});
 		getStepperSettings();
 	});
 
 	onDestroy(() => {
 		socket.off(stepperControlEvent);
-		socket.off(closedLoopControllerEvent);
 	});
 
 	let socketConnected = false;
@@ -181,64 +167,6 @@
 	<span slot="title">{stepperSettings.steppers[i].name}</span>
 	<div class="w-full">
 		{#if socketConnected}
-		{#if closedLoopControllers.controllers[i]}
-		<div class="w-full grid grid-flow-row grid-form items-center">
-			<label class="label cursor-pointer" for="enable-controller">
-				<span class="">Control</span>
-			</label>
-			<input
-				type="checkbox"
-				class="toggle toggle-primary"
-				id="enable-controller"
-				bind:checked={closedLoopControllers.controllers[i].enabled}
-				on:change={() => {
-					socket.sendEvent(closedLoopControllerEvent, closedLoopControllers);
-				}}
-			/>
-			<label class="label cursor-pointer" for="target">
-				<span class="mr-4">Target </span>
-			</label>
-			<input 
-				type="range"
-				min="0" 
-				max="360" 
-				step="0.01"
-				class="range range-primary"
-				id="target"
-				bind:value={closedLoopControllers.controllers[i].targetAngle}
-				on:change={() => {
-					socket.sendEvent(closedLoopControllerEvent, closedLoopControllers);
-				}}
-			/>
-			<label class="label cursor-pointer" for="position">
-				<span class="mr-4">Position </span>
-			</label>
-			<input 
-				type="range"
-				min="0" 
-				max="360" 
-				step="0.01"
-				class="range range-primary"
-				id="position"
-				bind:value={closedLoopControllers.controllers[i].curAngle}
-			/>
-			<label class="label cursor-pointer" for="tolerance">
-				<span class="mr-4">Tolerance</span>
-			</label>
-			<input 
-				type="range"
-				min="0" 
-				max="1" 
-				step="0.01"
-				class="range range-primary"
-				id="tolerance"
-				bind:value={closedLoopControllers.controllers[i].tolerance}
-				on:change={() => {
-					socket.sendEvent(closedLoopControllerEvent, closedLoopControllers);
-				}}
-			/>
-		</div>
-		{/if}
 		<div class="alert {stepperStatuses[i].infoclass} my-2 shadow-lg">
 			<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
 			<span>
