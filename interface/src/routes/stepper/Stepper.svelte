@@ -221,9 +221,6 @@
 				class="range range-primary"
 				id="position"
 				bind:value={closedLoopControllers.controllers[i].curAngle}
-				on:change={() => {
-					socket.sendEvent(closedLoopControllerEvent, closedLoopControllers);
-				}}
 			/>
 			<label class="label cursor-pointer" for="tolerance">
 				<span class="mr-4">Tolerance</span>
