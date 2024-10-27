@@ -19,6 +19,7 @@
 	import { socket } from '$lib/stores/socket';
 
 	const stepperControlEvent = "steppercontrol"
+	const closedLoopControllerEvent = "closedloopcontroller"
 
 	type StepperControl = {
 		isEnabled: boolean;
@@ -51,6 +52,17 @@
 		infoclass: string = "";
 	}
 
+	type ClosedLoopController = {
+		targetAngle: number;
+		curAngle: number;
+		tolerance: number;
+		enabled: boolean;
+	}
+	type ClosedLoopControllers = {
+		controllers: ClosedLoopController[];
+	}
+	let closedLoopControllers: ClosedLoopControllers = {controllers: []};
+
 	let formField: any;
 
 	let stepperStatuses: StepperStatus[];
@@ -82,10 +94,17 @@
 			steppersControl = data;
 			socketConnected = true;
 		});
+		socket.on<ClosedLoopControllers>(closedLoopControllerEvent, (data) => {
+			closedLoopControllers = data;
+			console.log(data)
+		});
 		getStepperSettings();
 	});
 
-	onDestroy(() => socket.off(stepperControlEvent));
+	onDestroy(() => {
+		socket.off(stepperControlEvent);
+		socket.off(closedLoopControllerEvent);
+	});
 
 	let socketConnected = false;
 
@@ -164,6 +183,53 @@
 	<span slot="title">{stepperSettings.steppers[i].name}</span>
 	<div class="w-full">
 		{#if socketConnected}
+		{#if true}
+		<div class="w-full grid grid-flow-row grid-form items-center">
+			<label class="label cursor-pointer" for="enable-controller">
+				<span class="">Control</span>
+			</label>
+			<input
+				type="checkbox"
+				class="toggle toggle-primary"
+				id="enable-controller"
+				bind:checked={stepper.isEnabled}
+				on:change={() => {
+					socket.sendEvent(stepperControlEvent, steppersControl);
+				}}
+			/>
+			<label class="label cursor-pointer" for="angle">
+				<span class="mr-4">Angle </span>
+			</label>
+			<input 
+				type="range"
+				min="0" 
+				max="360" 
+				step="0.01"
+				class="range range-primary"
+				id="angle"
+				bind:value={stepper.speed}
+				on:change={() => {
+					socket.sendEvent(stepperControlEvent, steppersControl);
+				}}
+			/>
+			<label class="label cursor-pointer" for="tolerance">
+				<span class="mr-4">Tolerance</span>
+			</label>
+			<input 
+				type="range"
+				min="0" 
+				max="1" 
+				step="0.01"
+				class="range range-primary"
+				id="tolerance"
+				bind:value={stepper.speed}
+				on:change={() => {
+					socket.sendEvent(stepperControlEvent, steppersControl);
+					// console.log(JSON.stringify({speed:stepper.speed}));
+				}}
+			/>
+		</div>
+		{/if}
 		<div class="alert {stepperStatuses[i].infoclass} my-2 shadow-lg">
 			<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
 			<span>
