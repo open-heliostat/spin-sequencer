@@ -2,24 +2,23 @@
 #define ClosedLoopControllerService_h
 
 #include <EventEndpoint.h>
+#include <FSPersistence.h>
 
 #include <closedloopcontroller.h>
 
-#define CL_CONTROLLER_STATE_EVENT "closedloopcontroller"
+#define CL_CONTROLLER_STATE_EVENT "controller"
+#define CL_CONTROLLER_SETTINGS_EVENT "controllersettings"
+#define CL_SETTINGS_FILE "/config/controllerSettings.json"
 
 class ClosedLoopControllerState
 {
 public:
-    bool enabled;
     double targetAngle;
     double curAngle;
-    double tolerance;
 
     static void read(ClosedLoopControllerState &state, JsonObject &root) {
         root["targetAngle"] = state.targetAngle;
         root["curAngle"] = state.curAngle;
-        root["tolerance"] = state.tolerance;
-        root["enabled"] = state.enabled;
     }
 
     static StateUpdateResult update(JsonObject &root, ClosedLoopControllerState &state) {
@@ -32,23 +31,13 @@ public:
             state.curAngle = root["curAngle"];
             changed = true;
         }
-        if (root["tolerance"].is<double>() & state.tolerance != root["tolerance"]) {
-            state.tolerance = root["tolerance"];
-            changed = true;
-        }
-        if (root["enabled"].is<bool>() & state.enabled != root["enabled"]) {
-            state.enabled = root["enabled"];
-            changed = true;
-        }
         if (changed) return StateUpdateResult::CHANGED;
         else return StateUpdateResult::UNCHANGED;
     }
 
     static void readState(ClosedLoopController *controller, JsonObject &root) {
         root["targetAngle"] = controller->targetAngle;
-        root["curAngle"] = controller->encoder.angle;
-        root["tolerance"] = controller->tolerance;
-        root["enabled"] = controller->enabled;
+        root["curAngle"] = (int)(controller->encoder.angle * 100 + 0.5) / 100.0;
     }
 };
 
@@ -97,5 +86,70 @@ private:
     std::vector<ClosedLoopController*>& _controllers;
 
     void onConfigUpdated(const String &originId);
+};
+
+class ClosedLoopControllerSettings
+{
+public:
+    bool enabled;
+    double tolerance;
+    String name;
+
+    static void read(ClosedLoopControllerSettings &state, JsonObject &root) {
+        root["tolerance"] = state.tolerance;
+        root["enabled"] = state.enabled;
+        root["name"] = state.name;
+    }
+    static StateUpdateResult update(JsonObject &root, ClosedLoopControllerSettings &state) {
+        state.tolerance = root["tolerance"] | 0.2;
+        state.enabled = root["enabled"] | false;
+        state.name = root["name"] | "Controller";
+        return StateUpdateResult::CHANGED;
+    }
+
+    static void readState(ClosedLoopController *controller, JsonObject &root) {
+        root["tolerance"] = controller->tolerance;
+        root["enabled"] = controller->enabled;
+    }
+};
+
+class MultiClosedLoopControllerSettings
+{
+public:
+    std::vector<ClosedLoopControllerSettings> settings;
+    static void read(MultiClosedLoopControllerSettings &settings, JsonObject &root)
+    {
+        JsonArray jsonArray = root["controllers"].to<JsonArray>();
+        for (ClosedLoopControllerSettings controller : settings.settings) {
+            JsonObject obj = jsonArray.add<JsonObject>();
+            controller.read(controller, obj);
+        }
+    }
+    static StateUpdateResult update(JsonObject &root, MultiClosedLoopControllerSettings &settings)
+    {
+        JsonArray jsonArray = root["controllers"].as<JsonArray>();
+        bool hasChanged = false;
+        for (int i = 0; i < min(jsonArray.size(), settings.settings.size()); i++) {
+            JsonObject obj = jsonArray[i];
+            if (settings.settings[i].update(obj, settings.settings[i]) == StateUpdateResult::CHANGED) hasChanged = true;
+        }
+        return hasChanged ? StateUpdateResult::CHANGED : StateUpdateResult::UNCHANGED;
+    }
+};
+
+class ClosedLoopControllerSettingsService : public StatefulService<MultiClosedLoopControllerSettings>
+{
+public:
+    ClosedLoopControllerSettingsService(EventSocket *socket,
+                                        FS *fs,
+                                        std::vector<ClosedLoopController*>& controllers);
+    void begin();
+
+private:
+    EventEndpoint<MultiClosedLoopControllerSettings> _eventEndpoint;
+    FSPersistence<MultiClosedLoopControllerSettings> _fsPersistence;
+    std::vector<ClosedLoopController*>& _controllers;
+
+    void onConfigUpdated();
 };
 #endif

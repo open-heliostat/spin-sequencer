@@ -39,9 +39,7 @@ void ClosedLoopControllerStateService::onConfigUpdated(const String &originId)
 {
     if (originId != "stateUpdate") {
         for (int i = 0; i < _controllers.size(); i++) {
-            _controllers[i]->enabled = _state.controllers[i].enabled;
             _controllers[i]->targetAngle = _state.controllers[i].targetAngle;
-            _controllers[i]->tolerance = _state.controllers[i].tolerance;
         }
     }
 }
@@ -51,4 +49,42 @@ void ClosedLoopControllerStateService::updateState() {
     JsonObject jsonObject = json.to<JsonObject>();
     _state.readState(_controllers, jsonObject);
     update(jsonObject, _state.update, "stateUpdate");
+}
+
+ClosedLoopControllerSettingsService::ClosedLoopControllerSettingsService(EventSocket *socket,
+                                                                         FS *fs,
+                                                                         std::vector<ClosedLoopController*>& controllers) :                  
+                                                                                _eventEndpoint(MultiClosedLoopControllerSettings::read,
+                                                                                                MultiClosedLoopControllerSettings::update,
+                                                                                                this,
+                                                                                                socket,
+                                                                                                CL_CONTROLLER_SETTINGS_EVENT),
+                                                                                _fsPersistence(MultiClosedLoopControllerSettings::read, MultiClosedLoopControllerSettings::update, this, fs, CL_SETTINGS_FILE),
+                                                                                _controllers(controllers)
+{
+
+    for (ClosedLoopController *s : controllers) {
+        ClosedLoopControllerSettings settings = ClosedLoopControllerSettings();
+        _state.settings.push_back(settings);
+    }
+
+    // configure settings service update handler to update LED state
+    addUpdateHandler([&](const String &originId)
+                     { onConfigUpdated(); },
+                     false);
+}
+
+void ClosedLoopControllerSettingsService::begin()
+{
+    _eventEndpoint.begin();
+    _fsPersistence.readFromFS();
+    onConfigUpdated();
+}
+
+
+void ClosedLoopControllerSettingsService::onConfigUpdated()
+{
+    for (int i = 0; i < _controllers.size(); i++) {
+        _controllers[i]->enabled = _state.settings[i].enabled;
+    }
 }
