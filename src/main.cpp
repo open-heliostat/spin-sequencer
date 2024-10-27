@@ -29,13 +29,20 @@ ESP32SvelteKit esp32sveltekit(&server, 120);
 
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 
-TMC5160Stepper driver1(10, R_SENSE, MOSI, MISO, SCK);
-TMC5160Stepper driver2(7, R_SENSE, MOSI, MISO, SCK);
+TMC5160Stepper driver1(10, R_SENSE, 13, 11, 12);
+TMC5160Stepper driver2(7, R_SENSE, 13, 11, 12);
 
 TMC5160Controller stepper1 = {driver1, engine, 9, 8};
 TMC5160Controller stepper2 = {driver2, engine, 6, 5};
 
+Encoder encoder1 = Encoder(2, 1);
+Encoder encoder2 = Encoder(4, 3, Wire1);
+
+ClosedLoopController closedLoopController1 = {stepper1, encoder1};
+ClosedLoopController closedLoopController2 = {stepper2, encoder2};
+
 std::vector<TMC5160Controller*> steppers = {&stepper1, &stepper2};
+std::vector<ClosedLoopController*> closedLoopControllers = {&closedLoopController1, &closedLoopController2};
 
 LightMqttSettingsService lightMqttSettingsService = LightMqttSettingsService(
     &server,
@@ -76,17 +83,13 @@ GPSStateService gpsStateService =  GPSStateService(
     &gpsneo,
     esp32sveltekit.getFeatureService());
 
-Encoder encoder1 = Encoder(2, 1);
-Encoder encoder2 = Encoder(4, 3, Wire1);
-
 EncoderStateService encoderService = EncoderStateService(
     esp32sveltekit.getSocket(),
     &encoder1);
 
-ClosedLoopController closedLoopController = {stepper1, encoder1};
 ClosedLoopControllerStateService closedLoopControllerService = ClosedLoopControllerStateService(
     esp32sveltekit.getSocket(),
-    &closedLoopController);
+    closedLoopControllers);
 
 void setup()
 {
@@ -122,17 +125,18 @@ void loop()
 {
     // Delete Arduino loop task, as it is not needed in this example
     // vTaskDelete(NULL);
-    auto now = millis();
-    gpsStateService.loop();
-    encoderService.loop();
-    closedLoopControllerService.loop();
+    unsigned long now = millis();
     if (now - lastTick > 100) {
+        lastTick = now;
+        gpsStateService.loop();
+        closedLoopControllerService.loop();
         if (WiFi.status() == WL_CONNECTED) {
             lightStateService.updateState(LightState{true, 0, 0.2, 0.1});
         }
         else {
             lightStateService.updateState(LightState{true, 0.2, 0.1, 0});
         }
+        // if (encoder1.update()) Serial.println(encoder1.angle);
         // if (encoder2.update()) Serial.println(encoder2.angle);
     }
 }

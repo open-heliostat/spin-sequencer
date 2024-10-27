@@ -10,6 +10,7 @@ public:
     double angle;
     Encoder(int SDA = SDA, int SCL = SCL, TwoWire &I2C_ = Wire) : I2C(I2C_) {
         I2C.begin(SDA, SCL);
+        // I2C.setClock(50000);
     }
     double getAngle() {
         update();
@@ -20,7 +21,7 @@ public:
         if (now - lastPoll >= maxPollInterval) {
             int value = readEncoder();
             lastPoll = now;
-            if (value) {
+            if (value >= 0) {
                 angle = value*360./16384.;
                 return true;
             }
@@ -42,7 +43,7 @@ public:
     }
 private:
     TwoWire &I2C;
-    uint32_t maxPollInterval = 1000;
+    uint32_t maxPollInterval = 100;
     uint32_t lastPoll = 0;
 };
 #endif
