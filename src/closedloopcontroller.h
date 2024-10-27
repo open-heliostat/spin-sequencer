@@ -18,7 +18,7 @@ public:
     void setAngle(double angle) {
         targetAngle = angle;
         double curAngle = encoder.getAngle();
-        double toGo = targetAngle - curAngle;
+        double toGo = stepper.mod(targetAngle - curAngle + 180., 360.) - 180.;
         if (abs(toGo) > tolerance) stepper.moveR(toGo);
     }
     double getAngle(){
