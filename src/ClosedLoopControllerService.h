@@ -46,7 +46,7 @@ public:
 
     static void readState(ClosedLoopController *controller, JsonObject &root) {
         root["targetAngle"] = controller->targetAngle;
-        root["curAngle"] = controller->curAngle;
+        root["curAngle"] = controller->encoder.angle;
         root["tolerance"] = controller->tolerance;
         root["enabled"] = controller->enabled;
     }

@@ -96,7 +96,6 @@
 		});
 		socket.on<ClosedLoopControllers>(closedLoopControllerEvent, (data) => {
 			closedLoopControllers = data;
-			console.log(data)
 		});
 		getStepperSettings();
 	});
@@ -126,7 +125,6 @@
 			});
 			const settings = await response.json();
 			stepperSettings = settings;
-			console.log(stepperSettings)
 		} catch (error) {
 			console.error('Error:', error);
 		}
@@ -183,7 +181,7 @@
 	<span slot="title">{stepperSettings.steppers[i].name}</span>
 	<div class="w-full">
 		{#if socketConnected}
-		{#if true}
+		{#if closedLoopControllers.controllers[i]}
 		<div class="w-full grid grid-flow-row grid-form items-center">
 			<label class="label cursor-pointer" for="enable-controller">
 				<span class="">Control</span>
@@ -192,13 +190,13 @@
 				type="checkbox"
 				class="toggle toggle-primary"
 				id="enable-controller"
-				bind:checked={stepper.isEnabled}
+				bind:checked={closedLoopControllers.controllers[i].enabled}
 				on:change={() => {
-					socket.sendEvent(stepperControlEvent, steppersControl);
+					socket.sendEvent(closedLoopControllerEvent, closedLoopControllers);
 				}}
 			/>
-			<label class="label cursor-pointer" for="angle">
-				<span class="mr-4">Angle </span>
+			<label class="label cursor-pointer" for="target">
+				<span class="mr-4">Target </span>
 			</label>
 			<input 
 				type="range"
@@ -206,10 +204,25 @@
 				max="360" 
 				step="0.01"
 				class="range range-primary"
-				id="angle"
-				bind:value={stepper.speed}
+				id="target"
+				bind:value={closedLoopControllers.controllers[i].targetAngle}
 				on:change={() => {
-					socket.sendEvent(stepperControlEvent, steppersControl);
+					socket.sendEvent(closedLoopControllerEvent, closedLoopControllers);
+				}}
+			/>
+			<label class="label cursor-pointer" for="position">
+				<span class="mr-4">Position </span>
+			</label>
+			<input 
+				type="range"
+				min="0" 
+				max="360" 
+				step="0.01"
+				class="range range-primary"
+				id="position"
+				bind:value={closedLoopControllers.controllers[i].curAngle}
+				on:change={() => {
+					socket.sendEvent(closedLoopControllerEvent, closedLoopControllers);
 				}}
 			/>
 			<label class="label cursor-pointer" for="tolerance">
@@ -222,10 +235,9 @@
 				step="0.01"
 				class="range range-primary"
 				id="tolerance"
-				bind:value={stepper.speed}
+				bind:value={closedLoopControllers.controllers[i].tolerance}
 				on:change={() => {
-					socket.sendEvent(stepperControlEvent, steppersControl);
-					// console.log(JSON.stringify({speed:stepper.speed}));
+					socket.sendEvent(closedLoopControllerEvent, closedLoopControllers);
 				}}
 			/>
 		</div>
