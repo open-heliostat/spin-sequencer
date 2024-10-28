@@ -92,17 +92,25 @@ class ClosedLoopControllerSettings
 {
 public:
     bool enabled;
+    bool hasLimits;
     double tolerance;
+    double limitA;
+    double limitB;
     String name;
 
     static void read(ClosedLoopControllerSettings &state, JsonObject &root) {
         root["tolerance"] = state.tolerance;
         root["enabled"] = state.enabled;
+        root["limitA"] = state.limitA;
+        root["limitB"] = state.limitB;
         root["name"] = state.name;
     }
     static StateUpdateResult update(JsonObject &root, ClosedLoopControllerSettings &state) {
         state.tolerance = root["tolerance"] | 0.2;
         state.enabled = root["enabled"] | false;
+        state.hasLimits = root["hasLimits"] | false;
+        state.limitA = root["limitA"] | 0.;
+        state.limitB = root["limitB"] | 360.;
         state.name = root["name"] | "Controller";
         return StateUpdateResult::CHANGED;
     }
@@ -110,6 +118,9 @@ public:
     static void readState(ClosedLoopController *controller, JsonObject &root) {
         root["tolerance"] = controller->tolerance;
         root["enabled"] = controller->enabled;
+        root["hasLimits"] = controller->hasLimits;
+        root["limitA"] = controller->limitA;
+        root["limitB"] = controller->limitB;
     }
 };
 

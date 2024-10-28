@@ -6,6 +6,7 @@
     export let step = 0.01;
     export let onChange = () => {};
     export let hasNumber = true;
+    export let disabled = false;
 </script>
 
 <label class="label cursor-pointer" for={label}>
@@ -19,6 +20,7 @@
         step={step}
         class="range range-primary"
         id={label}
+        {disabled}
         bind:value={value}
         on:change={onChange}
     />
@@ -31,6 +33,7 @@
         class="input input-bordered"
         style="height: 2rem;"
         id={label}
+        {disabled}
         bind:value={value}
         on:change={onChange}
     />

@@ -15,9 +15,6 @@
 	type ClosedLoopController = {
 		targetAngle: number;
 		curAngle: number;
-		tolerance: number;
-		enabled: boolean;
-		name: string;
 	}
 	type ClosedLoopControllers = {
 		controllers: ClosedLoopController[];
@@ -26,6 +23,9 @@
 	type ClosedLoopSettings = {
 		tolerance: number;
 		enabled: boolean;
+		hasLimits: boolean;
+		limitA: number;
+		limitB: number;
 		name: string;
 	}
 	type ClosedLoopSettingsMulti = {
@@ -77,6 +77,7 @@
 			min={0} 
 			max={360} 
 			step={0.01}
+			disabled
 			onChange={() => socket.sendEvent(closedLoopControllerEvent, closedLoopControllers)}
 		></Slider>
 	</div>
@@ -98,6 +99,27 @@
 				label="Tolerance" 
 				bind:value={controller.tolerance}
 				min={0.04} 
+				onChange={() => socket.sendEvent(closedLoopSettingsEvent, closedLoopSettings)}
+			></Slider>
+			<Checkbox 
+				label="Use Limits"
+				bind:value={controller.hasLimits}
+				onChange={() => socket.sendEvent(closedLoopSettingsEvent, closedLoopSettings)}
+			></Checkbox>
+			<Slider 
+				label="Limit A" 
+				bind:value={controller.limitA}
+				min={0} 
+				max={360} 
+				step={0.01}
+				onChange={() => socket.sendEvent(closedLoopSettingsEvent, closedLoopSettings)}
+			></Slider>
+			<Slider 
+				label="Limit B" 
+				bind:value={controller.limitB}
+				min={0} 
+				max={360} 
+				step={0.01}
 				onChange={() => socket.sendEvent(closedLoopSettingsEvent, closedLoopSettings)}
 			></Slider>
 		</div>

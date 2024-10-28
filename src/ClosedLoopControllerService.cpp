@@ -39,7 +39,9 @@ void ClosedLoopControllerStateService::onConfigUpdated(const String &originId)
 {
     if (originId != "stateUpdate") {
         for (int i = 0; i < _controllers.size(); i++) {
-            _controllers[i]->targetAngle = _state.controllers[i].targetAngle;
+            auto controller = _controllers[i];
+            auto state = _state.controllers[i];
+            controller->targetAngle = state.targetAngle;
         }
     }
 }
@@ -85,6 +87,12 @@ void ClosedLoopControllerSettingsService::begin()
 void ClosedLoopControllerSettingsService::onConfigUpdated()
 {
     for (int i = 0; i < _controllers.size(); i++) {
-        _controllers[i]->enabled = _state.settings[i].enabled;
+        auto controller = _controllers[i];
+        auto settings = _state.settings[i];
+        controller->enabled = settings.enabled;
+        controller->hasLimits = settings.hasLimits;
+        controller->tolerance = settings.tolerance;
+        controller->limitA = settings.limitA;
+        controller->limitB = settings.limitB;
     }
 }

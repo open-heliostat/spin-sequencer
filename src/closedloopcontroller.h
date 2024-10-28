@@ -14,11 +14,29 @@ public:
     bool enabled;
     double targetAngle;
     double tolerance = 0.1;
+    bool hasLimits = false;
+    double limitA = 0.;
+    double limitB = 360.;
     ClosedLoopController(TMC5160Controller &stepper, Encoder &encoder) : stepper(stepper), encoder(encoder) {}
+    double mod(double a, double N) {return a - N*floor(a/N);}
     void setAngle(double angle) {
         targetAngle = angle;
         double curAngle = encoder.getAngle();
-        double toGo = stepper.mod(targetAngle - curAngle + 180., 360.) - 180.;
+        double toGo = 0.;
+        if (hasLimits) {
+            double middle = mod((limitA + limitB) * 0.5, 360.);
+            double interval = limitB - limitA;
+            if (limitB < limitA) {
+                middle = mod(middle + 180., 360.);
+                interval = mod(interval, 360.);
+            }
+            double t = mod(targetAngle - middle + 180., 360.) - 180.;
+            targetAngle = mod(max(min(t, interval*0.5), -interval*0.5) + middle, 360.);
+            toGo = mod(targetAngle - middle + 180., 360.) - mod(curAngle - middle + 180., 360.);
+            // Serial.printf("Middle : %f`, Interval: %f, t: %f, Target: %f, To Go: %f\n", middle, interval, t, targetAngle, toGo);
+        }
+        else toGo = mod(targetAngle - curAngle + 180., 360.) - 180.;
+        // Serial.printf("Command : %f, Target: %f, Current: %f, To Go: %f\n", angle, targetAngle, curAngle, toGo);
         if (abs(toGo) > tolerance && encoder.hasNewData()) stepper.moveR(toGo);
     }
     double getAngle(){
