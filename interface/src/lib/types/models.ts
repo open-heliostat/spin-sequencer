@@ -163,3 +163,30 @@ export type MQTTSettings = {
 	clean_session: boolean;
 };
 
+export type StepperSettings = {
+	name: string;
+	enableOnStart: boolean;
+	invertDirection: boolean;
+	maxSpeed: number;
+	maxAcceleration: number;
+	current: number;
+};
+
+export type MultiStepperSettings = {
+	steppers: StepperSettings[]
+}
+
+export type StepperControl = {
+	isEnabled: boolean;
+	direction: boolean;
+	speed: number;
+	move: number;
+	acceleration: number;
+	status: number;
+	version: number;
+	socketConnected: boolean;
+};
+
+export type MultiStepperControl = {
+	steppers: StepperControl[];
+};
