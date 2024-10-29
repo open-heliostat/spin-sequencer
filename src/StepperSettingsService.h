@@ -1,13 +1,13 @@
 #ifndef StepperSettingsService_h
 #define StepperSettingsService_h
 
-#include <HttpEndpoint.h>
+#include <EventEndpoint.h>
 #include <FSPersistence.h>
 #include <tmcdriver.h>
 #include <vector>
 
 #define STEPPER_SETTINGS_FILE "/config/stepperSettings.json"
-#define STEPPER_SETTINGS_ENDPOINT_PATH "/rest/stepperSettings"
+#define STEPPER_SETTINGS_EVENT "steppersettings"
 
 class StepperSettings
 {
@@ -68,17 +68,16 @@ public:
 class StepperSettingsService : public StatefulService<MultiStepperSettings>
 {
 public:
-    StepperSettingsService(PsychicHttpServer *server, 
-                            FS *fs,
-                            SecurityManager *securityManager,
-                            std::vector<TMC5160Controller*>& steppers);
+    StepperSettingsService(EventSocket *socket, 
+                           FS *fs,
+                           std::vector<TMC5160Controller*>& steppers);
     void begin();
     int32_t getMaxSpeed();
     int32_t getMaxAccel();
     MultiStepperSettings getState();
 
 private:
-    HttpEndpoint<MultiStepperSettings> _httpEndpoint;
+    EventEndpoint<MultiStepperSettings> _eventEndpoint;
     FSPersistence<MultiStepperSettings> _fsPersistence;
     std::vector<TMC5160Controller*>& _steppers;
 
