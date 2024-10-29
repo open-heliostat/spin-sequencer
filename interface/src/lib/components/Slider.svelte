@@ -7,6 +7,7 @@
     export let onChange = () => {};
     export let hasNumber = true;
     export let disabled = false;
+    $: value = Math.round(value/step)*step;
 </script>
 
 <label class="label cursor-pointer" for={label}>
