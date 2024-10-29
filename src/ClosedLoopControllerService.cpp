@@ -62,7 +62,8 @@ ClosedLoopControllerSettingsService::ClosedLoopControllerSettingsService(EventSo
                                                                                                 socket,
                                                                                                 CL_CONTROLLER_SETTINGS_EVENT),
                                                                                 _fsPersistence(MultiClosedLoopControllerSettings::read, MultiClosedLoopControllerSettings::update, this, fs, CL_SETTINGS_FILE),
-                                                                                _controllers(controllers)
+                                                                                _controllers(controllers),
+                                                                                _closedLoopControllerStateService(socket, controllers)
 {
 
     for (ClosedLoopController *s : controllers) {
@@ -80,7 +81,12 @@ void ClosedLoopControllerSettingsService::begin()
 {
     _eventEndpoint.begin();
     _fsPersistence.readFromFS();
+    _closedLoopControllerStateService.begin();
     onConfigUpdated();
+}
+
+void ClosedLoopControllerSettingsService::loop() {
+    _closedLoopControllerStateService.loop();
 }
 
 
