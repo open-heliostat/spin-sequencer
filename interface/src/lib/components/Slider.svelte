@@ -22,7 +22,7 @@
         id={label}
         {disabled}
         bind:value={value}
-        on:change={onChange}
+        on:input={onChange}
     />
     {#if hasNumber}
     <input 
@@ -35,7 +35,7 @@
         id={label}
         {disabled}
         bind:value={value}
-        on:change={onChange}
+        on:input={onChange}
     />
     {/if}
 </div>
