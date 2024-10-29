@@ -21,6 +21,7 @@
 	import Checkbox from '$lib/components/Checkbox.svelte';
 
 	const stepperControlEvent = "steppercontrol"
+	const stepperSettingsEvent = "steppersettings"
 
 	type StepperControl = {
 		isEnabled: boolean;
@@ -84,11 +85,15 @@
 			steppersControl = data;
 			socketConnected = true;
 		});
-		getStepperSettings();
+		socket.on<MultiStepperSettings>(stepperSettingsEvent, (data) => {
+			stepperSettings = data;
+			console.log(data)
+		});
 	});
 
 	onDestroy(() => {
 		socket.off(stepperControlEvent);
+		socket.off(stepperSettingsEvent);
 	});
 
 	let socketConnected = false;
@@ -101,43 +106,11 @@
 		maxAcceleration: number;
 		current: number;
 	};
-
-	let stepperSettings: {steppers: StepperSettings[]};
-
-	async function getStepperSettings() {
-		try {
-			const response = await fetch('/rest/stepperSettings', {
-				method: 'GET'
-			});
-			const settings = await response.json();
-			stepperSettings = settings;
-		} catch (error) {
-			console.error('Error:', error);
-		}
-		return;
+	type MultiStepperSettings = {
+		steppers: StepperSettings[]
 	}
 
-	async function postStepperSettings() {
-		try {
-			const response = await fetch('/rest/stepperSettings', {
-				method: 'POST',
-				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(stepperSettings)
-			});
-			if (response.status == 200) {
-				notifications.success('Stepper settings updated.', 3000);
-				stepperSettings = await response.json();
-			} else {
-				notifications.error('User not authorized.', 3000);
-			}
-		} catch (error) {
-			console.error('Error:', error);
-		}
-		return;
-	}
+	let stepperSettings: MultiStepperSettings;
 
 </script>
 
@@ -146,25 +119,12 @@
 	.grid-form {
 	  grid-template-columns: [labels] auto [controls] 1fr;
 	}
-	/* .grid-form {
-	  display: grid;
-	  grid-template-columns: [labels] auto [controls] 1fr;
-	  grid-auto-flow: row;
-	}
-	.grid-form label  {
-	  grid-column: labels;
-	  grid-row: auto;
-	}
-	.grid-form input {
-	  grid-column: controls;
-	  grid-row: auto;
-	} */
 </style>
 
 {#each steppersControl.steppers as stepper, i}
 <SettingsCard collapsible={true} open={true}>
 	<Stepper slot="icon" class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">{stepperSettings.steppers[i].name}</span>
+	<span slot="title">{stepperSettings?.steppers[i].name}</span>
 	<div class="w-full">
 		{#if socketConnected}
 		<div class="alert {stepperStatuses[i].infoclass} my-2 shadow-lg">
@@ -262,20 +222,6 @@
 					socket.sendEvent(stepperControlEvent, steppersControl);
 				}}
 			/>
-			<!-- <label class="label cursor-pointer" for="current">
-				<span class="mr-4">Current </span>
-			</label>
-			<input 
-				type="range"
-				min="0" 
-				max="4000" 
-				class="range range-primary"
-				id="current"
-				bind:value={stepper.current}
-				on:change={() => {
-					socket.sendEvent(stepperControlEvent, stepperControl);
-				}}
-			/> -->
 		</div>
 		<div class="flex flex-row flex-wrap justify-between gap-x-2">
 			<div class="flex-grow"></div>
@@ -298,27 +244,12 @@
 		</div>
 		{/if}
 	</div>
-	<!-- {#if !$page.data.features.security || $user.admin}
-	<Collapsible open={false} class="shadow-lg">
-		<span slot="title">Driver Settings</span>
-
-		<form on:submit|preventDefault={""} novalidate>
-		</form>
-	</Collapsible>
-{/if} -->
 
 	<Collapsible open={false}>
 		<Settings slot="icon" class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
 		<span slot="title">Settings</span>
 		<div class="w-full overflow-x-auto">
-			{#await getStepperSettings()}
-				<Spinner />
-			{:then nothing}
 				<form
-					on:submit|preventDefault={postStepperSettings}
-					novalidate
-					bind:this={formField}
-					transition:slide|local={{ duration: 300, easing: cubicOut }}
 				>
 					<div class="w-full">
 						<div class="w-full grid grid-flow-row grid-form items-center">
@@ -384,84 +315,7 @@
 							/>
 						</div>
 					</div>
-					<!-- <div class="alert alert-info my-2 shadow-lg">
-						<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
-						<span
-							>The LED is controllable via MQTT with the demo project designed to work with Home
-							Assistant's auto discovery feature.</span
-						>
-					</div>
-					<div class="grid w-full grid-cols-1 content-center gap-x-4 px-4">
-						<div>
-							<label class="label" for="uid">
-								<span class="label-text text-md">Unique ID</span>
-							</label>
-							<input
-								type="text"
-								class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.uid
-									? 'border-error border-2'
-									: ''}"
-								bind:value={stepperSettings.unique_id}
-								id="uid"
-								min="3"
-								max="32"
-								required
-							/>
-							<label class="label" for="uid">
-								<span class="label-text-alt text-error {formErrors.uid ? '' : 'hidden'}"
-									>Unique ID must be between 3 and 32 characters long</span
-								>
-							</label>
-						</div>
-						<div>
-							<label class="label" for="name">
-								<span class="label-text text-md">Name</span>
-							</label>
-							<input
-								type="text"
-								class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.name
-									? 'border-error border-2'
-									: ''}"
-								bind:value={stepperSettings.name}
-								id="name"
-								min="3"
-								max="32"
-								required
-							/>
-							<label class="label" for="name">
-								<span class="label-text-alt text-error {formErrors.name ? '' : 'hidden'}"
-									>Name must be between 3 and 32 characters long</span
-								>
-							</label>
-						</div>
-						<div>
-							<label class="label" for="path">
-								<span class="label-text text-md">MQTT Path</span>
-							</label>
-							<input
-								type="text"
-								class="input input-bordered invalid:border-error w-full invalid:border-2 {formErrors.path
-									? 'border-error border-2'
-									: ''}"
-								bind:value={stepperSettings.mqtt_path}
-								id="path"
-								min="0"
-								max="64"
-								required
-							/>
-							<label class="label" for="path">
-								<span class="label-text-alt text-error {formErrors.path ? '' : 'hidden'}"
-									>MQTT path is limited to 64 characters</span
-								>
-							</label>
-						</div>
-					</div> -->
-					<div class="divider mb-2 mt-0" />
-					<div class="mx-4 flex flex-wrap justify-end gap-2">
-						<button class="btn btn-primary" type="submit">Apply Settings</button>
-					</div>
 				</form>
-			{/await}
 		</div>
 	</Collapsible>
 

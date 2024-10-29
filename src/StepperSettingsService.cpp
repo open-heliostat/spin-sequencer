@@ -1,18 +1,15 @@
 #include <StepperSettingsService.h>
 
-StepperSettingsService::StepperSettingsService(PsychicHttpServer *server,
-                                                FS *fs,
-                                                SecurityManager *securityManager,
-                                                std::vector<TMC5160Controller*>& steppers) :                  
-                                                                            _httpEndpoint(MultiStepperSettings::read,
-                                                                                            MultiStepperSettings::update,
-                                                                                            this,
-                                                                                            server,
-                                                                                            STEPPER_SETTINGS_ENDPOINT_PATH,
-                                                                                            securityManager,
-                                                                                            AuthenticationPredicates::IS_AUTHENTICATED),
-                                                                            _fsPersistence(MultiStepperSettings::read, MultiStepperSettings::update, this, fs, STEPPER_SETTINGS_FILE),
-                                                                            _steppers(steppers)
+StepperSettingsService::StepperSettingsService(EventSocket *socket,
+                                               FS *fs,
+                                               std::vector<TMC5160Controller*>& steppers) :                  
+                                                        _eventEndpoint(MultiStepperSettings::read,
+                                                                        MultiStepperSettings::update,
+                                                                        this,
+                                                                        socket,
+                                                                        STEPPER_SETTINGS_EVENT),
+                                                        _fsPersistence(MultiStepperSettings::read, MultiStepperSettings::update, this, fs, STEPPER_SETTINGS_FILE),
+                                                        _steppers(steppers)
 {
 
     for (TMC5160Controller *s : steppers) {
@@ -28,7 +25,7 @@ StepperSettingsService::StepperSettingsService(PsychicHttpServer *server,
 
 void StepperSettingsService::begin()
 {
-    _httpEndpoint.begin();
+    _eventEndpoint.begin();
     _fsPersistence.readFromFS();
     // _stepper->init();
     onConfigUpdated();

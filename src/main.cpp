@@ -58,9 +58,8 @@ LightStateService lightStateService = LightStateService(
     esp32sveltekit.getFeatureService());
 
 StepperSettingsService stepperSettingsService = StepperSettingsService(
-    &server, 
-    esp32sveltekit.getFS(), 
-    esp32sveltekit.getSecurityManager(), 
+    esp32sveltekit.getSocket(),
+    esp32sveltekit.getFS(),
     steppers);
 
 StepperControlService stepperControlService = StepperControlService(
