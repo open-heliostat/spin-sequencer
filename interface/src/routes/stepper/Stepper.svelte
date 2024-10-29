@@ -19,6 +19,7 @@
 	import { socket } from '$lib/stores/socket';
 	import Slider from '$lib/components/Slider.svelte';
 	import Checkbox from '$lib/components/Checkbox.svelte';
+	import Text from '$lib/components/Text.svelte';
 
 	const stepperControlEvent = "steppercontrol"
 	const stepperSettingsEvent = "steppersettings"
@@ -87,7 +88,6 @@
 		});
 		socket.on<MultiStepperSettings>(stepperSettingsEvent, (data) => {
 			stepperSettings = data;
-			console.log(data)
 		});
 	});
 
@@ -152,76 +152,39 @@
 			</span>
 		</div>
 		<div class="w-full grid grid-flow-row grid-form items-center">
-			<label class="label cursor-pointer" for="enable">
-				<span class="">Enable</span>
-			</label>
-			<input
-				type="checkbox"
-				class="toggle toggle-primary"
-				id="enable"
-				bind:checked={stepper.isEnabled}
-				on:change={() => {
-					socket.sendEvent(stepperControlEvent, steppersControl);
-				}}
-			/>
-			<label class="label cursor-pointer" for="direction">
-				<span class="">Direction</span>
-			</label>
-			<input
-				type="checkbox"
-				class="toggle toggle-primary"
-				id="direction"
-				bind:checked={stepper.direction}
-				on:change={() => {
-					socket.sendEvent(stepperControlEvent, steppersControl);
-				}}
-			/>
-			<label class="label cursor-pointer" for="speed">
-				<span class="mr-4">Speed </span>
-			</label>
-			<input 
-				type="range"
-				min="0" 
-				max="1" 
-				step="0.01"
-				class="range range-primary"
-				id="speed"
+			<Checkbox
+				label="Enable"
+				bind:value={stepper.isEnabled}
+				onChange={() => {socket.sendEvent(stepperControlEvent, steppersControl);}}
+			></Checkbox>
+			<Checkbox
+				label="Direction"
+				bind:value={stepper.direction}
+				onChange={() => {socket.sendEvent(stepperControlEvent, steppersControl);}}
+			></Checkbox>
+			<Slider
+				label="Speed"
+				min={0}
+				max={1}
+				step={0.01}
 				bind:value={stepper.speed}
-				on:change={() => {
-					socket.sendEvent(stepperControlEvent, steppersControl);
-					// console.log(JSON.stringify({speed:stepper.speed}));
-				}}
-			/>
-			<label class="label cursor-pointer" for="move">
-				<span class="mr-4">Move </span>
-			</label>
-			<input 
-				type="range"
-				min="0" 
-				max="1" 
-				step="0.01"
-				class="range range-primary"
-				id="move"
+				onChange={() => {socket.sendEvent(stepperControlEvent, steppersControl);}}
+			></Slider>
+			<Slider
+				label="Move"
+				min={0}
+				max={1}
+				step={0.01}
 				bind:value={stepper.move}
-				on:input={() => {
-					socket.sendEvent(stepperControlEvent, steppersControl);
-				}}
-			/>
-			<label class="label cursor-pointer" for="acceleration">
-				<span class="mr-4">Acceleration </span>
-			</label>
-			<input 
-				type="range"
-				min="0" 
-				max="1" 
-				step="0.01"
-				class="range range-primary"
-				id="acceleration"
+			></Slider>
+			<Slider
+				label="Acceleration"
+				min={0}
+				max={1}
+				step={0.01}
 				bind:value={stepper.acceleration}
-				on:change={() => {
-					socket.sendEvent(stepperControlEvent, steppersControl);
-				}}
-			/>
+				onChange={() => {socket.sendEvent(stepperControlEvent, steppersControl);}}
+			></Slider>
 		</div>
 		<div class="flex flex-row flex-wrap justify-between gap-x-2">
 			<div class="flex-grow"></div>
@@ -253,66 +216,42 @@
 				>
 					<div class="w-full">
 						<div class="w-full grid grid-flow-row grid-form items-center">
-							<label class="label cursor-pointer" for="steppername">
-								<span class="">Name</span>
-							</label>
-							<input
-								type="text"
-								class="input"
-								id="steppername"
-								bind:value={stepperSettings.steppers[i].name}
-							/>
-							<label class="label cursor-pointer" for="enableonstart">
-								<span class="">Enable on Start</span>
-							</label>
-							<input
-								type="checkbox"
-								class="toggle toggle-primary"
-								id="enableonstart"
-								bind:checked={stepperSettings.steppers[i].enableOnStart}
-							/>
-							<label class="label cursor-pointer" for="invdirection">
-								<span class="">Invert Direction</span>
-							</label>
-							<input
-								type="checkbox"
-								class="toggle toggle-primary"
-								id="invdirection"
-								bind:checked={stepperSettings.steppers[i].invertDirection}
-							/>
-							<label class="label cursor-pointer" for="maxSpeed">
-								<span class="mr-4">Max Speed </span>
-							</label>
-							<input 
-								type="range"
-								min="0" 
-								max="400" 
-								class="range range-primary"
-								id="maxSpeed"
+							<Text 
+								label="Name" 
+								bind:value={stepperSettings.steppers[i].name} 
+								onChange={() => socket.sendEvent(stepperSettingsEvent, stepperSettings)}
+							></Text>
+							<Checkbox
+								label="Enable on Start"
+								bind:value={stepperSettings.steppers[i].enableOnStart}
+								onChange={() => socket.sendEvent(stepperSettingsEvent, stepperSettings)}
+							></Checkbox>
+							<Checkbox
+								label="Invert Direction"
+								bind:value={stepperSettings.steppers[i].invertDirection}
+								onChange={() => socket.sendEvent(stepperSettingsEvent, stepperSettings)}
+							></Checkbox>
+							<Slider
+								label="Max Speed"
+								min={0}
+								max={400}
 								bind:value={stepperSettings.steppers[i].maxSpeed}
-							/>
-							<label class="label cursor-pointer" for="maxAcceleration">
-								<span class="mr-4">Max Acceleration </span>
-							</label>
-							<input 
-								type="range"
-								min="0" 
-								max="200" 
-								class="range range-primary"
-								id="maxAcceleration"
+								onChange={() => socket.sendEvent(stepperSettingsEvent, stepperSettings)}
+							></Slider>
+							<Slider
+								label="Max Acceleration"
+								min={0}
+								max={200}
 								bind:value={stepperSettings.steppers[i].maxAcceleration}
-							/>
-							<label class="label cursor-pointer" for="current">
-								<span class="mr-4">Driver Current </span>
-							</label>
-							<input 
-								type="range"
-								min="0" 
-								max="4000" 
-								class="range range-primary"
-								id="current"
+								onChange={() => socket.sendEvent(stepperSettingsEvent, stepperSettings)}
+							></Slider>
+							<Slider
+								label="Driver Current"
+								min={0}
+								max={4000}
 								bind:value={stepperSettings.steppers[i].current}
-							/>
+								onChange={() => socket.sendEvent(stepperSettingsEvent, stepperSettings)}
+							></Slider>
 						</div>
 					</div>
 				</form>
