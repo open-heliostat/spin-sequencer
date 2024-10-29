@@ -155,11 +155,13 @@ public:
                                         FS *fs,
                                         std::vector<ClosedLoopController*>& controllers);
     void begin();
+    void loop();
 
 private:
     EventEndpoint<MultiClosedLoopControllerSettings> _eventEndpoint;
     FSPersistence<MultiClosedLoopControllerSettings> _fsPersistence;
     std::vector<ClosedLoopController*>& _controllers;
+    ClosedLoopControllerStateService _closedLoopControllerStateService;
 
     void onConfigUpdated();
 };
