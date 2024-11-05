@@ -102,10 +102,11 @@
 				onChange={() => socket.sendEvent(closedLoopSettingsEvent, closedLoopSettings)}
 			></Slider>
 			<Checkbox 
-				label="Use Limits"
+				label="Limits"
 				bind:value={controller.hasLimits}
 				onChange={() => socket.sendEvent(closedLoopSettingsEvent, closedLoopSettings)}
 			></Checkbox>
+			{#if controller.hasLimits}
 			<Slider 
 				label="Limit A" 
 				bind:value={controller.limitA}
@@ -122,6 +123,7 @@
 				step={0.01}
 				onChange={() => socket.sendEvent(closedLoopSettingsEvent, closedLoopSettings)}
 			></Slider>
+			{/if}
 		</div>
 	</Collapsible>
 </SettingsCard>
