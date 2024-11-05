@@ -1,21 +1,21 @@
 #include <StepperSettingsService.h>
 
-StepperSettingsService::StepperSettingsService(PsychicHttpServer *server,
-                                                FS *fs,
-                                                SecurityManager *securityManager,
-                                                TMC5160Controller *stepper) :                  
-                                                                            _httpEndpoint(StepperSettings::read,
-                                                                                            StepperSettings::update,
-                                                                                            this,
-                                                                                            server,
-                                                                                            STEPPER_SETTINGS_ENDPOINT_PATH,
-                                                                                            securityManager,
-                                                                                            AuthenticationPredicates::IS_AUTHENTICATED),
-                                                                            _fsPersistence(StepperSettings::read, StepperSettings::update, this, fs, STEPPER_SETTINGS_FILE),
-                                                                            _stepper(stepper)
+StepperSettingsService::StepperSettingsService(EventSocket *socket,
+                                               FS *fs,
+                                               std::vector<TMC5160Controller*>& steppers) :                  
+                                                        _eventEndpoint(MultiStepperSettings::read,
+                                                                        MultiStepperSettings::update,
+                                                                        this,
+                                                                        socket,
+                                                                        STEPPER_SETTINGS_EVENT),
+                                                        _fsPersistence(MultiStepperSettings::read, MultiStepperSettings::update, this, fs, STEPPER_SETTINGS_FILE),
+                                                        _steppers(steppers)
 {
-    // configure led to be output
-    pinMode(LED_BUILTIN, OUTPUT);
+
+    for (TMC5160Controller *s : steppers) {
+        StepperSettings settings = StepperSettings();
+        _state.settings.push_back(settings);
+    }
 
     // configure settings service update handler to update LED state
     addUpdateHandler([&](const String &originId)
@@ -25,33 +25,38 @@ StepperSettingsService::StepperSettingsService(PsychicHttpServer *server,
 
 void StepperSettingsService::begin()
 {
-    _httpEndpoint.begin();
+    _eventEndpoint.begin();
     _fsPersistence.readFromFS();
     // _stepper->init();
     onConfigUpdated();
-    if (_state.enableOnStart) _stepper->enable();
-    else _stepper->disable();
+    for (int i = 0; i < _steppers.size(); i++) {
+        if (_state.settings[i].enableOnStart) _steppers[i]->enable();
+        else _steppers[i]->disable();
+    }
     // updateState();
 }
 
-int32_t StepperSettingsService::getMaxSpeed() {
-    return _state.maxSpeed;
-}
+// int32_t StepperSettingsService::getMaxSpeed() {
+//     return _state.maxSpeed;
+// }
 
-int32_t StepperSettingsService::getMaxAccel() {
-    return _state.maxAcceleration;
-}
+// int32_t StepperSettingsService::getMaxAccel() {
+//     return _state.maxAcceleration;
+// }
 
-StepperSettings StepperSettingsService::getState() {
+MultiStepperSettings StepperSettingsService::getState() {
     return _state;
 }
 
 void StepperSettingsService::onConfigUpdated()
 {
-    _stepper->maxSpeed = _state.maxSpeed;
-    _stepper->maxAccel = _state.maxAcceleration;
-    _stepper->driver.rms_current(_state.current);
-    _stepper->driver.shaft(_state.invertDirection);
+    for (int i = 0; i < _steppers.size(); i++) {        auto settings = _state.settings[i];
+        auto stepper = *_steppers[i];
+        stepper.maxSpeed = settings.maxSpeed;
+        stepper.maxAccel = settings.maxAcceleration;
+        stepper.driver.rms_current(settings.current);
+        stepper.driver.shaft(settings.invertDirection);
+    }
 }
 
 // void StepperSettingsService::updateState() {

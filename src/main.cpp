@@ -17,9 +17,9 @@
 #include <LightStateService.h>
 #include <PsychicHttpServer.h>
 #include <StepperControlService.h>
-#include <StepperSettingsService.h>
-#include <gpsneo.h>
 #include <GPSService.h>
+#include <EncoderService.h>
+#include <ClosedLoopControllerService.h>
 
 #define SERIAL_BAUD_RATE 115200
 
@@ -29,11 +29,20 @@ ESP32SvelteKit esp32sveltekit(&server, 120);
 
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 
-TMC5160Stepper driver1(10, R_SENSE, MOSI, MISO, SCK);
-// TMC5160Stepper driver2(16, R_SENSE, MOSI, MISO, SCK);
+TMC5160Stepper driver1(10, R_SENSE, 13, 11, 12);
+TMC5160Stepper driver2(7, R_SENSE, 13, 11, 12);
 
-TMC5160Controller stepper1 = {driver1, engine, 1, 2, 9};
-// TMC5160Controller stepper2 = {driver2, engine, STEP_PIN, DIR_PIN, EN_PIN};
+TMC5160Controller stepper1 = {driver1, engine, 9, 8};
+TMC5160Controller stepper2 = {driver2, engine, 6, 5};
+
+Encoder encoder1 = Encoder(2, 1);
+Encoder encoder2 = Encoder(4, 3, Wire1);
+
+ClosedLoopController closedLoopController1 = {stepper1, encoder1};
+ClosedLoopController closedLoopController2 = {stepper2, encoder2};
+
+std::vector<TMC5160Controller*> steppers = {&stepper1, &stepper2};
+std::vector<ClosedLoopController*> closedLoopControllers = {&closedLoopController1, &closedLoopController2};
 
 LightMqttSettingsService lightMqttSettingsService = LightMqttSettingsService(
     &server,
@@ -49,15 +58,15 @@ LightStateService lightStateService = LightStateService(
     esp32sveltekit.getFeatureService());
 
 StepperSettingsService stepperSettingsService = StepperSettingsService(
-    &server, 
-    esp32sveltekit.getFS(), 
-    esp32sveltekit.getSecurityManager(), 
-    &stepper1);
+    esp32sveltekit.getSocket(),
+    esp32sveltekit.getFS(),
+    steppers);
 
 StepperControlService stepperControlService = StepperControlService(
     esp32sveltekit.getSocket(),
     &stepperSettingsService,
-    &stepper1);
+    steppers,
+    esp32sveltekit.getFeatureService());
 
 SerialGPS gpsneo = SerialGPS(Serial1, TX, RX);
 
@@ -70,16 +79,22 @@ GPSSettingsService gpsSettingsService = GPSSettingsService(
 GPSStateService gpsStateService =  GPSStateService(
     esp32sveltekit.getSocket(),
     &gpsSettingsService,
-    &gpsneo);
+    &gpsneo,
+    esp32sveltekit.getFeatureService());
 
+EncoderStateService encoderService = EncoderStateService(
+    esp32sveltekit.getSocket(),
+    &encoder1);
+
+ClosedLoopControllerSettingsService closedLoopControllerService = ClosedLoopControllerSettingsService(
+    esp32sveltekit.getSocket(),
+    esp32sveltekit.getFS(),
+    closedLoopControllers);
 
 void setup()
 {
     // start serial and filesystem
     Serial.begin(SERIAL_BAUD_RATE);
-
-    esp32sveltekit.getFeatureService()->addFeature("stepper", true);
-    esp32sveltekit.getFeatureService()->addFeature("gps", true);
 
     // start ESP32-SvelteKit
     esp32sveltekit.begin();
@@ -89,8 +104,9 @@ void setup()
     // start the light service
     lightMqttSettingsService.begin();
 
-
+    engine.init();
     stepper1.init();
+    stepper2.init();
 
     stepperSettingsService.begin();
     stepperControlService.begin();
@@ -98,11 +114,29 @@ void setup()
     gpsneo.init();
     gpsSettingsService.begin();
     gpsStateService.begin();
+
+    encoderService.begin();
+    closedLoopControllerService.begin();
 }
+
+unsigned long lastTick = 0;
 
 void loop()
 {
     // Delete Arduino loop task, as it is not needed in this example
     // vTaskDelete(NULL);
-    gpsStateService.loop();
+    unsigned long now = millis();
+    if (now - lastTick > 100) {
+        lastTick = now;
+        gpsStateService.loop();
+        closedLoopControllerService.loop();
+        if (WiFi.status() == WL_CONNECTED) {
+            lightStateService.updateState(LightState{true, 0, 0.2, 0.1});
+        }
+        else {
+            lightStateService.updateState(LightState{true, 0.2, 0.1, 0});
+        }
+        // if (encoder1.update()) Serial.println(encoder1.angle);
+        // if (encoder2.update()) Serial.println(encoder2.angle);
+    }
 }

@@ -2,15 +2,18 @@
 
 GPSStateService::GPSStateService(EventSocket *socket,
                                  GPSSettingsService *gpsSettingsService,
-                                 SerialGPS *gps) :
+                                 SerialGPS *gps,
+                                 FeaturesService *featuresService) :
                                                     _eventEndpoint(GPSState::read,
                                                                     GPSState::update,
                                                                     this,
                                                                     socket,
                                                                     GPS_STATE_EVENT),
                                                     _gpsSettingsService(gpsSettingsService),
-                                                    _GPS(gps)
+                                                    _GPS(gps),
+                                                    _featuresService(featuresService)
 {
+    _featuresService->addFeature("gps", true);
 }
 
 void GPSStateService::begin()
@@ -20,7 +23,7 @@ void GPSStateService::begin()
 }
 
 void GPSStateService::loop() {
-    if (_GPS->update()) updateState();
+    if (_gpsSettingsService->isEnabled() && _GPS->update()) updateState();
 }
 
 void GPSStateService::updateState() {
@@ -55,6 +58,10 @@ void GPSSettingsService::begin()
     _httpEndpoint.begin();
     _fsPersistence.readFromFS();
     onConfigUpdated();
+}
+
+bool GPSSettingsService::isEnabled() {
+    return _state.enabled;
 }
 
 void GPSSettingsService::onConfigUpdated()

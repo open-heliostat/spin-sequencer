@@ -4,6 +4,8 @@
 #include <StepperSettingsService.h>
 
 #include <EventEndpoint.h>
+#include <FeaturesService.h>
+
 #include <tmcdriver.h>
 
 #define STEPPER_CONTROL_EVENT "steppercontrol"
@@ -72,7 +74,7 @@ public:
         else return StateUpdateResult::UNCHANGED;
     }
 
-    static void readState(TMC5160Controller *stepper, StepperSettingsService *stepperSettingsService, JsonObject &root) {
+    static void readState(TMC5160Controller *stepper, JsonObject &root) {
         root["isEnabled"] = stepper->enabled;
         if (abs(stepper->getSpeed()) > 0.001) root["direction"] = stepper->getSpeed() >= 0;
         // root["move"] = stepper->move();
@@ -86,19 +88,52 @@ public:
     }
 };
 
-class StepperControlService : public StatefulService<StepperControl>
+class StepperControllers
+{
+public:
+    std::vector<StepperControl> steppers;
+    static void read(StepperControllers &steppers, JsonObject &root)
+    {
+        JsonArray jsonArray = root["steppers"].to<JsonArray>();
+        for (StepperControl stepper : steppers.steppers) {
+            JsonObject obj = jsonArray.add<JsonObject>();
+            stepper.read(stepper, obj);
+        }
+    }
+    static StateUpdateResult update(JsonObject &root, StepperControllers &steppers)
+    {
+        JsonArray jsonArray = root["steppers"].as<JsonArray>();
+        bool hasChanged = false;
+        for (int i = 0; i < min(jsonArray.size(), steppers.steppers.size()); i++) {
+            JsonObject obj = jsonArray[i];
+            if (steppers.steppers[i].update(obj, steppers.steppers[i]) == StateUpdateResult::CHANGED) hasChanged = true;
+        }
+        return hasChanged ? StateUpdateResult::CHANGED : StateUpdateResult::UNCHANGED;
+    }
+    static void readState(std::vector<TMC5160Controller*> &steppers, JsonObject &root) {
+        JsonArray jsonArray = root["steppers"].to<JsonArray>();
+        for (TMC5160Controller *stepper : steppers) {
+            JsonObject obj = jsonArray.add<JsonObject>();
+            StepperControl::readState(stepper, obj);
+        }
+    }
+};
+
+class StepperControlService : public StatefulService<StepperControllers>
 {
 public:
     StepperControlService(EventSocket *socket,
                           StepperSettingsService *stepperSettingsService,
-                          TMC5160Controller *stepper);
+                          std::vector<TMC5160Controller*>& steppers,
+                          FeaturesService *featuresService);
     void begin();
     void loop();
 
 private:
-    EventEndpoint<StepperControl> _eventEndpoint;
+    EventEndpoint<StepperControllers> _eventEndpoint;
     StepperSettingsService *_stepperSettingsService;
-    TMC5160Controller *_stepper;
+    std::vector<TMC5160Controller*>& _steppers;
+    FeaturesService *_featuresService;
 
     unsigned long lastUpdate = 0;
 

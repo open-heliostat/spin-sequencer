@@ -76,6 +76,13 @@ void LightStateService::begin()
     onConfigUpdated();
 }
 
+void LightStateService::updateState(LightState lightState) {
+    JsonDocument json;
+    JsonObject jsonObject = json.to<JsonObject>();
+    _state.read(lightState, jsonObject);
+    update(jsonObject, _state.update, "driver");
+}
+
 void LightStateService::onConfigUpdated()
 {
 #ifdef RGB_BUILTIN

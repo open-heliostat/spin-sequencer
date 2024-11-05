@@ -22,19 +22,51 @@ private:
 
 public:
     GeoCoords coords;
+    int fixQuality;
+    int numSats = 0;
+    uint32_t lastUpdate = 0;
+    uint32_t sinceLastUpdate = 0;
+    char timeStr[16];
+    char dateStr[16];
+    bool hasSerial = false;
+
     SerialGPS(HardwareSerial &serial_ = Serial1, uint8_t RX_ = 25, uint8_t TX_ = 33) : serial(serial_), RX(RX_), TX(TX_) {}
     void init() {
         serial.begin(9600, SERIAL_8N1, RX, TX);
     }
     bool update() {
-        while (serial.available() > 0) {
-            gps.encode(serial.read());
+        unsigned long now = millis();
+        bool updated = false;
+        if (serial.available() > 0) {
+            while (serial.available() > 0) {
+                int s = serial.read();
+                gps.encode(s);
+                // Serial.print(char(s));
+            }
+            if (gps.satellites.isUpdated()) {
+                numSats = gps.satellites.value();
+            }
+            if (gps.time.isValid()) {
+                sprintf(timeStr, "%i:%i:%i", gps.time.hour(), gps.time.minute(), gps.time.second());
+                sprintf(dateStr, "%i/%i/%i", gps.date.day(), gps.date.month(), gps.date.year());
+                // updated = true;
+            }
+            if (gps.location.isUpdated()) {
+                coords.latitude = gps.location.lat();
+                coords.longitude = gps.location.lng();
+                coords.altitude = gps.altitude.meters();
+                fixQuality = gps.location.FixQuality();
+                updated = true;
+            }
+            if (!hasSerial) {
+                updated = true;
+                hasSerial = true;
+            }
+            lastUpdate = now;
         }
-        bool updated = gps.location.isUpdated();
-        if (updated) {
-            coords.latitude = gps.location.lat();
-            coords.longitude = gps.location.lng();
-            coords.altitude = gps.altitude.meters();
+        else if (hasSerial && now - lastUpdate > 10000) {
+            hasSerial = false;
+            updated = true;
         }
         return updated;
     }
