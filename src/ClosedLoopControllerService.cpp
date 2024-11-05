@@ -21,6 +21,7 @@ ClosedLoopControllerStateService::ClosedLoopControllerStateService(EventSocket *
 void ClosedLoopControllerStateService::begin()
 {
     _eventEndpoint.begin();
+    for (auto controller : _controllers) if (controller->enabled) controller->setAngle(controller->getAngle());
     updateState();
     onConfigUpdated("begin");
 }
@@ -81,8 +82,8 @@ void ClosedLoopControllerSettingsService::begin()
 {
     _eventEndpoint.begin();
     _fsPersistence.readFromFS();
-    _closedLoopControllerStateService.begin();
     onConfigUpdated();
+    _closedLoopControllerStateService.begin();
 }
 
 void ClosedLoopControllerSettingsService::loop() {
