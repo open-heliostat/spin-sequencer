@@ -24,7 +24,7 @@ jobs:
       - name: Install PlatformIO
         run: python3 -m pip install platformio cryptography
       - name: Build firmwares
-        run: FIRMWARE_VERSION=${{github.ref_name}} platformio run
+        run: FIRMWARE_VERSION=${{github.ref_name}} platformio run -e "esp32-s3-super-mini"
       - name: Archive
         uses: actions/upload-artifact@v4
         with:
