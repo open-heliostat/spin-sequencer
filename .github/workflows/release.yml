@@ -55,7 +55,3 @@ jobs:
             prerelease: true
             title: "Development Build"
             files: "firmware/*"
-        # uses: ncipollo/release-action@v1
-        # with:
-        #   artifacts: "firmware/*"
-        #   bodyFile: "CHANGELOG.md"
