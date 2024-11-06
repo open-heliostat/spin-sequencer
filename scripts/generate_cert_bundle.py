@@ -20,7 +20,7 @@ import sys
 import requests
 from io import open
 
-Import("env")
+env = DefaultEnvironment()
 
 try:
     from cryptography import x509
