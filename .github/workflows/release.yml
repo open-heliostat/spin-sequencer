@@ -1,8 +1,8 @@
 name: release
 on:
   push:
-    tags:
-      - "v*"
+    branches:
+      - "dev"
   workflow_dispatch:
   
 jobs:
@@ -48,7 +48,14 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
       - name: release
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "firmware/*"
-          bodyFile: "CHANGELOG.md"
+        uses: "marvinpinto/action-automatic-releases@latest"
+          with:
+            repo_token: "${{ secrets.GITHUB_TOKEN }}"
+            automatic_release_tag: "latest"
+            prerelease: true
+            title: "Development Build"
+            files: "firmware/*"
+        # uses: ncipollo/release-action@v1
+        # with:
+        #   artifacts: "firmware/*"
+        #   bodyFile: "CHANGELOG.md"
