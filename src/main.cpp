@@ -16,6 +16,10 @@
 #include <LightMqttSettingsService.h>
 #include <LightStateService.h>
 #include <PsychicHttpServer.h>
+#include <StepperControlService.h>
+#include <GPSService.h>
+#include <EncoderService.h>
+#include <ClosedLoopControllerService.h>
 
 #define SERIAL_BAUD_RATE 115200
 
@@ -23,15 +27,69 @@ PsychicHttpServer server;
 
 ESP32SvelteKit esp32sveltekit(&server, 120);
 
-LightMqttSettingsService lightMqttSettingsService = LightMqttSettingsService(&server,
-                                                                             esp32sveltekit.getFS(),
-                                                                             esp32sveltekit.getSecurityManager());
+FastAccelStepperEngine engine = FastAccelStepperEngine();
 
-LightStateService lightStateService = LightStateService(&server,
-                                                        esp32sveltekit.getSocket(),
-                                                        esp32sveltekit.getSecurityManager(),
-                                                        esp32sveltekit.getMqttClient(),
-                                                        &lightMqttSettingsService);
+TMC5160Stepper driver1(10, R_SENSE, 13, 11, 12);
+TMC5160Stepper driver2(7, R_SENSE, 13, 11, 12);
+
+TMC5160Controller stepper1 = {driver1, engine, 9, 8};
+TMC5160Controller stepper2 = {driver2, engine, 6, 5};
+
+Encoder encoder1 = Encoder(2, 1);
+Encoder encoder2 = Encoder(4, 3, Wire1);
+
+ClosedLoopController closedLoopController1 = {stepper1, encoder1};
+ClosedLoopController closedLoopController2 = {stepper2, encoder2};
+
+std::vector<TMC5160Controller*> steppers = {&stepper1, &stepper2};
+std::vector<ClosedLoopController*> closedLoopControllers = {&closedLoopController1, &closedLoopController2};
+
+LightMqttSettingsService lightMqttSettingsService = LightMqttSettingsService(
+    &server,
+    esp32sveltekit.getFS(),
+    esp32sveltekit.getSecurityManager());
+
+LightStateService lightStateService = LightStateService(
+    &server,
+    esp32sveltekit.getSocket(),
+    esp32sveltekit.getSecurityManager(),
+    esp32sveltekit.getMqttClient(),
+    &lightMqttSettingsService,
+    esp32sveltekit.getFeatureService());
+
+StepperSettingsService stepperSettingsService = StepperSettingsService(
+    esp32sveltekit.getSocket(),
+    esp32sveltekit.getFS(),
+    steppers);
+
+StepperControlService stepperControlService = StepperControlService(
+    esp32sveltekit.getSocket(),
+    &stepperSettingsService,
+    steppers,
+    esp32sveltekit.getFeatureService());
+
+SerialGPS gpsneo = SerialGPS(Serial1, TX, RX);
+
+GPSSettingsService gpsSettingsService = GPSSettingsService(
+    &server,
+    esp32sveltekit.getFS(),
+    esp32sveltekit.getSecurityManager(),
+    &gpsneo);
+
+GPSStateService gpsStateService =  GPSStateService(
+    esp32sveltekit.getSocket(),
+    &gpsSettingsService,
+    &gpsneo,
+    esp32sveltekit.getFeatureService());
+
+EncoderStateService encoderService = EncoderStateService(
+    esp32sveltekit.getSocket(),
+    &encoder1);
+
+ClosedLoopControllerSettingsService closedLoopControllerService = ClosedLoopControllerSettingsService(
+    esp32sveltekit.getSocket(),
+    esp32sveltekit.getFS(),
+    closedLoopControllers);
 
 void setup()
 {
@@ -45,10 +103,40 @@ void setup()
     lightStateService.begin();
     // start the light service
     lightMqttSettingsService.begin();
+
+    engine.init();
+    stepper1.init();
+    stepper2.init();
+
+    stepperSettingsService.begin();
+    stepperControlService.begin();
+
+    gpsneo.init();
+    gpsSettingsService.begin();
+    gpsStateService.begin();
+
+    encoderService.begin();
+    closedLoopControllerService.begin();
 }
+
+unsigned long lastTick = 0;
 
 void loop()
 {
     // Delete Arduino loop task, as it is not needed in this example
-    vTaskDelete(NULL);
+    // vTaskDelete(NULL);
+    unsigned long now = millis();
+    if (now - lastTick > 100) {
+        lastTick = now;
+        gpsStateService.loop();
+        closedLoopControllerService.loop();
+        if (WiFi.status() == WL_CONNECTED) {
+            lightStateService.updateState(LightState{true, 0, 0.2, 0.1});
+        }
+        else {
+            lightStateService.updateState(LightState{true, 0.2, 0.1, 0});
+        }
+        // if (encoder1.update()) Serial.println(encoder1.angle);
+        // if (encoder2.update()) Serial.println(encoder2.angle);
+    }
 }

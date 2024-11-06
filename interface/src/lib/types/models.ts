@@ -58,6 +58,9 @@ export type ApSettings = {
 
 export type LightState = {
 	led_on: boolean;
+	red: number;
+	green: number;
+	blue: number;
 };
 
 export type BrokerSettings = {
@@ -80,6 +83,21 @@ export type NTPSettings = {
 	tz_label: string;
 	tz_format: string;
 };
+
+export type GPSSettings = {
+	enabled: boolean;
+}
+
+export type GPSStatus = {
+	latitude: number;
+	longitude: number;
+	altitude: number;
+	numSats: number;
+	timeStr: string;
+	dateStr: string;
+	fixQuality: number;
+	hasSerial: boolean;
+}
 
 export type Analytics = {
 	max_alloc_heap: number;
@@ -143,4 +161,31 @@ export type MQTTSettings = {
 	client_id: string;
 	keep_alive: number;
 	clean_session: boolean;
+};
+
+export type StepperSettings = {
+	name: string;
+	enableOnStart: boolean;
+	invertDirection: boolean;
+	maxSpeed: number;
+	maxAcceleration: number;
+	current: number;
+};
+
+export type MultiStepperSettings = {
+	steppers: StepperSettings[]
+}
+
+export type StepperControl = {
+	isEnabled: boolean;
+	direction: boolean;
+	speed: number;
+	move: number;
+	acceleration: number;
+	status: number;
+	version: number;
+};
+
+export type MultiStepperControl = {
+	steppers: StepperControl[];
 };

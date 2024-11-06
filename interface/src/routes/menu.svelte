@@ -16,6 +16,7 @@
 	import Copyright from '~icons/tabler/copyright';
 	import MQTT from '~icons/tabler/topology-star-3';
 	import NTP from '~icons/tabler/clock-check';
+	import GPS from '~icons/tabler/satellite';
 	import Metrics from '~icons/tabler/report-analytics';
 	import { page } from '$app/stores';
 	import { user } from '$lib/stores/user';
@@ -51,6 +52,13 @@
 			
 		},
 		{
+			title: 'Stepper',
+			icon: Control,
+			href: '/stepper',
+			feature: $page.data.features.stepper,
+			active: false
+		},
+		{
 			title: 'Connections',
 			icon: Remote,
 			feature: $page.data.features.mqtt || $page.data.features.ntp,
@@ -67,6 +75,13 @@
 					icon: NTP,
 					href: '/connections/ntp',
 					feature: $page.data.features.ntp,
+					
+				},
+				{
+					title: 'GPS',
+					icon: GPS,
+					href: '/connections/gps',
+					feature: $page.data.features.gps,
 					
 				}
 			]
