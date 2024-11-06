@@ -11,14 +11,17 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
       - name: Set up python
         uses: actions/setup-python@v5
         with:
           python-version: "3.9"
-          node-version: "20.x"
           architecture: "x64"
       - name: Install PlatformIO
-        run: python3 -m pip install platformio==6.1.15
+        run: python3 -m pip install platformio cryptography
       - name: Build firmwares
         run: FIRMWARE_VERSION=${{github.ref_name}} platformio run
       - name: Archive
