@@ -32,7 +32,6 @@ jobs:
           retention-days: 1
   release:
     name: Release
-    # if: startsWith(github.event.ref, 'refs/tags/v')
     needs: build
     permissions:
       contents: write
@@ -45,10 +44,10 @@ jobs:
         with:
           name: firmware
           path: firmware
-      # - name: Display structure of downloaded files
-      #   run: ls -R
+      - name: Display structure of downloaded files
+        run: ls -R
       - name: release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "firmware/*/firmware_*.bin"
+          artifacts: "firmware/*"
           bodyFile: "CHANGELOG.md"
