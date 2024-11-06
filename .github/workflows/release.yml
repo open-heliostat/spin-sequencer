@@ -12,10 +12,12 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
+
       - name: Cache pip
         uses: actions/cache@v2
         with:
@@ -23,26 +25,33 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
+
       - name: Set up python
         uses: actions/setup-python@v5
         with:
           python-version: "3.9"
-          architecture: "x64"
+
       - name: Cache PlatformIO
         uses: actions/cache@v2
         with:
           path: ~/.platformio
           key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
+
       - name: Install PlatformIO
         run: python3 -m pip install platformio cryptography
-      - name: Build firmwares
-        run: FIRMWARE_VERSION=${{github.ref_name}} platformio run -e "esp32-s3-super-mini"
+
+      - name: Build firmware
+        env:
+          VERSION: "0.0.${{ github.event.number }}"
+        run: platformio run -e "esp32-s3-super-mini"
+
       - name: Archive
         uses: actions/upload-artifact@v4
         with:
           name: firmware
           path: build/firmware/*
           retention-days: 1
+
   release:
     name: Release
     needs: build
@@ -52,13 +61,13 @@ jobs:
     steps:
       - name: Checkout repo for CHANGELOG
         uses: actions/checkout@v4
+
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
           name: firmware
           path: firmware
-      - name: Display structure of downloaded files
-        run: ls -R
+
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
@@ -67,8 +76,3 @@ jobs:
           title: "Development Build"
           files: |
             firmware/*
-      # - name: release
-      #   uses: ncipollo/release-action@v1
-      #   with:
-      #     artifacts: "firmware/*"
-      #     bodyFile: "CHANGELOG.md"
