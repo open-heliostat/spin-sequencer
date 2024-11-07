@@ -20,7 +20,7 @@ jobs:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
           root: "platformio.ini"
-          regex_pattern: "(version=)(?<version>[\d+\.]{3}([-\+][\w\.0-9]+)?)"
+          regex_pattern: "(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?"
 
       - name: Cache PlatformIO
         uses: actions/cache@v4
