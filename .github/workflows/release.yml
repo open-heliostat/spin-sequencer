@@ -1,8 +1,8 @@
 name: release
 on:
-  push:
-    branches:
-      - "dev"
+  # push:
+  #   branches:
+  #     - "dev"
   workflow_dispatch:
   
 jobs:
@@ -15,12 +15,12 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - uses: butlerlogic/action-autotag@1.1.2
-        env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        with:
-          root: "platformio.ini"
-          regex_pattern: "APP_VERSION=\\"([0-9\\.]{5}([-\\+][\\w\\.0-9]+)?)"
+      # - uses: butlerlogic/action-autotag@1.1.2
+      #   env:
+      #     GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+      #   with:
+      #     root: "platformio.ini"
+      #     regex_pattern: "APP_VERSION=\\"([0-9\\.]{5}([-\\+][\\w\\.0-9]+)?)"
 
       - name: Cache PlatformIO
         uses: actions/cache@v4
