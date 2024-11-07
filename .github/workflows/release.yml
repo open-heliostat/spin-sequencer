@@ -1,29 +1,25 @@
 name: release
-
 on:
+  push:
+    branches:
+      - "dev"
   workflow_dispatch:
-  # push:
-  #   branches:
-  #     - "dev"
+
+permissions:
+  contents: write
+  pull-requests: write
   
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: calculate version
-        id: calculate-version
-        uses: bitshifted/git-auto-semver@v1
-          with:
-            create_tag: true
-
-      - name: Use version
-        run: echo "Calculated version: ${{ steps.calculate-version.outputs.version-string }}"
+      - uses: googleapis/release-please-action@v4
+        with:
+          release-type: simple
 
       - name: Cache PlatformIO
         uses: actions/cache@v4
