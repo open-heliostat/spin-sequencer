@@ -9,17 +9,13 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: 
-        - 12.x
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - uses: phish108/autotag-action@v1.1.64
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN}}
+      - uses: butlerlogic/action-autotag@stable
+        env:
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 
       - name: Cache PlatformIO
         uses: actions/cache@v4
