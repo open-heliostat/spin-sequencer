@@ -18,6 +18,9 @@ jobs:
       - uses: butlerlogic/action-autotag@1.1.2
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        with:
+          root: "platformio.ini"
+          regex_pattern: "(version=)(?<version>[\d+\.]{3}([-\+][\w\.0-9]+)?)"
 
       - name: Cache PlatformIO
         uses: actions/cache@v4
