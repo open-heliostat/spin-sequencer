@@ -8,6 +8,65 @@ All notable changes to this project will be documented in this file.
 
 - Ensure thread safety for client subscriptions [#58](https://github.com/theelims/ESP32-sveltekit/pull/58)
 
+## 1.0.0 (2024-11-07)
+
+
+### Features
+
+* Add and update components in Controller.svelte ([0bdff72](https://github.com/open-heliostat/open-heliostat/commit/0bdff727f4f07fbd0e30414a6e6df178a7399042))
+* Add and update components in Controller.svelte ([5afcd10](https://github.com/open-heliostat/open-heliostat/commit/5afcd10a0ee14a0d04b5eb973b35599652808312))
+* add GitHub Actions workflow for firmware release ([a736e19](https://github.com/open-heliostat/open-heliostat/commit/a736e1900d67dcd360dde6413885c21d4a17d3a2))
+* add name and defaults to stepper settings ([c784e1a](https://github.com/open-heliostat/open-heliostat/commit/c784e1a3f110126f49bb58029a77ecfb7a7f0165))
+* add name and defaults to stepper settings ([6c25621](https://github.com/open-heliostat/open-heliostat/commit/6c25621aad7a75da5f65822f0a06524808418717))
+* basic closed loop controller implementation ([dedc47a](https://github.com/open-heliostat/open-heliostat/commit/dedc47a8a537e1e2eec86453f3ed171c314bb1c0))
+* basic closed loop controller implementation ([98bd0c4](https://github.com/open-heliostat/open-heliostat/commit/98bd0c4a28da43713283fcca43fa70d065b3d175))
+* **ci:** add autotagging for version updates in release.yml ([f5667d0](https://github.com/open-heliostat/open-heliostat/commit/f5667d0598458c32c58702451123f0a17e28e394))
+* **ci:** add caching for pip and PlatformIO in workflow ([ced053e](https://github.com/open-heliostat/open-heliostat/commit/ced053e7e16384c6cbf7c0ba7daa28b9f657d29f))
+* **ci:** add Node.js version matrix to build workflow ([51a70cf](https://github.com/open-heliostat/open-heliostat/commit/51a70cfcaed44f0c0789acfb821d697283e0cc83))
+* **ci:** add version bump and tag push to release workflow ([f9ebfb6](https://github.com/open-heliostat/open-heliostat/commit/f9ebfb6aac82d20a935e35cdeba2feaba550cdc8))
+* **ci:** update Node.js setup in release workflow ([b04bc0e](https://github.com/open-heliostat/open-heliostat/commit/b04bc0efaa8be7657a29e6da39bb48e247b99a73))
+* **ci:** update release workflow to calculate version ([853f6be](https://github.com/open-heliostat/open-heliostat/commit/853f6be01b5bc7376b42544ca383c593714ddfbb))
+* closedLoopController basic impl working ([0b76f8a](https://github.com/open-heliostat/open-heliostat/commit/0b76f8a4591ebbdbdb10b85b91566687d1d0257e))
+* closedLoopController basic impl working ([bb59d4c](https://github.com/open-heliostat/open-heliostat/commit/bb59d4c85a8bf946fe58b4d3fd288078fa3525db))
+* **controller-ui:** conditional rendering of limit sliders ([218f5fc](https://github.com/open-heliostat/open-heliostat/commit/218f5fc1e03d1f22af6aa5555aaf5472fd60b107))
+* **controller-ui:** conditional rendering of limit sliders ([6193b9e](https://github.com/open-heliostat/open-heliostat/commit/6193b9ed2fb9c77e1d7f3d05c6dfa3a4a42d1137))
+* **controller:** implement dynamic limits with correct path calculation ([5bba168](https://github.com/open-heliostat/open-heliostat/commit/5bba16874000f72d684951b04802bf49883419af))
+* **controller:** implement dynamic limits with correct path calculation ([bd6a257](https://github.com/open-heliostat/open-heliostat/commit/bd6a257321d4d7ae45bb6f927094c6c56ac1a895))
+* **controller:** prevent updating stepper path if encoder doesn't have realtime data ([e1ddba9](https://github.com/open-heliostat/open-heliostat/commit/e1ddba94d5126f5c7c5289f471e9786af4d5145e))
+* **controller:** prevent updating stepper path if encoder doesn't have realtime data ([fd7e866](https://github.com/open-heliostat/open-heliostat/commit/fd7e866add949a2677b3c161fefa7d30fdca5363))
+* **encoder:** Add newData flag, return it in update() and  add debug prints ([5e1827d](https://github.com/open-heliostat/open-heliostat/commit/5e1827d7319843be53a0e94c3a6ca1a8ba6ec289))
+* **encoder:** Add newData flag, return it in update() and  add debug prints ([77eb32c](https://github.com/open-heliostat/open-heliostat/commit/77eb32c744c595372d32f39fc608db0f7ed726fb))
+* multiple closed loop controllers with full state ([c0cdb72](https://github.com/open-heliostat/open-heliostat/commit/c0cdb72bf85eccc792c3ac8b12baff281ff8dc46))
+* multiple closed loop controllers with full state ([c4e186b](https://github.com/open-heliostat/open-heliostat/commit/c4e186bbf342f261ecaf2e2caad629478ff6de8a))
+* Round slider value to nearest step size ([6116d8e](https://github.com/open-heliostat/open-heliostat/commit/6116d8e37c420416c4e2305c2d5bb14b44d695de))
+* Round slider value to nearest step size ([0283af3](https://github.com/open-heliostat/open-heliostat/commit/0283af3709413cfdc9edbb8b5226138755ec3210))
+* Update GPS data structure and display in UI. ([b2a5e1a](https://github.com/open-heliostat/open-heliostat/commit/b2a5e1ad4ae2285bff7d8bff06b07ad6ab5108fd))
+* Update GPS data structure and display in UI. ([fa7c7ca](https://github.com/open-heliostat/open-heliostat/commit/fa7c7ca163741461e19be93eb01810f7f33415f3))
+* Update GPS state handling and UI for `sinceLastUpdate` and `hasSerial` properties. ([162a57d](https://github.com/open-heliostat/open-heliostat/commit/162a57d6389afa245a206000215fc8091f9afa88))
+* Update GPS state handling and UI for `sinceLastUpdate` and `hasSerial` properties. ([84b7ff9](https://github.com/open-heliostat/open-heliostat/commit/84b7ff9028b5a7a8e82d66c8fe7aa86cb7ffd43c))
+* update release workflow configuration ([d883e68](https://github.com/open-heliostat/open-heliostat/commit/d883e68944473799c99e7917c6a6bd627093ce04))
+* update release workflow for development builds ([1beeaed](https://github.com/open-heliostat/open-heliostat/commit/1beeaedaa95f05b634b82c2950a7debf5f274c83))
+* update release workflow for simplified versioning ([d2b6c37](https://github.com/open-heliostat/open-heliostat/commit/d2b6c3711b2a6ba48735bf795231e97b595e1c40))
+* update release workflows for version tagging ([2ae9c9f](https://github.com/open-heliostat/open-heliostat/commit/2ae9c9f541e4cb9cad229d971aabdd7aa3e6bad1))
+
+
+### Bug Fixes
+
+* **controller:** keep current position on restart ([18c678f](https://github.com/open-heliostat/open-heliostat/commit/18c678f2418a77593e25a8644cdfa538f5fa432d))
+* **controller:** keep current position on restart ([4d0d857](https://github.com/open-heliostat/open-heliostat/commit/4d0d857c9f57298e5a5a8173d1c62c009fd2a57d))
+* Correct encoder angle calculation in update method ([6c90743](https://github.com/open-heliostat/open-heliostat/commit/6c907433ad73604fa224d313abfb2c1fdc92cc49))
+* Correct encoder angle calculation in update method ([28f9f63](https://github.com/open-heliostat/open-heliostat/commit/28f9f63f3d255662ce797543f54b6966ba741018))
+* correct indentation in release workflow ([ff33565](https://github.com/open-heliostat/open-heliostat/commit/ff335656790b8f163d6bcb5c6b8d25c31a460701))
+* remove duplicate imports in vite config ([dad32d5](https://github.com/open-heliostat/open-heliostat/commit/dad32d5ee8c4e56d541bcaf643c5e1b69f7384ed))
+* shorter path to destination, boundary bug and remove unnecessary event triggering ([9670fae](https://github.com/open-heliostat/open-heliostat/commit/9670fae25df1d9a67d93d3b3dc7655235c635842))
+* shorter path to destination, boundary bug and remove unnecessary event triggering ([6d795e1](https://github.com/open-heliostat/open-heliostat/commit/6d795e11b26b80abe9ab26e69ef942e4e579628e))
+* update regex pattern for version extraction ([88f505f](https://github.com/open-heliostat/open-heliostat/commit/88f505fa8952a64cfe8fc9a693d42d3b636f43b6))
+* use on:input instead of change for slider to mitigate feedback loop ([b7a2b32](https://github.com/open-heliostat/open-heliostat/commit/b7a2b320d9dbb03d419eab15087e1e4371d0c02f))
+* use on:input instead of change for slider to mitigate feedback loop ([c4396fd](https://github.com/open-heliostat/open-heliostat/commit/c4396fd46ac867023e2c3aa3abb9199c484d29d5))
+* **workflow:** adjust indentation in release.yml ([a8a34fe](https://github.com/open-heliostat/open-heliostat/commit/a8a34fef0dccded3f2ef537a5d69222446ebd02a))
+* **workflow:** update regex pattern for version extraction ([69f68f0](https://github.com/open-heliostat/open-heliostat/commit/69f68f029ed5e0c27ff54bd562e8343966c9fceb))
+* **workflow:** update regex pattern for version matching ([db9daaf](https://github.com/open-heliostat/open-heliostat/commit/db9daaf1512203086b43fbd7c1850711726c668f))
+
 ## [0.5.0] - 2024-05-06
 
 Changes the Event Socket System to use a clearer message structure and MessagePack. Brings breaking changes to the `EventSocket.h` API.
