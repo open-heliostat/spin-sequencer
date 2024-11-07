@@ -15,12 +15,14 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      # - uses: butlerlogic/action-autotag@1.1.2
-      #   env:
-      #     GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-      #   with:
-      #     root: "platformio.ini"
-      #     regex_pattern: "APP_VERSION=\\"([0-9\\.]{5}([-\\+][\\w\\.0-9]+)?)"
+      - name: calculate version
+        id: calculate-version
+        uses: bitshifted/git-auto-semver@v1
+          with:
+            create_tag: true
+
+      - name: Use version
+        run: echo "Calculated version: ${{ steps.calculate-version.outputs.version-string }}"
 
       - name: Cache PlatformIO
         uses: actions/cache@v4
