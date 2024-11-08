@@ -17,9 +17,9 @@ public:
         root["elevation"] = state.elevation;
     }
 
-    static void readController(HeliostatController &controller, JsonObject &root) {
-        root["azimuth"] = controller.azimuthController.targetAngle;
-        root["elevation"] = controller.elevationController.targetAngle;
+    static void readState(HeliostatController &controller, JsonObject &root) {
+        root["azimuth"] = controller.azimuthController.getAngle();
+        root["elevation"] = controller.elevationController.getAngle();
     }
 
     static StateUpdateResult update(JsonObject &root, HeliostatControllerState &state) {
@@ -39,7 +39,7 @@ class HeliostatControllerStateService : public StatefulService<HeliostatControll
 public:
     HeliostatControllerStateService(EventSocket *socket, FS *fs, HeliostatController &controller) :
         _eventEndpoint(HeliostatControllerState::read, HeliostatControllerState::update, this, socket, "heliostat-control"),
-        _fsPersistence(HeliostatControllerState::read, HeliostatControllerState::update, this, fs, "heliostat-control.json"),
+        _fsPersistence(HeliostatControllerState::read, HeliostatControllerState::update, this, fs, "/config/heliostat-control.json"),
         controller(controller) 
     {
         addUpdateHandler([&](const String &originId) { updateController(originId); }, false);
@@ -50,17 +50,25 @@ public:
         _fsPersistence.readFromFS();
         updateController("begin");
     }
-    void updateController(const String &originId) 
+    void updateState()
     {
-        if (originId != "stateUpdate") {
-            HeliostatControllerState::updateController(_state, controller);
-        }
+        JsonDocument json;
+        JsonObject jsonObject = json.to<JsonObject>();
+        _state.readState(controller, jsonObject);
+        update(jsonObject, _state.update, "stateUpdate");
     }
 
 private:
     EventEndpoint<HeliostatControllerState> _eventEndpoint;
     FSPersistence<HeliostatControllerState> _fsPersistence;
     HeliostatController &controller;
+
+    void updateController(const String &originId) 
+    {
+        if (originId != "stateUpdate") {
+            HeliostatControllerState::updateController(_state, controller);
+        }
+    }
 };
 
 class HeliostatControllerSettings
@@ -96,6 +104,7 @@ public:
     void loop() 
     {
         controller.run();
+        // stateService.updateState();
     }
 
 private:
