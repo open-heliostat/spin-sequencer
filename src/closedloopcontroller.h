@@ -63,13 +63,23 @@ public:
         }
     }
     void startCalibration() {
-        calibrationStepperStartOffset = stepper.getAngle() - encoder.getAngle();
-        stepper.setSpeed(50);
-        calibrationRunning = true;
+        if (!calibrationRunning) {
+            calibrationStepperStartOffset = stepper.getAngle() - encoder.getAngle();
+            stepper.setSpeed(50);
+            calibrationRunning = true;
+        }
+    }
+    void stopCalibration() {
+        if (calibrationRunning) {
+            stepper.stop();
+            calibrationRunning = false;
+        }
     }
     void runCalibration() {
         double readAngle = encoder.getAngle();
         double stepperAngle = stepper.getAngle();
+        double diff = stepperAngle - readAngle;
+        calibrationOffsets[int(readAngle*calibrationSteps/360.)] = diff;
     }
 private:
     uint32_t lastPoll = 0;

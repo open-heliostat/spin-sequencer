@@ -114,6 +114,25 @@ private:
     const std::map<String, std::function<void (JsonVariant content)>> eventMap = {
         {"hello", [&](JsonVariant content) {
             ESP_LOGI("Heliostat Service", "Received Json Event : %s", content.as<String>().c_str());
+        }},
+        {"calibration", [&](JsonVariant content) {
+            if (content.is<JsonObject>()) {
+                if (content["start"].is<JsonObject>()) {
+                    if (content["start"]["azimuth"].is<JsonVariant>()) controller.azimuthController.startCalibration();
+                    if (content["start"]["elevation"].is<JsonVariant>()) controller.elevationController.startCalibration();
+                }
+                else if (content["stop"].is<JsonObject>()) {
+                    if (content["stop"]["azimuth"].is<JsonVariant>()) controller.azimuthController.stopCalibration();
+                    if (content["stop"]["elevation"].is<JsonVariant>()) controller.elevationController.stopCalibration();
+                }
+            }
+            else {
+                JsonDocument jsonDoc;
+                JsonObject json = jsonDoc.to<JsonObject>();
+                json["calibration"]["azimuth"]["running"] = controller.azimuthController.calibrationRunning;
+                json["calibration"]["elevation"]["running"] = controller.elevationController.calibrationRunning;
+                socket->emitEvent(eventName, json);
+            }
         }}
     };
 };
