@@ -86,9 +86,36 @@ class HeliostatDiagnostic
 
 };
 
-class HeliostatDiagnosticService : public StatefulService<HeliostatDiagnostic>
+class HeliostatStatelessService
 {
-
+public:
+    HeliostatStatelessService(EventSocket *socket, HeliostatController &controller) :
+        socket(socket),
+        controller(controller) {}
+    void begin() 
+    {
+        socket->registerEvent(eventName);
+        socket->onEvent(eventName, [&](JsonObject &root, int originID) { onEvent(root, originID); });
+        ESP_LOGI("Heliostat Service", "Registered Json Event : %s", eventName);
+    }
+    void onEvent(JsonObject &root, int originId) 
+    {
+        String json;
+        serializeJson(root, json);
+        ESP_LOGI("Heliostat Service", "Received Json Event : %s", json.c_str());
+        for (auto const& e : eventMap) {
+            if (root[e.first].is<JsonVariant>()) e.second(root[e.first]);
+        }
+    }
+private:
+    HeliostatController &controller;
+    EventSocket *socket;
+    const char* eventName = "heliostat-service";
+    const std::map<String, std::function<void (JsonVariant content)>> eventMap = {
+        {"hello", [&](JsonVariant content) {
+            ESP_LOGI("Heliostat Service", "Received Json Event : %s", content.as<String>().c_str());
+        }}
+    };
 };
 
 class HeliostatService
@@ -96,10 +123,12 @@ class HeliostatService
 public:
     HeliostatService(EventSocket *socket, FS *fs, HeliostatController &controller) :
         stateService(socket, fs, controller),
+        diagnosticService(socket, controller),
         controller(controller) {}
     void begin() 
     {
         stateService.begin();
+        diagnosticService.begin();
     }
     void loop() 
     {
@@ -109,6 +138,7 @@ public:
 
 private:
     HeliostatControllerStateService stateService;
+    HeliostatStatelessService diagnosticService;
     HeliostatController &controller;
 };
 

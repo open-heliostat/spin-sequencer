@@ -23,6 +23,7 @@
 		socket.on<HeliostatControllerState>(heliostatControllerStateEvent, (data) => {
 			heliostatControllerState = data;
 		});
+		socket.sendEvent("heliostat-service", {hello:"hi"})
 	});
 
 	onDestroy(() => {
