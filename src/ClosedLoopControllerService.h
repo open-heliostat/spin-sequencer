@@ -3,12 +3,68 @@
 
 #include <EventEndpoint.h>
 #include <FSPersistence.h>
+#include <StatelessService.h>
 
 #include <closedloopcontroller.h>
 
 #define CL_CONTROLLER_STATE_EVENT "controller"
 #define CL_CONTROLLER_SETTINGS_EVENT "controllersettings"
 #define CL_SETTINGS_FILE "/config/controllerSettings.json"
+
+
+class ClosedLoopControllerJsonReader
+{
+public:
+    ClosedLoopControllerJsonReader(ClosedLoopController &controller) : 
+        controller(controller) {}
+    bool route(JsonVariant content)
+    {
+        return router.route(content);
+    }
+private:
+    JsonRouter router = JsonRouter(
+    {
+        {"calibration", [&](JsonVariant content) {
+            return calibrationRouter.route(content);
+        }},
+        {"target", [&](JsonVariant content) {
+            if (content.is<double>()) {
+                controller.setAngle(content.as<double>());
+                return true;
+            }
+            else return false;
+        }}
+    },
+    {
+        {"position", [&](const JsonVariant& target) {
+            target.set(controller.getAngle());
+        }},
+        {"target", [&](const JsonVariant target) {
+            target.set(controller.targetAngle);
+        }},
+        {"calibration", [&](const JsonVariant target) {
+            target["running"].set(controller.calibrationRunning);
+            target["steps"].set(controller.calibrationSteps);
+            if (target["offsets"].is<JsonVariant>()) {
+                auto array = target["offsets"].to<JsonArray>();
+                for (int i =0; i < controller.calibrationSteps; i++) {
+                    array.add(controller.calibrationOffsets[i]);
+                }
+            }
+        }},
+    });
+    JsonEventRouter calibrationRouter = JsonEventRouter({
+        {"start", [&](JsonVariant content) {
+            controller.startCalibration();
+            return true;
+        }},
+        {"stop", [&](JsonVariant content) {
+            controller.stopCalibration();
+            return true;
+        }},
+    });
+    ClosedLoopController &controller;
+};
 
 class ClosedLoopControllerState
 {

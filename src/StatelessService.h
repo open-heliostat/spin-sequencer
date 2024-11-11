@@ -37,22 +37,14 @@ public:
         emitter(emitter) {}
     void route(JsonVariant target) 
     {
-        String jsonStr;
-        serializeJson(target, jsonStr);
-        ESP_LOGI("State Router", "%s", jsonStr.c_str());
-        JsonDocument doc;
-        JsonObject obj = doc["obj"].to<JsonObject>();
         if (target.as<JsonObject>().size() > 0) {
-            obj = target.as<JsonObject>();
-            for (auto const& e : readerMap) if (obj[e.first].is<JsonVariant>()) e.second(obj[e.first].as<JsonVariant>());
+            for (auto const& e : readerMap) if (target[e.first].is<JsonVariant>()) e.second(target[e.first].as<JsonVariant>());
         }
         else if (target.is<JsonVariant>()) {
-            obj = target.to<JsonObject>();
+            JsonObject obj = target.to<JsonObject>();
             for (auto const& e : readerMap) e.second(obj[e.first].to<JsonVariant>());
         }
         emitter(target.as<JsonObject>());
-        serializeJson(target, jsonStr);
-        ESP_LOGI("State Router", "%s", jsonStr.c_str());
     }
 private:
     const JsonStateReaderMap readerMap;
@@ -88,17 +80,14 @@ public:
     {
         return router.route(contents);
     }
-private:
     void emitEvent(JsonObject &json) 
     {
-        String jsonStr;
-        serializeJson(json, jsonStr);
-        ESP_LOGI("State Router", "%s", jsonStr.c_str());
         socket->emitEvent(eventName, json);
     }
-    const char* eventName;
-    EventSocket *socket;
-    JsonRouter router;
+private:
+    const char* eventName = nullptr;
+    EventSocket *socket = nullptr;
+    JsonRouter router = JsonRouter({});
 };
 
 #endif

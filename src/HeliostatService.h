@@ -3,6 +3,7 @@
 
 #include <EventEndpoint.h>
 #include <FSPersistence.h>
+#include <StatelessService.h>
 
 #include <heliostat.h>
 
@@ -86,6 +87,7 @@ class HeliostatDiagnostic
 
 };
 
+
 class HeliostatStatelessService
 {
 public:
@@ -95,46 +97,30 @@ public:
     void begin() 
     {
         socket->registerEvent(eventName);
-        socket->onEvent(eventName, [&](JsonObject &root, int originID) { onEvent(root, originID); });
+        socket->onEvent(eventName, [&](JsonObject &root, int originID) { eventRouter.route(root); });
         ESP_LOGI("Heliostat Service", "Registered Json Event : %s", eventName);
     }
-    void onEvent(JsonObject &root, int originId) 
-    {
-        String json;
-        serializeJson(root, json);
-        ESP_LOGI("Heliostat Service", "Received Json Event : %s", json.c_str());
-        for (auto const& e : eventMap) {
-            if (root[e.first].is<JsonVariant>()) e.second(root[e.first]);
-        }
-    }
+
 private:
+    const char* eventName = "heliostat-service";
     HeliostatController &controller;
     EventSocket *socket;
-    const char* eventName = "heliostat-service";
-    const std::map<String, std::function<void (JsonVariant content)>> eventMap = {
-        {"hello", [&](JsonVariant content) {
-            ESP_LOGI("Heliostat Service", "Received Json Event : %s", content.as<String>().c_str());
+    ClosedLoopControllerJsonReader azimuthReader = ClosedLoopControllerJsonReader(controller.azimuthController);
+    ClosedLoopControllerJsonReader elevationReader = ClosedLoopControllerJsonReader(controller.elevationController);
+    JsonStateRouter eventRouter = JsonStateRouter({
+        {"azimuth", [&](JsonVariant content) {
+            azimuthReader.route(content);
         }},
-        {"calibration", [&](JsonVariant content) {
-            if (content.is<JsonObject>()) {
-                if (content["start"].is<JsonObject>()) {
-                    if (content["start"]["azimuth"].is<JsonVariant>()) controller.azimuthController.startCalibration();
-                    if (content["start"]["elevation"].is<JsonVariant>()) controller.elevationController.startCalibration();
-                }
-                else if (content["stop"].is<JsonObject>()) {
-                    if (content["stop"]["azimuth"].is<JsonVariant>()) controller.azimuthController.stopCalibration();
-                    if (content["stop"]["elevation"].is<JsonVariant>()) controller.elevationController.stopCalibration();
-                }
-            }
-            else {
-                JsonDocument jsonDoc;
-                JsonObject json = jsonDoc.to<JsonObject>();
-                json["calibration"]["azimuth"]["running"] = controller.azimuthController.calibrationRunning;
-                json["calibration"]["elevation"]["running"] = controller.elevationController.calibrationRunning;
-                socket->emitEvent(eventName, json);
-            }
+        {"elevation", [&](JsonVariant content) {
+            elevationReader.route(content);
         }}
-    };
+    }, [&](JsonObject event) {emitEvent(event);});
+    void emitEvent(JsonObject &json) {
+        String jsonStr;
+        serializeJson(json, jsonStr);
+        ESP_LOGI("State Router", "%s", jsonStr.c_str());
+        socket->emitEvent(eventName, json);
+    }
 };
 
 class HeliostatService
