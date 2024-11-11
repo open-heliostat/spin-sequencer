@@ -98,6 +98,11 @@ public:
     {
         socket->registerEvent(eventName);
         socket->onEvent(eventName, [&](JsonObject &root, int originID) { eventRouter.route(root); });
+        socket->onSubscribe(eventName, [&](const String &originID) {
+            JsonDocument doc;
+            JsonObject obj = doc.to<JsonObject>();
+            eventRouter.route(obj); 
+        });
         ESP_LOGI("Heliostat Service", "Registered Json Event : %s", eventName);
     }
 
