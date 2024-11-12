@@ -103,3 +103,88 @@ void ClosedLoopControllerSettingsService::onConfigUpdated()
         controller->limitB = settings.limitB;
     }
 }
+
+JsonRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::router = JsonRouter<ClosedLoopController>(
+{
+    {"target", [](JsonVariant content, ClosedLoopController &controller) {
+        if (content.is<double>()) {
+            controller.setAngle(content.as<double>());
+            return true;
+        }
+        else return false;
+    }},
+    {"calibration", [](JsonVariant content, ClosedLoopController &controller) {
+        return calibrationRouter.parse(content, controller);
+    }},
+    {"limits", [](JsonVariant content, ClosedLoopController &controller) {
+        return limitsRouter.parse(content, controller);
+    }}
+},
+{
+    {"position", [](ClosedLoopController &controller, const JsonVariant target) {
+        target.set(controller.getAngle());
+    }},
+    {"target", [](ClosedLoopController &controller, const JsonVariant target) {
+        target.set(controller.targetAngle);
+    }},
+    {"limits", [](ClosedLoopController &controller, const JsonVariant target) {
+        target["enabled"] = controller.hasLimits;
+        target["begin"] = controller.limitA;
+        target["end"] = controller.limitB;
+    }},
+    {"calibration", [](ClosedLoopController &controller, const JsonVariant target) {
+        target["running"].set(controller.calibrationRunning);
+        target["steps"].set(controller.calibrationSteps);
+        if (target["offsets"].is<JsonVariant>()) {
+            auto array = target["offsets"].to<JsonArray>();
+            copyArray(controller.calibrationOffsets, array);
+        }
+    }}
+});
+
+JsonEventRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::calibrationRouter = JsonEventRouter<ClosedLoopController>({
+    {"start", [](JsonVariant content, ClosedLoopController &controller) {
+        controller.startCalibration();
+        return true;
+    }},
+    {"stop", [](JsonVariant content, ClosedLoopController &controller) {
+        controller.stopCalibration();
+        return true;
+    }},
+    {"offsets", [](JsonVariant content, ClosedLoopController &controller) {
+        if (content.is<JsonArray>()) {
+            auto array = content.as<JsonArray>();
+            if (array.size() == controller.calibrationSteps) {
+                copyArray(array, controller.calibrationOffsets);
+            }
+        }
+        String str;
+        serializeJson(content, str);
+        ESP_LOGI("Offsets", "%s", str);
+        return false;
+    }},
+});
+
+JsonEventRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::limitsRouter = JsonEventRouter<ClosedLoopController>({
+    {"enabled", [](JsonVariant content, ClosedLoopController &controller) {
+        if (content.is<bool>()) {
+            controller.hasLimits = content.as<bool>();
+            return true;
+        }
+        else return false;
+    }},
+    {"begin", [](JsonVariant content, ClosedLoopController &controller) {
+        if (content.is<double>()) {
+            controller.limitA = content.as<double>();
+            return true;
+        }
+        else return false;
+    }},
+    {"end", [](JsonVariant content, ClosedLoopController &controller) {
+        if (content.is<double>()) {
+            controller.limitB = content.as<double>();
+            return true;
+        }
+        else return false;
+    }}
+});

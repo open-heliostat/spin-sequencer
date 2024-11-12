@@ -11,60 +11,38 @@
 #define CL_CONTROLLER_SETTINGS_EVENT "controllersettings"
 #define CL_SETTINGS_FILE "/config/controllerSettings.json"
 
-
-class ClosedLoopControllerJsonReader
+class ClosedLoopControllerJsonRouter
 {
 public:
-    ClosedLoopControllerJsonReader(ClosedLoopController &controller) : 
-        controller(controller) {}
-    bool route(JsonVariant content)
+    static bool route(JsonVariant content, ClosedLoopController &controller)
     {
-        return router.route(content);
+        return router.route(content, controller);
     }
+    static void read(ClosedLoopController &state, JsonObject &root) 
+    {
+        router.route(root, state);
+    }
+    static StateUpdateResult update(JsonObject &root, ClosedLoopController &state)
+    { 
+        if (router.route(root, state)) return StateUpdateResult::CHANGED;
+        else return StateUpdateResult::UNCHANGED;
+    }
+    static const JsonDocument getSaveMap() {
+        JsonDocument doc;
+        doc.to<JsonObject>();
+        doc["calibration"]["enabled"] = true;
+        doc["calibration"]["offsets"] = true;
+        doc["limits"]["enabled"] = true;
+        doc["limits"]["begin"] = true;
+        doc["limits"]["end"] = true;
+        return doc;
+    }
+    static JsonRouter<ClosedLoopController> router;
 private:
-    JsonRouter router = JsonRouter(
-    {
-        {"calibration", [&](JsonVariant content) {
-            return calibrationRouter.route(content);
-        }},
-        {"target", [&](JsonVariant content) {
-            if (content.is<double>()) {
-                controller.setAngle(content.as<double>());
-                return true;
-            }
-            else return false;
-        }}
-    },
-    {
-        {"position", [&](const JsonVariant& target) {
-            target.set(controller.getAngle());
-        }},
-        {"target", [&](const JsonVariant target) {
-            target.set(controller.targetAngle);
-        }},
-        {"calibration", [&](const JsonVariant target) {
-            target["running"].set(controller.calibrationRunning);
-            target["steps"].set(controller.calibrationSteps);
-            if (target["offsets"].is<JsonVariant>()) {
-                auto array = target["offsets"].to<JsonArray>();
-                for (int i =0; i < controller.calibrationSteps; i++) {
-                    array.add(controller.calibrationOffsets[i]);
-                }
-            }
-        }},
-    });
-    JsonEventRouter calibrationRouter = JsonEventRouter({
-        {"start", [&](JsonVariant content) {
-            controller.startCalibration();
-            return true;
-        }},
-        {"stop", [&](JsonVariant content) {
-            controller.stopCalibration();
-            return true;
-        }},
-    });
-    ClosedLoopController &controller;
+    static JsonEventRouter<ClosedLoopController> calibrationRouter;
+    static JsonEventRouter<ClosedLoopController> limitsRouter;
 };
+
 
 class ClosedLoopControllerState
 {
@@ -220,5 +198,23 @@ private:
     ClosedLoopControllerStateService _closedLoopControllerStateService;
 
     void onConfigUpdated();
+};
+
+class ClosedLoopControllerService : public StatefulService<ClosedLoopController&>
+{
+public:
+    ClosedLoopControllerService(EventSocket *socket,
+                                FS *fs,
+                                ClosedLoopController &controller) :
+                                    _eventEndpoint(_router.read, _router.update, this, socket, "controllers"),
+                                    _fsPersistence(_router.read, _router.update, this, fs, "/config/controllers.json"),
+                                    StatefulService(controller)
+                                    {}
+    void begin();
+
+private:
+    EventEndpoint<ClosedLoopController&> _eventEndpoint;
+    FSPersistence<ClosedLoopController&> _fsPersistence;
+    ClosedLoopControllerJsonRouter _router;
 };
 #endif

@@ -7,6 +7,8 @@
 
 #include <heliostat.h>
 
+#include <esp_debug_helpers.h>
+
 class HeliostatControllerState
 {
 public:
@@ -72,60 +74,106 @@ private:
     }
 };
 
-class HeliostatControllerSettings
-{
-
-};
-
-class HeliostatControllerSettingsService : public StatefulService<HeliostatControllerSettings>
-{
-
-};
-
-class HeliostatDiagnostic
-{
-
-};
-
-
 class HeliostatStatelessService
 {
 public:
-    HeliostatStatelessService(EventSocket *socket, HeliostatController &controller) :
+    HeliostatStatelessService(EventSocket *socket, FS *fs, HeliostatController &controller) :
         socket(socket),
+        file(filePath, fs),
         controller(controller) {}
     void begin() 
     {
         socket->registerEvent(eventName);
-        socket->onEvent(eventName, [&](JsonObject &root, int originID) { eventRouter.route(root); });
+        socket->onEvent(eventName, [&](JsonObject &root, int originID) {
+            String str;
+            serializeJson(root, str);
+            ESP_LOGI("Heliostat Service", "%s", str.c_str());
+            if (router.route(root, controller)) saveStateIfNeeded(root);
+        });
         socket->onSubscribe(eventName, [&](const String &originID) {
             JsonDocument doc;
             JsonObject obj = doc.to<JsonObject>();
-            eventRouter.route(obj); 
+            router.serialize(controller, obj); 
         });
         ESP_LOGI("Heliostat Service", "Registered Json Event : %s", eventName);
+        JsonDocument savedState = file.readFromFS();
+        if (savedState.is<JsonObject>()) {
+            router.parse(savedState.as<JsonObject>(), controller);
+            String str;
+            serializeJson(savedState, str);
+            ESP_LOGI("Loading File", "\n%s", str.c_str());
+        }
+        else {
+            saveState();
+        }
+    }
+    void saveStateIfNeeded(JsonObject &state)
+    {
+        if (needsToSave(state)) saveState();
+    }
+    void saveState() {
+        JsonDocument doc = getSaveMap();
+        router.serializeWithoutPropagation(controller, doc.as<JsonObject>());
+        JsonDocument ref = getSaveMap();
+        String str;
+        serializeJson(doc, str);
+        ESP_LOGI("Pre Filter", "\n%s", str.c_str());
+        deserializeJson(doc, str, DeserializationOption::Filter(ref));
+        serializeJson(doc, str);
+        ESP_LOGI("Post Filter", "\n%s", str.c_str());
+        file.writeToFS(doc.as<JsonObject>());
+    }
+    bool needsToSave(JsonObject &state) {
+        JsonDocument saveMap = getSaveMap();
+        return checkFields(saveMap.as<JsonObject>(), state);
+    }
+    bool checkFields(JsonObject ref, JsonObject obj) {
+        for (JsonPair kv : ref) {
+            if (kv.value() == true && obj[kv.key()].is<JsonVariant>()) return true;
+            else if (kv.value().is<JsonObject>() && obj[kv.key()].is<JsonObject>() && checkFields(kv.value(), obj[kv.key()])) return true;
+        }
+        return false;
+    }
+    JsonDocument getSaveMap() {
+        JsonDocument doc;
+        doc["elevation"] = closedLoopControllerRouter.getSaveMap();
+        doc["azimuth"] = closedLoopControllerRouter.getSaveMap();
+        return doc;
+    }
+    void emitEvent(JsonObject &json) 
+    {
+        String jsonStr;
+        serializeJson(json, jsonStr);
+        ESP_LOGI("Heliostat Event", "%s", jsonStr.c_str());
+        // esp_backtrace_print(10);
+        socket->emitEvent(eventName, json);
     }
 
 private:
     const char* eventName = "heliostat-service";
-    HeliostatController &controller;
+    const char* filePath = "/config/heliostat.json";
     EventSocket *socket;
-    ClosedLoopControllerJsonReader azimuthReader = ClosedLoopControllerJsonReader(controller.azimuthController);
-    ClosedLoopControllerJsonReader elevationReader = ClosedLoopControllerJsonReader(controller.elevationController);
-    JsonStateRouter eventRouter = JsonStateRouter({
-        {"azimuth", [&](JsonVariant content) {
-            azimuthReader.route(content);
+    JsonFilePersistence file;
+    HeliostatController &controller;
+    ClosedLoopControllerJsonRouter closedLoopControllerRouter;
+    JsonRouter<HeliostatController> router = JsonRouter<HeliostatController>(
+    {
+        {"azimuth", [&](JsonVariant content, HeliostatController &controller) {
+            return closedLoopControllerRouter.router.parse(content, controller.azimuthController);
         }},
-        {"elevation", [&](JsonVariant content) {
-            elevationReader.route(content);
+        {"elevation", [&](JsonVariant content, HeliostatController &controller) {
+            return closedLoopControllerRouter.router.parse(content, controller.elevationController);
         }}
-    }, [&](JsonObject event) {emitEvent(event);});
-    void emitEvent(JsonObject &json) {
-        String jsonStr;
-        serializeJson(json, jsonStr);
-        ESP_LOGI("State Router", "%s", jsonStr.c_str());
-        socket->emitEvent(eventName, json);
-    }
+    },
+    {
+        {"azimuth", [&](HeliostatController &controller, JsonVariant content) {
+            closedLoopControllerRouter.router.serialize(controller.azimuthController, content);
+        }},
+        {"elevation", [&](HeliostatController &controller, JsonVariant content) {
+            closedLoopControllerRouter.router.serialize(controller.elevationController, content);
+        }}
+    }, 
+    [&](JsonObject event) {emitEvent(event);});
 };
 
 class HeliostatService
@@ -133,12 +181,12 @@ class HeliostatService
 public:
     HeliostatService(EventSocket *socket, FS *fs, HeliostatController &controller) :
         stateService(socket, fs, controller),
-        diagnosticService(socket, controller),
+        statelessService(socket, fs, controller),
         controller(controller) {}
     void begin() 
     {
         stateService.begin();
-        diagnosticService.begin();
+        statelessService.begin();
     }
     void loop() 
     {
@@ -148,7 +196,7 @@ public:
 
 private:
     HeliostatControllerStateService stateService;
-    HeliostatStatelessService diagnosticService;
+    HeliostatStatelessService statelessService;
     HeliostatController &controller;
 };
 
