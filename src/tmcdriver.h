@@ -140,7 +140,7 @@ struct TMC5160Controller {
     }
 
     double getAngle() {
-        return mod(stepper->getCurrentPosition()*360./double(microsteps), 360.);
+        return fmod(stepper->getCurrentPosition()*360./double(microsteps*stepsPerRotation), 360.);
     }
 
     double getTargetAngle() {

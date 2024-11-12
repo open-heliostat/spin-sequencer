@@ -19,7 +19,7 @@ public:
     double limitB = 360.;
     bool hasCalibration = false;
     bool calibrationRunning = false;
-    static const int calibrationSteps = 1024;
+    static const int calibrationSteps = 128;
     float calibrationOffsets[calibrationSteps];
     double calibrationStepperStartOffset = 0.;
     ClosedLoopController(TMC5160Controller &stepper, Encoder &encoder) : stepper(stepper), encoder(encoder) {}
@@ -64,8 +64,8 @@ public:
     }
     void startCalibration() {
         if (!calibrationRunning) {
-            calibrationStepperStartOffset = stepper.getAngle() - encoder.getAngle();
-            stepper.setSpeed(50);
+            calibrationStepperStartOffset = fmod(stepper.getAngle() - encoder.getAngle() + 180., 360.) - 180.;
+            stepper.setSpeed(5);
             calibrationRunning = true;
         }
     }
@@ -78,7 +78,8 @@ public:
     void runCalibration() {
         double readAngle = encoder.getAngle();
         double stepperAngle = stepper.getAngle();
-        double diff = stepperAngle - readAngle;
+        double diff = fmod(stepperAngle - readAngle - calibrationStepperStartOffset + 180., 360.) - 180.;
+        ESP_LOGI("Calibration", "diff %f", diff);
         calibrationOffsets[int(readAngle*calibrationSteps/360.)] = diff;
     }
 private:
