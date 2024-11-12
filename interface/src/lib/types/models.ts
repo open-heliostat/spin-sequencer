@@ -189,3 +189,20 @@ export type StepperControl = {
 export type MultiStepperControl = {
 	steppers: StepperControl[];
 };
+
+export type ControllerState = {
+	position: number;
+	target: number;
+	limits: {
+		enabled: boolean;
+		begin: number;
+		end: number;
+	};
+	calibration?: {
+		enabled: boolean;
+		running: boolean;
+		steps: number;
+		offsets: number[];
+		start: {};
+	};
+}
