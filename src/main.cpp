@@ -47,6 +47,7 @@ HeliostatController heliostatController = {closedLoopController1, closedLoopCont
 HeliostatService heliostatService = HeliostatService(
     esp32sveltekit.getSocket(),
     esp32sveltekit.getFS(),
+    &server,
     heliostatController);
 
 std::vector<TMC5160Controller*> steppers = {&stepper1, &stepper2};

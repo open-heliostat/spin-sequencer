@@ -77,9 +77,10 @@ private:
 class HeliostatStatelessService
 {
 public:
-    HeliostatStatelessService(EventSocket *socket, FS *fs, HeliostatController &controller) :
+    HeliostatStatelessService(EventSocket *socket, FS *fs, PsychicHttpServer *server ,HeliostatController &controller) :
         socket(socket),
         file(filePath, fs),
+        server(server),
         controller(controller) {}
     void begin() 
     {
@@ -106,6 +107,53 @@ public:
         else {
             saveState();
         }
+        server->on(restPath, HTTP_GET, [&](PsychicRequest *request, JsonVariant &json){
+            PsychicJsonResponse response = PsychicJsonResponse(request, false);
+            ESP_LOGI("HTTP GET", "Path : %s, Body: %s", request->path().c_str(), request->body().c_str());
+            String str;
+            JsonObject jsonObject = response.getRoot();
+            String path(request->path());
+            if (path.startsWith("/rest/heliostat")) path = path.substring(15);
+            JsonObject obj = resolvePath(path, jsonObject);
+            if (json.is<JsonObject>()) {
+                obj.set(json.as<JsonObject>());
+            }
+            // ESP_LOGI("HTTP GET", "%s", path.c_str());
+            router.serialize(controller, response.getRoot());
+            response.getRoot() = obj;
+            return response.send();
+        });
+        server->on(restPath, HTTP_POST, [&](PsychicRequest *request, JsonVariant &json){
+            // String str;
+            // serializeJson(json, str);
+            // ESP_LOGI("HTTP POST", "%s", str.c_str());
+            JsonDocument doc;
+            JsonObject jsonObject = doc.to<JsonObject>();
+            String path(request->path());
+            if (path.startsWith("/rest/heliostat")) path = path.substring(15);
+            JsonObject obj = resolvePath(path, jsonObject);
+            obj.set(json.as<JsonObject>());
+            if (router.parse(doc.as<JsonObject>(), controller)) {
+                PsychicJsonResponse response = PsychicJsonResponse(request, false);
+                response.getRoot() = obj;
+                // serializeJson(obj, str);
+                // ESP_LOGI("HTTP POST", "%s", str.c_str());
+                return response.send();
+            }
+            else return request->reply(400);
+        });
+    }
+    JsonObject resolvePath(String path, JsonObject obj) {
+        int index = 0;
+        while ((index = path.indexOf('/')) != -1)
+        {
+            String segment = path.substring(0, index);
+            // ESP_LOGI("HTTP SUBPATH", "%s", segment.c_str());
+            if (index > 0) obj = obj[segment].to<JsonObject>();
+            path = path.substring(index+1);
+        }
+        if (path.length()>0) obj = obj[path].to<JsonObject>();
+        return obj;
     }
     void saveStateIfNeeded(JsonObject &state)
     {
@@ -151,8 +199,10 @@ public:
 
 private:
     const char* eventName = "heliostat-service";
+    const char* restPath = "/rest/heliostat/?*";
     const char* filePath = "/config/heliostat.json";
     EventSocket *socket;
+    PsychicHttpServer *server;
     JsonFilePersistence file;
     HeliostatController &controller;
     ClosedLoopControllerJsonRouter closedLoopControllerRouter;
@@ -179,9 +229,9 @@ private:
 class HeliostatService
 {
 public:
-    HeliostatService(EventSocket *socket, FS *fs, HeliostatController &controller) :
+    HeliostatService(EventSocket *socket, FS *fs, PsychicHttpServer *server, HeliostatController &controller) :
         stateService(socket, fs, controller),
-        statelessService(socket, fs, controller),
+        statelessService(socket, fs, server, controller),
         controller(controller) {}
     void begin() 
     {
