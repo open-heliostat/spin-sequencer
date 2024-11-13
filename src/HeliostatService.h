@@ -107,26 +107,25 @@ public:
         else {
             saveState();
         }
-        server->on(restPath, HTTP_GET, [&](PsychicRequest *request, JsonVariant &json){
+        server->on(restPath, HTTP_GET, [&](PsychicRequest *request){
             PsychicJsonResponse response = PsychicJsonResponse(request, false);
-            ESP_LOGI("HTTP GET", "Path : %s, Body: %s", request->path().c_str(), request->body().c_str());
-            String str;
+            ESP_LOGV("HTTP GET", "Path : %s, Body: %s", request->path().c_str(), request->body().c_str());
             JsonObject jsonObject = response.getRoot();
             String path(request->path());
             if (path.startsWith("/rest/heliostat")) path = path.substring(15);
             JsonObject obj = resolvePath(path, jsonObject);
-            if (json.is<JsonObject>()) {
-                obj.set(json.as<JsonObject>());
+            JsonDocument requestBody;
+            if (deserializeJson(requestBody, request->body()) == DeserializationError::Ok) {
+                obj.set(requestBody.as<JsonObject>());
+                ESP_LOGV("HTTP GET", "Json %s", requestBody.as<String>().c_str());   
             }
-            // ESP_LOGI("HTTP GET", "%s", path.c_str());
             router.serialize(controller, response.getRoot());
             response.getRoot() = obj;
+            ESP_LOGV("HTTP GET", "Response %s", response.getRoot().as<String>().c_str());
             return response.send();
         });
         server->on(restPath, HTTP_POST, [&](PsychicRequest *request, JsonVariant &json){
-            // String str;
-            // serializeJson(json, str);
-            // ESP_LOGI("HTTP POST", "%s", str.c_str());
+            ESP_LOGV("HTTP POST", "%s", json.as<String>().c_str());
             JsonDocument doc;
             JsonObject jsonObject = doc.to<JsonObject>();
             String path(request->path());
@@ -136,8 +135,7 @@ public:
             if (router.parse(doc.as<JsonObject>(), controller)) {
                 PsychicJsonResponse response = PsychicJsonResponse(request, false);
                 response.getRoot() = obj;
-                // serializeJson(obj, str);
-                // ESP_LOGI("HTTP POST", "%s", str.c_str());
+                ESP_LOGV("HTTP POST", "Response %s", response.getRoot().as<String>().c_str());
                 return response.send();
             }
             else return request->reply(400);
@@ -164,11 +162,11 @@ public:
         router.serializeWithoutPropagation(controller, doc.as<JsonObject>());
         JsonDocument ref = getSaveMap();
         String str;
-        serializeJson(doc, str);
-        ESP_LOGI("Pre Filter", "\n%s", str.c_str());
+        // serializeJson(doc, str);
+        // ESP_LOGI("Pre Filter", "\n%s", str.c_str());
         deserializeJson(doc, str, DeserializationOption::Filter(ref));
-        serializeJson(doc, str);
-        ESP_LOGI("Post Filter", "\n%s", str.c_str());
+        // serializeJson(doc, str);
+        // ESP_LOGI("Post Filter", "\n%s", str.c_str());
         file.writeToFS(doc.as<JsonObject>());
     }
     bool needsToSave(JsonObject &state) {
