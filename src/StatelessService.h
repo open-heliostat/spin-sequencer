@@ -117,9 +117,9 @@ public:
         mkdirs();
         File settingsFile = fs->open(filePath, "w");
         if (!settingsFile) return false;
-        String str;
-        serializeJson(jsonObject, str);
-        ESP_LOGI("Writing file :", "\n%s", str.c_str());
+        // String str;
+        // serializeJson(jsonObject, str);
+        // ESP_LOGI("Writing file :", "\n%s", str.c_str());
         serializeJson(jsonObject, settingsFile);
         settingsFile.close();
         return true;

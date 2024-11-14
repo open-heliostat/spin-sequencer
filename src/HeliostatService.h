@@ -84,19 +84,19 @@ public:
         controller(controller) {}
     void begin() 
     {
-        socket->registerEvent(eventName);
-        socket->onEvent(eventName, [&](JsonObject &root, int originID) {
-            String str;
-            serializeJson(root, str);
-            ESP_LOGI("Heliostat Service", "%s", str.c_str());
-            if (router.route(root, controller)) saveStateIfNeeded(root);
-        });
-        socket->onSubscribe(eventName, [&](const String &originID) {
-            JsonDocument doc;
-            JsonObject obj = doc.to<JsonObject>();
-            router.serialize(controller, obj); 
-        });
-        ESP_LOGI("Heliostat Service", "Registered Json Event : %s", eventName);
+        // socket->registerEvent(eventName);
+        // socket->onEvent(eventName, [&](JsonObject &root, int originID) {
+        //     String str;
+        //     serializeJson(root, str);
+        //     ESP_LOGI("Heliostat Service", "%s", str.c_str());
+        //     if (router.route(root, controller)) saveStateIfNeeded(root);
+        // });
+        // socket->onSubscribe(eventName, [&](const String &originID) {
+        //     JsonDocument doc;
+        //     JsonObject obj = doc.to<JsonObject>();
+        //     router.serialize(controller, obj); 
+        // });
+        // ESP_LOGI("Heliostat Service", "Registered Json Event : %s", eventName);
         JsonDocument savedState = file.readFromFS();
         if (savedState.is<JsonObject>()) {
             router.parse(savedState.as<JsonObject>(), controller);
@@ -125,7 +125,7 @@ public:
             return response.send();
         });
         server->on(restPath, HTTP_POST, [&](PsychicRequest *request, JsonVariant &json){
-            ESP_LOGV("HTTP POST", "%s", json.as<String>().c_str());
+            ESP_LOGV("HTTP POST", "Path : %s, Json : %s", request->path().c_str(), json.as<String>().c_str());
             JsonDocument doc;
             JsonObject jsonObject = doc.to<JsonObject>();
             String path(request->path());
@@ -133,7 +133,9 @@ public:
             JsonObject obj = resolvePath(path, jsonObject);
             obj.set(json.as<JsonObject>());
             if (router.parse(doc.as<JsonObject>(), controller)) {
+                saveStateIfNeeded(doc.as<JsonObject>());
                 PsychicJsonResponse response = PsychicJsonResponse(request, false);
+                router.serialize(controller, doc.as<JsonObject>());
                 response.getRoot() = obj;
                 ESP_LOGV("HTTP POST", "Response %s", response.getRoot().as<String>().c_str());
                 return response.send();
@@ -146,14 +148,14 @@ public:
         while ((index = path.indexOf('/')) != -1)
         {
             String segment = path.substring(0, index);
-            // ESP_LOGI("HTTP SUBPATH", "%s", segment.c_str());
+            ESP_LOGV("HTTP SUBPATH", "%s", segment.c_str());
             if (index > 0) obj = obj[segment].to<JsonObject>();
             path = path.substring(index+1);
         }
         if (path.length()>0) obj = obj[path].to<JsonObject>();
         return obj;
     }
-    void saveStateIfNeeded(JsonObject &state)
+    void saveStateIfNeeded(JsonObject state)
     {
         if (needsToSave(state)) saveState();
     }
@@ -162,11 +164,10 @@ public:
         router.serializeWithoutPropagation(controller, doc.as<JsonObject>());
         JsonDocument ref = getSaveMap();
         String str;
-        // serializeJson(doc, str);
-        // ESP_LOGI("Pre Filter", "\n%s", str.c_str());
+        serializeJson(doc, str);
+        ESP_LOGV("Pre Filter", "\n%s", str.c_str());
         deserializeJson(doc, str, DeserializationOption::Filter(ref));
-        // serializeJson(doc, str);
-        // ESP_LOGI("Post Filter", "\n%s", str.c_str());
+        ESP_LOGV("Post Filter", "\n%s", doc.as<String>().c_str());
         file.writeToFS(doc.as<JsonObject>());
     }
     bool needsToSave(JsonObject &state) {
@@ -220,8 +221,9 @@ private:
         {"elevation", [&](HeliostatController &controller, JsonVariant content) {
             closedLoopControllerRouter.router.serialize(controller.elevationController, content);
         }}
-    }, 
-    [&](JsonObject event) {emitEvent(event);});
+    } 
+    //, [&](JsonObject event) {emitEvent(event);}
+    );
 };
 
 class HeliostatService

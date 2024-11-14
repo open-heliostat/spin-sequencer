@@ -134,6 +134,7 @@ JsonRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::router = JsonRo
     }},
     {"calibration", [](ClosedLoopController &controller, const JsonVariant target) {
         target["running"].set(controller.calibrationRunning);
+        target["enabled"].set(controller.hasCalibration);
         target["steps"].set(controller.calibrationSteps);
         if (target["offsets"].is<JsonVariant>()) {
             auto array = target["offsets"].to<JsonArray>();
@@ -151,16 +152,29 @@ JsonEventRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::calibratio
         controller.stopCalibration();
         return true;
     }},
+    {"enabled", [](JsonVariant content, ClosedLoopController &controller) {
+        if (content.is<bool>()) {
+            controller.hasCalibration = content.as<bool>();
+            return true;
+        }
+        else return false;
+    }},
+    {"running", [](JsonVariant content, ClosedLoopController &controller) {
+        if (content.is<bool>()) {
+            if (content.as<bool>()) controller.startCalibration();
+            else controller.stopCalibration();
+            return true;
+        }
+        else return false;
+    }},
     {"offsets", [](JsonVariant content, ClosedLoopController &controller) {
         if (content.is<JsonArray>()) {
             auto array = content.as<JsonArray>();
             if (array.size() == controller.calibrationSteps) {
                 copyArray(array, controller.calibrationOffsets);
+                return true;
             }
         }
-        String str;
-        serializeJson(content, str);
-        ESP_LOGI("Offsets", "%s", str);
         return false;
     }},
 });
