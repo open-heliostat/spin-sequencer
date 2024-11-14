@@ -5,107 +5,121 @@
 	import Slider from '$lib/components/Slider.svelte';
 	import Checkbox from '$lib/components/Checkbox.svelte';
 	import GridForm from '$lib/components/GridForm.svelte';
-	import { Chart, registerables } from 'chart.js';
-	import { daisyColor } from '$lib/DaisyUiHelper';
-	import { cubicOut } from 'svelte/easing';
-	import { slide } from 'svelte/transition';
-	import { analytics } from '$lib/stores/analytics';
+	import { user } from '$lib/stores/user';
+	import { page } from '$app/stores';
+	import { notifications } from '$lib/components/toasts/notifications';
+	import ChartComp from './ChartComp.svelte';
 
-    export let controllerState : ControllerState | undefined;
     export let label: string;
-    export let onChange = () => {};
-    export let sendEvent = ({}) => {};
-    export let hydrate = () => {};
-    
+    export let restPath : string;
 
-	Chart.register(...registerables);
-
-    let offsetsChartElement: HTMLCanvasElement;
-    let offsetsChart: Chart;
+    let controllerState : ControllerState | undefined;
+    let calibrationOffsets : number[] | undefined;
 
     onMount(() => {
-        offsetsChart = new Chart(offsetsChartElement, {
-            type: 'line',
-            data: {
-				labels: [],
-                datasets: [
-                    {
-                        label: label + ' calibration data',
-                        borderColor: daisyColor('--p'),
-                        backgroundColor: daisyColor('--p', 50),
-                        borderWidth: 2,
-                        data: [],
-                        yAxisID: 'y'
-                    }
-                ]
-            },
-            options: {
-                maintainAspectRatio: false,
-                responsive: true,
-                elements: {
-                    point: {
-                        radius: 1
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: {
-                            color: daisyColor('--bc', 10)
-                        },
-                        ticks: {
-                            color: daisyColor('--bc')
-                        },
-                        display: false
-                    },
-                    y: {
-                        type: 'linear',
-                        title: {
-                            display: true,
-                            text: 'Offset',
-                            color: daisyColor('--bc'),
-                            font: {
-                                size: 16,
-                                weight: 'bold'
-                            }
-                        },
-                        position: 'left',
-                        grid: { color: daisyColor('--bc', 10) },
-                        ticks: {
-                            color: daisyColor('--bc')
-                        },
-                        border: { color: daisyColor('--bc', 10) }
-                    }
-                }
-            }
-        });
-        setInterval(() => {
-            updateData();
-        }, 2000);
+        getControllerState().then((data) => controllerState = data);
     });
 
-    function updateData() {
-        if (controllerState?.calibration?.offsets) {
-            let offsets = controllerState.calibration.offsets;
-            offsetsChart.data.labels = offsets;
-            offsetsChart.data.datasets[0].data = offsets;
-            offsetsChart.scales['y'].min = Math.min(...offsets);
-            offsetsChart.scales['y'].max = Math.max(...offsets);
-            offsetsChart.update('none');
-        }
+    async function updateJsonRest<T>(path: string, destination : T) {
+		try {
+			const response = await fetch(path, {
+				method: 'GET',
+				headers: {
+					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					'Content-Type': 'application/json'
+				}
+			});
+			let json = await response.json();
+            destination = json;
+		} catch (error) {
+			console.error('Error:', error);
+		}
+		return destination;
+	}
+
+    async function postJsonRest<T>(path: string, data: T) {
+		try {
+			const response = await fetch(path, {
+				method: 'POST',
+				headers: {
+					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(data)
+			});
+			if (response.status == 200) {
+				data = await response.json();
+                console.log(data);
+			} else {
+				notifications.error('Wrong Path.', 3000);
+			}
+		} catch (error) {
+			notifications.error('Error: ' + error, 3000);
+		}
+        return data;
+	}
+
+    function getControllerState() {
+        return updateJsonRest(restPath, controllerState).then((data) => controllerState = data);
+    }
+
+    function postControllerState() {
+        postJsonRest(restPath, controllerState).then((data) => controllerState = data);
+    }
+
+    function getCalibrationOffsets() {
+        if (controllerState) controllerState.calibration.running = true;
+        return updateJsonRest(restPath + '/calibration/offsets', calibrationOffsets).then((data) => calibrationOffsets = data);
+    }
+
+    let calibrationIntervalID : any;
+
+    function startCalibration() {
+        if (controllerState) controllerState.calibration.running = true;
+        calibrationIntervalID = setInterval(getCalibrationOffsets, 1000);
+        postJsonRest(restPath + '/calibration/start', {});
+    }
+    
+    function stopCalibration() {
+        if (controllerState) controllerState.calibration.running = false;
+        clearInterval(calibrationIntervalID);
+        postJsonRest(restPath + '/calibration/stop', {});
+    }
+
+    function saveCalibration() {
+        stopCalibration();
+        postJsonRest(restPath + '/calibration', {offsets: calibrationOffsets});
     }
 
 </script>
 
-<Collapsible on:opened={hydrate} open={true} class="shadow-lg">
+<Collapsible open={true} class="shadow-lg">
 	<span slot="title">{label} Controller</span>
     {#if controllerState}
-        {#if controllerState.limits}
+        <!-- {#if controllerState.limits} -->
             <div>
+                <Slider 
+                    label="Target" 
+                    bind:value={controllerState.target}
+                    min={0} 
+                    max={360} 
+                    step={0.01}
+                    onChange={postControllerState}
+                ></Slider>
+                <!-- <Slider 
+                    label="Position" 
+                    bind:value={controllerState.position}
+                    min={0} 
+                    max={360} 
+                    step={0.01}
+                    onChange={postControllerState}
+                ></Slider> -->
                 <span class="text-lg">Limits</span>
                 <GridForm>
                     <Checkbox 
                         label="Enable" 
                         bind:value={controllerState.limits.enabled}
+                        onChange={postControllerState}
                     ></Checkbox>
                     {#if controllerState.limits.enabled}
                     <Slider 
@@ -114,7 +128,7 @@
                         min={0} 
                         max={360} 
                         step={0.01}
-                        {onChange}
+                        onChange={postControllerState}
                     ></Slider>
                     <Slider 
                         label="End" 
@@ -122,53 +136,49 @@
                         min={0} 
                         max={360} 
                         step={0.01}
-                        {onChange}
+                        onChange={postControllerState}
                     ></Slider>
                     {/if}
                 </GridForm>
             </div>
-        {/if}
-        {#if controllerState.calibration}
+        <!-- {/if} -->
+        <!-- {#if controllerState.calibration} -->
             <div>
                 <span class="text-lg">Calibration</span>
                 <GridForm>
                     <Checkbox 
                         label="Enable" 
                         bind:value={controllerState.calibration.enabled}
+                        onChange={postControllerState}
                     ></Checkbox>
-                    {#if controllerState.calibration.enabled}
-                    {/if}
-                    {#if controllerState.calibration.offsets}
-                    {/if}
                 </GridForm>
+                {#if controllerState.calibration.running}
+                <ChartComp
+                    {label}
+                    data={calibrationOffsets}
+                ></ChartComp>
+                {/if}
                 <div class="flex flex-row flex-wrap justify-between gap-x-2">
+                    <button class="btn btn-primary inline-flex items-center" 
+                        on:click={startCalibration}
+                        ><span>Start</span></button
+                    >
+                    <button class="btn btn-primary inline-flex items-center" 
+                        on:click={stopCalibration}
+                        ><span>Stop</span></button
+                    >
                     <div class="flex-grow"></div>
-                    <div>
-                        <button class="btn btn-primary inline-flex items-center" on:click={() => {sendEvent({calibration:{start:{}}});}}
-                            ><span>Start</span></button
-                        >
-                        <button class="btn btn-primary inline-flex items-center" on:click={() => {sendEvent({calibration:{stop:{}}});}}
-                            ><span>Stop</span></button
-                        >
-                        <button class="btn btn-primary inline-flex items-center" on:click={() => {sendEvent({calibration:{offsets:{}}});}}
-                            ><span>Get Data</span></button
-                        >
-                        <button class="btn btn-primary inline-flex items-center" on:click={() => {sendEvent({limits:{enabled:true}});}}
-                            ><span>Save</span></button
-                        >
-                    </div>
+                    <button class="btn btn-primary inline-flex items-center" 
+                        on:click={getCalibrationOffsets}
+                        ><span>Get Data</span></button
+                    >
+                    <button class="btn btn-primary inline-flex items-center" 
+                        on:click={saveCalibration}
+                        ><span>Save</span></button
+                    >
                 </div>
             </div>
-        {/if}
+        <!-- {/if} -->
     {/if}
 
 </Collapsible>
-
-<div class="w-full overflow-x-auto">
-    <div
-        class="flex w-full flex-col space-y-1 h-52"
-        transition:slide|local={{ duration: 300, easing: cubicOut }}
-    >
-        <canvas bind:this={offsetsChartElement} />
-    </div>
-</div>

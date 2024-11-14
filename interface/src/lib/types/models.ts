@@ -198,11 +198,9 @@ export type ControllerState = {
 		begin: number;
 		end: number;
 	};
-	calibration?: {
+	calibration: {
 		enabled: boolean;
 		running: boolean;
 		steps: number;
-		offsets: number[];
-		start: {};
 	};
 }

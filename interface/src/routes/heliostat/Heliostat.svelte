@@ -33,11 +33,11 @@
 		socket.on<HeliostatControllerState>(heliostatControllerStateEvent, (data) => {
 			heliostatControllerState = data;
 		});
-		socket.on("heliostat-service", (data) => {
-			controlState = Object.assign(controlState, data);
-			console.log(data);
-		});
-		socket.sendEvent("heliostat-service", {azimuth:{limits:{enabled:false}}});
+		// socket.on("heliostat-service", (data) => {
+		// 	controlState = Object.assign(controlState, data);
+		// 	console.log(data);
+		// });
+		// socket.sendEvent("heliostat-service", {azimuth:{limits:{enabled:false}}});
 	});
 
 	onDestroy(() => {
@@ -76,16 +76,12 @@
 	<span slot="title">Settings</span>
 	<ControllerSettings
 		label="Azimuth"
-		controllerState={controlState.azimuth}
-		hydrate={() => socket.sendEvent("heliostat-service", {azimuth: {}})}
-		sendEvent={(x) => {socket.sendEvent("heliostat-service",{azimuth: x});}}
+		restPath="/rest/heliostat/azimuth"
 	>
 	</ControllerSettings>
 	<ControllerSettings 
 		label="Elevation"
-		controllerState={controlState.elevation} 
-		hydrate={() => socket.sendEvent("heliostat-service", {elevation: {}})}
-		sendEvent={(x) => {socket.sendEvent("heliostat-service",{elevation: x});}}
+		restPath="/rest/heliostat/elevation"
 	>
 	</ControllerSettings>
 </SettingsCard>
