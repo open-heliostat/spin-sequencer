@@ -202,5 +202,7 @@ export type ControllerState = {
 		enabled: boolean;
 		running: boolean;
 		steps: number;
+		speed: number;
+		decay: number;
 	};
 }

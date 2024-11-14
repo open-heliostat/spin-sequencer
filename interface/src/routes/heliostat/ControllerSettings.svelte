@@ -49,7 +49,7 @@
 			});
 			if (response.status == 200) {
 				data = await response.json();
-                console.log(data);
+                // console.log(data);
 			} else {
 				notifications.error('Wrong Path.', 3000);
 			}
@@ -64,11 +64,10 @@
     }
 
     function postControllerState() {
-        postJsonRest(restPath, controllerState).then((data) => controllerState = data);
+        postJsonRest(restPath, controllerState);
     }
 
     function getCalibrationOffsets() {
-        if (controllerState) controllerState.calibration.running = true;
         return updateJsonRest(restPath + '/calibration/offsets', calibrationOffsets).then((data) => calibrationOffsets = data);
     }
 
@@ -76,14 +75,21 @@
 
     function startCalibration() {
         if (controllerState) controllerState.calibration.running = true;
-        calibrationIntervalID = setInterval(getCalibrationOffsets, 1000);
+        calibrationIntervalID = setInterval(getCalibrationOffsets, 1011);
         postJsonRest(restPath + '/calibration/start', {});
     }
     
     function stopCalibration() {
         if (controllerState) controllerState.calibration.running = false;
         clearInterval(calibrationIntervalID);
-        postJsonRest(restPath + '/calibration/stop', {});
+        postJsonRest(restPath + '/calibration/stop', {})
+        .then(() => getCalibrationOffsets());
+    }
+
+    function resetCalibration() {
+        clearInterval(calibrationIntervalID);
+        postJsonRest(restPath + '/calibration/reset', {});
+        calibrationOffsets = [];
     }
 
     function saveCalibration() {
@@ -151,13 +157,27 @@
                         bind:value={controllerState.calibration.enabled}
                         onChange={postControllerState}
                     ></Checkbox>
+                    <Slider 
+                        label="Speed" 
+                        bind:value={controllerState.calibration.speed}
+                        min={-20} 
+                        max={20} 
+                        step={1}
+                        onChange={postControllerState}
+                    ></Slider>
+                    <Slider 
+                        label="Decay" 
+                        bind:value={controllerState.calibration.decay}
+                        min={0.} 
+                        max={0.2} 
+                        step={0.01}
+                        onChange={postControllerState}
+                    ></Slider>
                 </GridForm>
-                {#if controllerState.calibration.running}
                 <ChartComp
                     {label}
                     data={calibrationOffsets}
                 ></ChartComp>
-                {/if}
                 <div class="flex flex-row flex-wrap justify-between gap-x-2">
                     <button class="btn btn-primary inline-flex items-center" 
                         on:click={startCalibration}
@@ -167,15 +187,21 @@
                         on:click={stopCalibration}
                         ><span>Stop</span></button
                     >
+                    <button class="btn btn-primary inline-flex items-center" 
+                        on:click={resetCalibration}
+                        ><span>Reset</span></button
+                    >
                     <div class="flex-grow"></div>
                     <button class="btn btn-primary inline-flex items-center" 
                         on:click={getCalibrationOffsets}
                         ><span>Get Data</span></button
                     >
+                    {#if calibrationOffsets?.length == controllerState.calibration.steps}
                     <button class="btn btn-primary inline-flex items-center" 
                         on:click={saveCalibration}
                         ><span>Save</span></button
                     >
+                    {/if}
                 </div>
             </div>
         <!-- {/if} -->

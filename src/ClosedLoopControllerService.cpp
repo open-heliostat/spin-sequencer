@@ -136,6 +136,8 @@ JsonRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::router = JsonRo
         target["running"].set(controller.calibrationRunning);
         target["enabled"].set(controller.hasCalibration);
         target["steps"].set(controller.calibrationSteps);
+        target["speed"].set(controller.calibrationSpeed);
+        target["decay"].set(controller.calibrationDecay);
         if (target["offsets"].is<JsonVariant>()) {
             auto array = target["offsets"].to<JsonArray>();
             copyArray(controller.calibrationOffsets, array);
@@ -151,6 +153,24 @@ JsonEventRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::calibratio
     {"stop", [](JsonVariant content, ClosedLoopController &controller) {
         controller.stopCalibration();
         return true;
+    }},
+    {"reset", [](JsonVariant content, ClosedLoopController &controller) {
+        controller.resetCalibration();
+        return true;
+    }},
+    {"speed", [](JsonVariant content, ClosedLoopController &controller) {
+        if (content.is<int>()) {
+            controller.setCalibrationSpeed(content.as<int>());
+            return true;
+        }
+        else return false;
+    }},
+    {"decay", [](JsonVariant content, ClosedLoopController &controller) {
+        if (content.is<double>()) {
+            controller.calibrationDecay = content.as<double>();
+            return true;
+        }
+        else return false;
     }},
     {"enabled", [](JsonVariant content, ClosedLoopController &controller) {
         if (content.is<bool>()) {
