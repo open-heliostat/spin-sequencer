@@ -14,11 +14,12 @@ public:
     bool enabled;
     double targetAngle;
     double tolerance = 0.1;
-    bool hasLimits = false;
+    double error;
     double limitA = 0.;
     double limitB = 360.;
     double calibrationDecay = 0.1;
     int calibrationSpeed = 5;
+    bool hasLimits = false;
     bool hasCalibration = false;
     bool calibrationRunning = false;
     static const int calibrationSteps = 128;
@@ -26,11 +27,13 @@ public:
     double calibrationStepperStartOffset = 0.;
     ClosedLoopController(TMC5160Controller &stepper, Encoder &encoder) : stepper(stepper), encoder(encoder) {}
     double mod(double a, double N) {return a - N*floor(a/N);}
+    double angularDistance(double a, double b) {
+        return mod(a - b + 180., 360.) - 180.;
+    }
     void setAngle(double angle) {
         targetAngle = angle;
         double curAngle = getAngle();
         if (encoder.hasNewData()) {
-            double toGo = 0.;
             if (hasLimits) {
                 double middle = mod((limitA + limitB) * 0.5, 360.);
                 double interval = limitB - limitA;
@@ -40,12 +43,12 @@ public:
                 }
                 double t = mod(targetAngle - middle + 180., 360.) - 180.;
                 targetAngle = mod(max(min(t, interval*0.5), -interval*0.5) + middle, 360.);
-                toGo = mod(targetAngle - middle + 180., 360.) - mod(curAngle - middle + 180., 360.);
-                // Serial.printf("Middle : %f`, Interval: %f, t: %f, Target: %f, To Go: %f\n", middle, interval, t, targetAngle, toGo);
+                error = mod(targetAngle - middle + 180., 360.) - mod(curAngle - middle + 180., 360.);
+                // ESP_LOGI("Controller", "Middle : %f`, Interval: %f, t: %f, Target: %f, To Go: %f\n", middle, interval, t, targetAngle, error);
             }
-            else toGo = mod(targetAngle - curAngle + 180., 360.) - 180.;
-            // Serial.printf("Command : %f, Target: %f, Current: %f, To Go: %f\n", angle, targetAngle, curAngle, toGo);
-            if (abs(toGo) > tolerance) stepper.moveR(toGo);
+            else error = mod(targetAngle - curAngle + 180., 360.) - 180.;
+            // ESP_LOGI("Controller", "Command : %f, Target: %f, Current: %f, To Go: %f\n", angle, targetAngle, curAngle, error);
+            if (abs(error) > tolerance) stepper.moveR(error);
         }
     }
     double getAngle(){
@@ -72,8 +75,9 @@ public:
     }
     void startCalibration() {
         if (!calibrationRunning) {
-            calibrationStepperStartOffset = mod(stepper.getAngle() - encoder.getAngle() + 180., 360.) - 180.;
+            calibrationStepperStartOffset = angularDistance(stepper.getAngle(), encoder.getAngle());
             stepper.setSpeed(calibrationSpeed);
+            if (hasLimits) setAngle(limitA);
             calibrationRunning = true;
         }
     }
@@ -93,16 +97,16 @@ public:
         if (calibrationRunning) stepper.setSpeed(calibrationSpeed);
     }
     void runCalibration() {
-        double readAngle = encoder.getAngle();
+        double rawAngle = encoder.getAngle();
         if (encoder.hasNewData()) {
             double stepperAngle = stepper.getAngle();
-            double offset = mod(stepperAngle - readAngle - calibrationStepperStartOffset + 180., 360.) - 180.;
-            ESP_LOGI("Calibration", "offset %f", offset);
-            float index = readAngle*calibrationSteps/360.;
+            double offset = mod(stepperAngle - rawAngle - calibrationStepperStartOffset + 180., 360.) - 180.;
+            // ESP_LOGI("Calibration", "offset %f", offset);
+            float index = rawAngle*calibrationSteps/360.;
             int current = int(floor(index)) % calibrationSteps;
             if (calibrationOffsets[current] == 0.) {
                 calibrationOffsets[current] = offset;
-                ESP_LOGI("Calibration", "current %d", current);
+                // ESP_LOGI("Calibration", "current %d", current);
             }
             else {
                 int next = int(ceil(index)) % calibrationSteps;
@@ -110,6 +114,19 @@ public:
                 calibrationOffsets[current] = lerp(calibrationOffsets[current], offset, calibrationDecay - fract * calibrationDecay);
                 if (calibrationOffsets[next] != 0.) calibrationOffsets[next] = lerp(calibrationOffsets[next], offset, fract * calibrationDecay);
             }
+        }
+        if (hasLimits) {
+            if (abs(angularDistance(targetAngle, getAngle())) < tolerance) {
+                if (abs(angularDistance(rawAngle, limitA)) > abs(angularDistance(rawAngle, limitB))) {
+                    setAngle(limitA);
+                    ESP_LOGI("Calibration", "Goto A");
+                }
+                else {
+                    setAngle(limitB);
+                    ESP_LOGI("Calibration", "Goto B");
+                }
+            }
+            else setAngle(targetAngle);
         }
     }
 private:
