@@ -101,6 +101,28 @@ private:
     JsonStatelessReader<T> stateReader;
 };
 
+class JsonSaveManager
+{
+public:
+    static bool needsToSave(JsonObject state, JsonDocument saveMap) {
+        return checkFieldsRecursively(saveMap.as<JsonObject>(), state);
+    }
+    static bool checkFieldsRecursively(JsonObject ref, JsonObject obj) {
+        for (JsonPair kv : ref) {
+            if (kv.value() == true && obj[kv.key()].is<JsonVariant>()) return true;
+            else if (kv.value().is<JsonObject>() && obj[kv.key()].is<JsonObject>()) return checkFieldsRecursively(kv.value(), obj[kv.key()]);
+        }
+        return false;
+    }
+    static void filterFieldsRecursively(JsonObject ref, JsonObject obj) {
+        for (JsonPair kv : obj) {
+            if (ref[kv.key()].is<bool>() && ref[kv.key()].as<bool>()) continue;
+            else if (ref[kv.key()].is<JsonObject>() && kv.value().is<JsonObject>()) filterFieldsRecursively(ref[kv.key()], kv.value());
+            else obj.remove(kv.key());
+        }
+    }
+};
+
 class JsonFilePersistence
 {
 public:
