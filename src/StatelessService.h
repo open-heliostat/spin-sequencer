@@ -164,6 +164,26 @@ private:
     FS *fs;
 };
 
+template <class T>
+class StaticJsonRouter
+{
+public:
+    static bool route(JsonVariant content, T &controller)
+    {
+        return router.route(content, controller);
+    }
+    static void read(T &state, JsonObject &root) 
+    {
+        router.serialize(state, root);
+    }
+    static StateUpdateResult update(JsonObject &root, T &state)
+    { 
+        if (router.parse(root, state)) return StateUpdateResult::CHANGED;
+        else return StateUpdateResult::UNCHANGED;
+    }
+    static JsonRouter<T> router;
+};
+
 // class StatelessService
 // {
 // public:
