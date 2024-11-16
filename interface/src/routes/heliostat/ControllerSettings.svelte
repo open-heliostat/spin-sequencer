@@ -9,16 +9,17 @@
 	import { page } from '$app/stores';
 	import { notifications } from '$lib/components/toasts/notifications';
 	import ChartComp from './ChartComp.svelte';
+	import Spinner from '$lib/components/Spinner.svelte';
 
     export let label: string;
     export let restPath : string;
 
-    let controllerState : ControllerState | undefined;
+    let controllerState : ControllerState;
     let calibrationOffsets : number[] | undefined;
 
-    onMount(() => {
-        getControllerState().then((data) => controllerState = data);
-    });
+    // onMount(() => {
+    //     getControllerState();
+    // });
 
     async function updateJsonRest<T>(path: string, destination : T) {
 		try {
@@ -56,19 +57,24 @@
 		} catch (error) {
 			notifications.error('Error: ' + error, 3000);
 		}
+        // console.log(data);
         return data;
 	}
 
-    function getControllerState() {
-        return updateJsonRest(restPath, controllerState).then((data) => controllerState = data);
+    async function getControllerState() {
+        const res = await fetch(restPath);
+        const data = await res.json();
+        controllerState = data;
+        return data;
+        // return updateJsonRest(restPath, controllerState);
     }
 
     function postControllerState() {
-        postJsonRest(restPath, controllerState);
+        postJsonRest(restPath, controllerState).then((data) => controllerState = data);
     }
 
     function getCalibrationOffsets() {
-        return updateJsonRest(restPath + '/calibration/offsets', calibrationOffsets).then((data) => calibrationOffsets = data);
+        return updateJsonRest(restPath + '/calibration/offsets/', calibrationOffsets).then((data) => calibrationOffsets = data);
     }
 
     let calibrationIntervalID : any;
@@ -101,9 +107,20 @@
 
 <Collapsible open={true} class="shadow-lg">
 	<span slot="title">{label} Controller</span>
-    {#if controllerState}
-        <!-- {#if controllerState.limits} -->
-            <div>
+    {#await getControllerState()}
+    <Spinner></Spinner>
+    {:then nothing}
+        <div>
+            <!-- <Slider 
+                label="Position" 
+                bind:value={controllerState.position}
+                min={0} 
+                max={360} 
+                step={0.01}
+                onChange={postControllerState}
+            ></Slider> -->
+            <span class="text-lg">Control</span>
+            <GridForm>
                 <Slider 
                     label="Target" 
                     bind:value={controllerState.target}
@@ -112,99 +129,98 @@
                     step={0.01}
                     onChange={postControllerState}
                 ></Slider>
-                <!-- <Slider 
-                    label="Position" 
-                    bind:value={controllerState.position}
+
+                <Slider 
+                    label="Tolerance" 
+                    bind:value={controllerState.tolerance}
+                    min={0.04} 
+                    max={0.4} 
+                    step={0.01}
+                    onChange={postControllerState}
+                ></Slider>
+            </GridForm>
+            <span class="text-lg">Limits</span>
+            <GridForm>
+                <Checkbox 
+                    label="Enable" 
+                    bind:value={controllerState.limits.enabled}
+                    onChange={postControllerState}
+                ></Checkbox>
+                {#if controllerState.limits.enabled}
+                <Slider 
+                    label="Begin" 
+                    bind:value={controllerState.limits.begin}
                     min={0} 
                     max={360} 
                     step={0.01}
                     onChange={postControllerState}
-                ></Slider> -->
-                <span class="text-lg">Limits</span>
-                <GridForm>
-                    <Checkbox 
-                        label="Enable" 
-                        bind:value={controllerState.limits.enabled}
-                        onChange={postControllerState}
-                    ></Checkbox>
-                    {#if controllerState.limits.enabled}
-                    <Slider 
-                        label="Begin" 
-                        bind:value={controllerState.limits.begin}
-                        min={0} 
-                        max={360} 
-                        step={0.01}
-                        onChange={postControllerState}
-                    ></Slider>
-                    <Slider 
-                        label="End" 
-                        bind:value={controllerState.limits.end}
-                        min={0} 
-                        max={360} 
-                        step={0.01}
-                        onChange={postControllerState}
-                    ></Slider>
-                    {/if}
-                </GridForm>
+                ></Slider>
+                <Slider 
+                    label="End" 
+                    bind:value={controllerState.limits.end}
+                    min={0} 
+                    max={360} 
+                    step={0.01}
+                    onChange={postControllerState}
+                ></Slider>
+                {/if}
+            </GridForm>
+        </div>
+        <div>
+            <span class="text-lg">Calibration</span>
+            <GridForm>
+                <Checkbox 
+                    label="Enable" 
+                    bind:value={controllerState.calibration.enabled}
+                    onChange={postControllerState}
+                ></Checkbox>
+                <Slider 
+                    label="Speed" 
+                    bind:value={controllerState.calibration.speed}
+                    min={-20} 
+                    max={20} 
+                    step={1}
+                    onChange={postControllerState}
+                ></Slider>
+                <Slider 
+                    label="Decay" 
+                    bind:value={controllerState.calibration.decay}
+                    min={0.} 
+                    max={0.2} 
+                    step={0.01}
+                    onChange={postControllerState}
+                ></Slider>
+            </GridForm>
+            <ChartComp
+                {label}
+                data={calibrationOffsets}
+            ></ChartComp>
+            <div class="flex flex-row flex-wrap justify-between gap-x-2">
+                <button class="btn btn-primary inline-flex items-center" 
+                    on:click={startCalibration}
+                    ><span>Start</span></button
+                >
+                <button class="btn btn-primary inline-flex items-center" 
+                    on:click={stopCalibration}
+                    ><span>Stop</span></button
+                >
+                <button class="btn btn-primary inline-flex items-center" 
+                    on:click={resetCalibration}
+                    ><span>Reset</span></button
+                >
+                <div class="flex-grow"></div>
+                <button class="btn btn-primary inline-flex items-center" 
+                    on:click={getCalibrationOffsets}
+                    ><span>Get Data</span></button
+                >
+                {#if calibrationOffsets?.length == controllerState.calibration.steps}
+                <button class="btn btn-primary inline-flex items-center" 
+                    on:click={saveCalibration}
+                    ><span>Save</span></button
+                >
+                {/if}
             </div>
-        <!-- {/if} -->
-        <!-- {#if controllerState.calibration} -->
-            <div>
-                <span class="text-lg">Calibration</span>
-                <GridForm>
-                    <Checkbox 
-                        label="Enable" 
-                        bind:value={controllerState.calibration.enabled}
-                        onChange={postControllerState}
-                    ></Checkbox>
-                    <Slider 
-                        label="Speed" 
-                        bind:value={controllerState.calibration.speed}
-                        min={-20} 
-                        max={20} 
-                        step={1}
-                        onChange={postControllerState}
-                    ></Slider>
-                    <Slider 
-                        label="Decay" 
-                        bind:value={controllerState.calibration.decay}
-                        min={0.} 
-                        max={0.2} 
-                        step={0.01}
-                        onChange={postControllerState}
-                    ></Slider>
-                </GridForm>
-                <ChartComp
-                    {label}
-                    data={calibrationOffsets}
-                ></ChartComp>
-                <div class="flex flex-row flex-wrap justify-between gap-x-2">
-                    <button class="btn btn-primary inline-flex items-center" 
-                        on:click={startCalibration}
-                        ><span>Start</span></button
-                    >
-                    <button class="btn btn-primary inline-flex items-center" 
-                        on:click={stopCalibration}
-                        ><span>Stop</span></button
-                    >
-                    <button class="btn btn-primary inline-flex items-center" 
-                        on:click={resetCalibration}
-                        ><span>Reset</span></button
-                    >
-                    <div class="flex-grow"></div>
-                    <button class="btn btn-primary inline-flex items-center" 
-                        on:click={getCalibrationOffsets}
-                        ><span>Get Data</span></button
-                    >
-                    {#if calibrationOffsets?.length == controllerState.calibration.steps}
-                    <button class="btn btn-primary inline-flex items-center" 
-                        on:click={saveCalibration}
-                        ><span>Save</span></button
-                    >
-                    {/if}
-                </div>
-            </div>
-        <!-- {/if} -->
-    {/if}
+        </div>
+    {/await}
 
 </Collapsible>

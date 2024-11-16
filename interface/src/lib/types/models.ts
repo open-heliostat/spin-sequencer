@@ -193,6 +193,7 @@ export type MultiStepperControl = {
 export type ControllerState = {
 	position: number;
 	target: number;
+	tolerance: number;
 	limits: {
 		enabled: boolean;
 		begin: number;
