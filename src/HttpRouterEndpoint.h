@@ -87,7 +87,7 @@ public:
                             JsonObject jsonObject = response.getRoot();
                             String path(request->path());
                             path = path.substring(_pathLength);
-                            ESP_LOGI("HTTP GET", "Subpath %s", path.c_str());
+                            ESP_LOGV("HTTP GET", "Subpath %s", path.c_str());
                             JsonObject obj = resolvePath(path, jsonObject);
                             JsonDocument requestBody;
                             if (deserializeJson(requestBody, request->body()) == DeserializationError::Ok) {

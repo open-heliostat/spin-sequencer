@@ -4,6 +4,7 @@
 #include <EventEndpoint.h>
 #include <FSPersistence.h>
 #include <StatelessService.h>
+#include <HttpRouterEndpoint.h>
 
 #include <closedloopcontroller.h>
 
@@ -20,27 +21,60 @@ public:
     }
     static void read(ClosedLoopController &state, JsonObject &root) 
     {
-        router.route(root, state);
+        router.serialize(state, root);
+    }
+    static void readForSave(ClosedLoopController &state, JsonObject &root) 
+    {
+        getSaveMap(root);
+        router.serialize(state, root);
+        JsonDocument ref = getSaveMap();
+        JsonSaveManager::filterFieldsRecursively(ref.as<JsonObject>(), root);
     }
     static StateUpdateResult update(JsonObject &root, ClosedLoopController &state)
     { 
-        if (router.route(root, state)) return StateUpdateResult::CHANGED;
+        if (router.parse(root, state) && JsonSaveManager::needsToSave(root, getSaveMap())) return StateUpdateResult::CHANGED;
         else return StateUpdateResult::UNCHANGED;
     }
-    static const JsonDocument getSaveMap() {
+    static const void getSaveMap(JsonObject &root) 
+    {
+        root["calibration"]["enabled"] = true;
+        root["calibration"]["offsets"] = true;
+        root["limits"]["enabled"] = true;
+        root["limits"]["begin"] = true;
+        root["limits"]["end"] = true;
+    }
+    static const JsonDocument getSaveMap() 
+    {
         JsonDocument doc;
-        doc.to<JsonObject>();
-        doc["calibration"]["enabled"] = true;
-        doc["calibration"]["offsets"] = true;
-        doc["limits"]["enabled"] = true;
-        doc["limits"]["begin"] = true;
-        doc["limits"]["end"] = true;
+        JsonObject obj = doc.to<JsonObject>();
+        getSaveMap(obj);
         return doc;
     }
     static JsonRouter<ClosedLoopController> router;
-private:
     static JsonEventRouter<ClosedLoopController> calibrationRouter;
     static JsonEventRouter<ClosedLoopController> limitsRouter;
+};
+
+class ClosedLoopControllerService : public StatefulService<ClosedLoopController&>
+{
+public:
+    ClosedLoopControllerService(PsychicHttpServer *server,
+                                EventSocket *socket,
+                                FS *fs,
+                                SecurityManager *securityManager,
+                                ClosedLoopController &controller) :
+                                    _httpRouterEndpoint(_router.read, _router.update, this, server, "/rest/controllers", securityManager),
+                                    _fsPersistence(_router.readForSave, _router.update, this, fs, "/config/controllers.json"),
+                                    // _eventEndpoint(_router.read, _router.update, this, socket, "controllers"),
+                                    StatefulService(controller)
+                                    {}
+    void begin();
+
+private:
+    // EventEndpoint<ClosedLoopController&> _eventEndpoint;
+    HttpRouterEndpoint<ClosedLoopController&> _httpRouterEndpoint;
+    FSPersistence<ClosedLoopController&> _fsPersistence;
+    ClosedLoopControllerJsonRouter _router;
 };
 
 
@@ -198,23 +232,5 @@ private:
     ClosedLoopControllerStateService _closedLoopControllerStateService;
 
     void onConfigUpdated();
-};
-
-class ClosedLoopControllerService : public StatefulService<ClosedLoopController&>
-{
-public:
-    ClosedLoopControllerService(EventSocket *socket,
-                                FS *fs,
-                                ClosedLoopController &controller) :
-                                    _eventEndpoint(_router.read, _router.update, this, socket, "controllers"),
-                                    _fsPersistence(_router.read, _router.update, this, fs, "/config/controllers.json"),
-                                    StatefulService(controller)
-                                    {}
-    void begin();
-
-private:
-    EventEndpoint<ClosedLoopController&> _eventEndpoint;
-    FSPersistence<ClosedLoopController&> _fsPersistence;
-    ClosedLoopControllerJsonRouter _router;
 };
 #endif

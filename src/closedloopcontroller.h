@@ -22,7 +22,7 @@ public:
     bool hasLimits = false;
     bool hasCalibration = false;
     bool calibrationRunning = false;
-    static const int calibrationSteps = 128;
+    static const int calibrationSteps = 32;
     float calibrationOffsets[calibrationSteps];
     double calibrationStepperStartOffset = 0.;
     ClosedLoopController(TMC5160Controller &stepper, Encoder &encoder) : stepper(stepper), encoder(encoder) {}
@@ -58,14 +58,6 @@ public:
     double lerp(double a, double b, double t) {
         return b * t + a * (1. - t);
     }
-    double getCalibratedAngle() {
-        double readAngle = encoder.getAngle();
-        double index = readAngle*360./calibrationSteps;
-        double current = calibrationOffsets[int(floor(index)) % calibrationSteps];
-        double next = calibrationOffsets[int(ceil(index)) % calibrationSteps];
-        double offset = lerp(current, next, mod(index, 1.));
-        return mod(readAngle + offset, 360.);
-    }
     void run() {
         if (calibrationRunning) runCalibration();
         else if (enabled && millis() - lastPoll >= maxPollInterval) {
@@ -96,17 +88,26 @@ public:
         calibrationSpeed = speed;
         if (calibrationRunning) stepper.setSpeed(calibrationSpeed);
     }
+private:
+    double getCalibratedAngle() {
+        double readAngle = encoder.getAngle();
+        double index = readAngle*360./calibrationSteps;
+        double current = calibrationOffsets[int(floor(index)) % calibrationSteps];
+        double next = calibrationOffsets[int(ceil(index)) % calibrationSteps];
+        double offset = lerp(current, next, mod(index, 1.));
+        return mod(readAngle + offset, 360.);
+    }
     void runCalibration() {
         double rawAngle = encoder.getAngle();
         if (encoder.hasNewData()) {
             double stepperAngle = stepper.getAngle();
             double offset = mod(stepperAngle - rawAngle - calibrationStepperStartOffset + 180., 360.) - 180.;
-            // ESP_LOGI("Calibration", "offset %f", offset);
+            ESP_LOGI("Calibration", "Offset %f, Encoder %f, Stepper %f", offset, rawAngle, stepperAngle);
             float index = rawAngle*calibrationSteps/360.;
             int current = int(floor(index)) % calibrationSteps;
             if (calibrationOffsets[current] == 0.) {
                 calibrationOffsets[current] = offset;
-                // ESP_LOGI("Calibration", "current %d", current);
+                ESP_LOGI("Calibration", "current %d", current);
             }
             else {
                 int next = int(ceil(index)) % calibrationSteps;
@@ -129,7 +130,6 @@ public:
             else setAngle(targetAngle);
         }
     }
-private:
     uint32_t lastPoll = 0;
 };
 #endif

@@ -113,6 +113,13 @@ JsonRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::router = JsonRo
         }
         else return false;
     }},
+    {"tolerance", [](JsonVariant content, ClosedLoopController &controller) {
+        if (content.is<double>()) {
+            controller.tolerance = content.as<double>();
+            return true;
+        }
+        else return false;
+    }},
     {"calibration", [](JsonVariant content, ClosedLoopController &controller) {
         return calibrationRouter.parse(content, controller);
     }},
@@ -126,6 +133,9 @@ JsonRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::router = JsonRo
     }},
     {"target", [](ClosedLoopController &controller, const JsonVariant target) {
         target.set(controller.targetAngle);
+    }},
+    {"tolerance", [](ClosedLoopController &controller, const JsonVariant target) {
+        target.set(controller.tolerance);
     }},
     {"limits", [](ClosedLoopController &controller, const JsonVariant target) {
         target["enabled"] = controller.hasLimits;
@@ -222,3 +232,8 @@ JsonEventRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::limitsRout
         else return false;
     }}
 });
+
+void ClosedLoopControllerService::begin() {
+    _httpRouterEndpoint.begin();
+    _fsPersistence.readFromFS();
+}
