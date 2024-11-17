@@ -45,8 +45,10 @@ ClosedLoopController closedLoopController2 = {stepper2, encoder2};
 HeliostatController heliostatController = {closedLoopController1, closedLoopController2};
 
 HeliostatService heliostatService = HeliostatService(
+    &server,
     esp32sveltekit.getSocket(),
     esp32sveltekit.getFS(),
+    esp32sveltekit.getSecurityManager(),
     heliostatController);
 
 std::vector<TMC5160Controller*> steppers = {&stepper1, &stepper2};
@@ -94,15 +96,20 @@ EncoderStateService encoderService = EncoderStateService(
     esp32sveltekit.getSocket(),
     &encoder1);
 
-ClosedLoopControllerSettingsService closedLoopControllerService = ClosedLoopControllerSettingsService(
-    esp32sveltekit.getSocket(),
-    esp32sveltekit.getFS(),
-    closedLoopControllers);
+// ClosedLoopControllerService closedLoopControllerService = ClosedLoopControllerService(
+//     &server,
+//     esp32sveltekit.getSocket(),
+//     esp32sveltekit.getFS(),
+//     esp32sveltekit.getSecurityManager(),
+//     closedLoopController1);
 
 void setup()
 {
     // start serial and filesystem
     Serial.begin(SERIAL_BAUD_RATE);
+
+    // increase httpd stack for HttpJsonRouter
+    server.config.stack_size = 8192;
 
     // start ESP32-SvelteKit
     esp32sveltekit.begin();
@@ -124,9 +131,10 @@ void setup()
     gpsStateService.begin();
 
     // encoderService.begin();
-    closedLoopControllerService.begin();
 
     heliostatService.begin();
+    
+    // closedLoopControllerService.begin();
 }
 
 unsigned long lastTick = 0;

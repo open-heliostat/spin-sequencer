@@ -7,7 +7,7 @@
     export let onChange = () => {};
     export let hasNumber = true;
     export let disabled = false;
-    $: value = Math.round(value/step)*step;
+    // $: value = Math.round(value/step)*step;
 </script>
 
 <label class="label cursor-pointer" for={label}>
@@ -23,7 +23,7 @@
         id={label}
         {disabled}
         bind:value={value}
-        on:input={onChange}
+        on:change={onChange}
     />
     {#if hasNumber}
     <input 
@@ -36,7 +36,7 @@
         id={label}
         {disabled}
         bind:value={value}
-        on:input={onChange}
+        on:change={onChange}
     />
     {/if}
 </div>

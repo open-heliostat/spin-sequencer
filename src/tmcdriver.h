@@ -132,7 +132,7 @@ struct TMC5160Controller {
         stepper->move((move-this->move())*microsteps);
     }
 
-    float mod(float a, float N) {return a - N*floor(a/N);}
+    double mod(double a, double N) {return a - N*floor(a/N);}
 
     void setAngle(double angle) {
         double dist = angle - getAngle();
@@ -140,7 +140,7 @@ struct TMC5160Controller {
     }
 
     double getAngle() {
-        return mod(stepper->getCurrentPosition()*360./double(microsteps), 360.);
+        return mod(stepper->getCurrentPosition()*360./double(microsteps*stepsPerRotation), 360.);
     }
 
     double getTargetAngle() {

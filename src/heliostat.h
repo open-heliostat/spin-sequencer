@@ -9,31 +9,76 @@ struct SphericalCoordinate
     double elevation;
 };
 
+using DirectionsMap = std::map<String, SphericalCoordinate>;
+
 class HeliostatController
 {
 public:
     HeliostatController(ClosedLoopController &azimuthController, ClosedLoopController &elevationController) : 
         azimuthController(azimuthController), elevationController(elevationController) {}
 
-    SphericalCoordinate getTarget() {
+    SphericalCoordinate getTarget() 
+    {
         return SphericalCoordinate{azimuthController.targetAngle, elevationController.targetAngle};
     }
 
-    SphericalCoordinate getPosition() {
+    SphericalCoordinate getPosition() 
+    {
         return SphericalCoordinate{azimuthController.getAngle(), elevationController.getAngle()};
     }
 
-    void setTarget(double azimuth, double elevation){
+    void setPosition(double azimuth, double elevation)
+    {
         azimuthController.setAngle(azimuth);
         elevationController.setAngle(elevation);
     }
 
-    void run() {
+    void setPosition(SphericalCoordinate target)
+    {
+        azimuthController.setAngle(target.azimuth);
+        elevationController.setAngle(target.elevation);
+    }
+
+    SphericalCoordinate reflect(SphericalCoordinate source, SphericalCoordinate target) 
+    {
+        return target;
+    }
+
+    void reflectCurrentSource() {
+        setPosition(reflect(sourcesMap[currentSource], targetsMap[currentTarget]));
+    }
+
+    void run() 
+    {
+        unsigned long now = millis();
+        if (now - lastCommand > 100) {
+            reflectCurrentSource();
+            lastCommand = now;
+        }
         azimuthController.run();
         elevationController.run();
     }
 
+    void init() 
+    {
+    }
+
+    String currentSource = "Sun";
+    String currentTarget = "Default Target";
+
+    DirectionsMap sourcesMap = 
+    {
+        {"Sun", {180., 90.}},
+        {"Target", {120., 15.}},
+    };
+    DirectionsMap targetsMap = 
+    {
+        {"Default Target", {120., 15.}}
+    };
+
     ClosedLoopController &azimuthController;
     ClosedLoopController &elevationController;
+
+    unsigned long lastCommand = 0;
 };
 #endif

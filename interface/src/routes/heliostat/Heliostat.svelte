@@ -9,20 +9,46 @@
 	import GridForm from '$lib/components/GridForm.svelte';
 	import Slider from '$lib/components/Slider.svelte';
 	import Checkbox from '$lib/components/Checkbox.svelte';
+	import type { ControllerState } from '$lib/types/models'
+	import ControllerSettings from './ControllerSettings.svelte';
 
-	type HeliostatControllerState = {
+	type Direction = {
 		azimuth: number;
 		elevation: number;
 	}
 
-	let heliostatControllerStateEvent = "heliostat-control"
+	type HeliostatControllerState = {
+		currentSource: string;
+		currentTarget: string;
+		sourcesMap: {
+			[key: string]: Direction
+		}
+		targetsMap: {
+			[key: string]: Direction
+		}
+	}
+
+	let heliostatControllerStateEvent = "heliostat-service"
 
 	let heliostatControllerState : HeliostatControllerState;
+
+	let selectedTarget: Direction;
+	$: selectedTarget = heliostatControllerState?.targetsMap[heliostatControllerState.currentTarget];
+
+	let selectedSource: Direction;
+	$: selectedSource = heliostatControllerState?.sourcesMap[heliostatControllerState.currentSource];
+
 
 	onMount(() => {
 		socket.on<HeliostatControllerState>(heliostatControllerStateEvent, (data) => {
 			heliostatControllerState = data;
+			console.log(data);
 		});
+		// socket.on("heliostat-service", (data) => {
+		// 	controlState = Object.assign(controlState, data);
+		// 	console.log(data);
+		// });
+		// socket.sendEvent("heliostat-service", {azimuth:{limits:{enabled:false}}});
 	});
 
 	onDestroy(() => {
@@ -31,27 +57,48 @@
 
 </script>
 
-{#if heliostatControllerState}
 <SettingsCard collapsible={false}>
 	<Light slot="icon" class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">Heliostat Control</span>
+	{#if selectedTarget}
 	<div class="w-full">
 		<Slider 
 			label="Azimuth" 
-			bind:value={heliostatControllerState.azimuth}
+			bind:value={selectedTarget.azimuth}
 			min={0} 
 			max={360} 
 			step={0.01}
-			onChange={() => socket.sendEvent(heliostatControllerStateEvent, heliostatControllerState)}
+			onChange={() => {
+				heliostatControllerState.targetsMap[heliostatControllerState.currentTarget] = selectedTarget;
+				socket.sendEvent(heliostatControllerStateEvent, heliostatControllerState);
+			}}
 		></Slider>
 		<Slider 
 			label="Elevation" 
-			bind:value={heliostatControllerState.elevation}
+			bind:value={selectedTarget.elevation}
 			min={0} 
 			max={360} 
 			step={0.01}
-			onChange={() => socket.sendEvent(heliostatControllerStateEvent, heliostatControllerState)}
+			onChange={() => {
+				heliostatControllerState.targetsMap[heliostatControllerState.currentTarget] = selectedTarget;
+				socket.sendEvent(heliostatControllerStateEvent, heliostatControllerState);
+			}}
 		></Slider>
 	</div>
+	{/if}
 </SettingsCard>
-{/if}
+
+<SettingsCard collapsible={false}>
+	<Light slot="icon" class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
+	<span slot="title">Settings</span>
+	<ControllerSettings
+		label="Azimuth"
+		restPath="/rest/heliostat/azimuth"
+	>
+	</ControllerSettings>
+	<ControllerSettings 
+		label="Elevation"
+		restPath="/rest/heliostat/elevation"
+	>
+	</ControllerSettings>
+</SettingsCard>
