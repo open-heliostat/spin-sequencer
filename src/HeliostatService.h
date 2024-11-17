@@ -17,11 +17,11 @@ public:
     {
         return router.route(content, controller);
     }
-    static void read(HeliostatController &state, JsonObject &root) 
+    static void read(HeliostatController &state, JsonObject &root)
     {
         router.serialize(state, root);
     }
-    static void readForSave(HeliostatController &state, JsonObject &root) 
+    static void readForSave(HeliostatController &state, JsonObject &root)
     {
         getSaveMap(root);
         router.serialize(state, root);
@@ -29,22 +29,29 @@ public:
         JsonSaveManager::filterFieldsRecursively(ref.as<JsonObject>(), root);
     }
     static StateUpdateResult update(JsonObject &root, HeliostatController &state)
-    { 
+    {
         if (router.parse(root, state) && JsonSaveManager::needsToSave(root, getSaveMap())) return StateUpdateResult::CHANGED;
         else return StateUpdateResult::UNCHANGED;
     }
-    static const void getSaveMap(JsonObject &root) 
+    static const void getSaveMap(JsonObject &root)
     {
         root["elevation"] = ClosedLoopControllerJsonRouter::getSaveMap();
         root["azimuth"] = ClosedLoopControllerJsonRouter::getSaveMap();
+        root["currentTarget"] = true;
+        root["currentSource"] = true;
+        root["sourcesMap"] = true;
+        root["targetsMap"] = true;
     }
-    static const JsonDocument getSaveMap() 
+    static const JsonDocument getSaveMap()
     {
         JsonDocument doc;
         JsonObject obj = doc.to<JsonObject>();
         getSaveMap(obj);
         return doc;
     }
+    static bool removeFromMap(String target, DirectionsMap &map);
+    static bool updateDirectionsMap(JsonVariant content, DirectionsMap &map);
+    static void readDirectionsMap(DirectionsMap &map, JsonObject object);
     static JsonRouter<HeliostatController> router;
 };
 
@@ -52,28 +59,69 @@ public:
 class HeliostatControllerState
 {
 public:
-    double azimuth;
-    double elevation;
-    
+    String currentSource;
+    String currentTarget;
+    DirectionsMap sourcesMap = {};
+    DirectionsMap targetsMap = {};
+
     static void read(HeliostatControllerState &state, JsonObject &root) {
-        root["azimuth"] = state.azimuth;
-        root["elevation"] = state.elevation;
+        root["currentSource"] = state.currentSource;
+        root["currentTarget"] = state.currentTarget;
+        JsonObject sourcesMapJson = root["sourcesMap"].to<JsonObject>();
+        readDirectionsMap(state.sourcesMap, sourcesMapJson);
+        JsonObject targetsMapJson = root["targetsMap"].to<JsonObject>();
+        readDirectionsMap(state.targetsMap, targetsMapJson);
     }
 
-    static void readState(HeliostatController &controller, JsonObject &root) {
-        root["azimuth"] = controller.azimuthController.getAngle();
-        root["elevation"] = controller.elevationController.getAngle();
+    static void readDirectionsMap(DirectionsMap&map, JsonObject &object) 
+    {
+        for (auto &dir : map) { 
+            JsonObject obj = object[dir.first];
+            obj["elevation"] = dir.second.elevation;
+            obj["azimuth"] = dir.second.azimuth;
+        }
     }
 
     static StateUpdateResult update(JsonObject &root, HeliostatControllerState &state) {
-        state.azimuth = root["azimuth"] | 0.;
-        state.elevation = root["elevation"] | 45.;
+        state.currentSource = root["currentSource"] | "";
+        state.currentTarget = root["currentTarget"] | "";
+        for (auto source : root["sourcesMap"].as<JsonObject>()) {
+            String key = String(source.key().c_str());
+            if (state.sourcesMap.find(key) != state.sourcesMap.end()) {
+                state.sourcesMap[key].azimuth = source.value()["azimuth"] | state.sourcesMap[key].azimuth;
+                state.sourcesMap[key].elevation = source.value()["elevation"] | state.sourcesMap[key].elevation;
+            }
+            else {
+                state.sourcesMap[key] = {source.value()["azimuth"], source.value()["elevation"]};
+            }
+        }
+        for (auto target : root["targetsMap"].as<JsonObject>()) {
+            String key = String(target.key().c_str());
+            if (state.targetsMap.find(key) != state.targetsMap.end()) {
+                state.targetsMap[key].azimuth = target.value()["azimuth"] | state.targetsMap[key].azimuth;
+                state.targetsMap[key].elevation = target.value()["elevation"] | state.targetsMap[key].elevation;
+            }
+            else {
+                state.targetsMap[key] = {target.value()["azimuth"], target.value()["elevation"]};
+            }
+        }
         return StateUpdateResult::CHANGED;
     }
 
+    static void readController(HeliostatController &controller, JsonObject &root) {
+        root["currentSource"] = controller.currentSource;
+        root["currentTarget"] = controller.currentTarget;
+        JsonObject sourcesMapJson = root["sourcesMap"].to<JsonObject>();
+        readDirectionsMap(controller.sourcesMap, sourcesMapJson);
+        JsonObject targetsMapJson = root["targetsMap"].to<JsonObject>();
+        readDirectionsMap(controller.targetsMap, targetsMapJson);
+    }
+
     static void updateController(HeliostatControllerState &state, HeliostatController &controller) {
-        controller.azimuthController.setAngle(state.azimuth);
-        controller.elevationController.setAngle(state.elevation);
+        controller.currentSource = state.currentSource;
+        controller.currentTarget = state.currentTarget;
+        controller.sourcesMap = state.sourcesMap;
+        controller.targetsMap = state.targetsMap;
     }
 };
 
@@ -83,21 +131,22 @@ public:
     HeliostatControllerStateService(EventSocket *socket, FS *fs, HeliostatController &controller) :
         _eventEndpoint(HeliostatControllerState::read, HeliostatControllerState::update, this, socket, "heliostat-control"),
         _fsPersistence(HeliostatControllerState::read, HeliostatControllerState::update, this, fs, "/config/heliostat-control.json"),
-        controller(controller) 
+        controller(controller)
     {
         addUpdateHandler([&](const String &originId) { updateController(originId); }, false);
     }
-    void begin() 
+    void begin()
     {
         _eventEndpoint.begin();
         _fsPersistence.readFromFS();
+        updateState();
         updateController("begin");
     }
     void updateState()
     {
         JsonDocument json;
         JsonObject jsonObject = json.to<JsonObject>();
-        _state.readState(controller, jsonObject);
+        _state.readController(controller, jsonObject);
         update(jsonObject, _state.update, "stateUpdate");
     }
 
@@ -106,7 +155,7 @@ private:
     FSPersistence<HeliostatControllerState> _fsPersistence;
     HeliostatController &controller;
 
-    void updateController(const String &originId) 
+    void updateController(const String &originId)
     {
         if (originId != "stateUpdate") {
             HeliostatControllerState::updateController(_state, controller);
@@ -121,9 +170,10 @@ public:
     HeliostatService(PsychicHttpServer *server,
                         EventSocket *socket,
                         FS *fs,
-                        SecurityManager *securityManager, 
+                        SecurityManager *securityManager,
                         HeliostatController &controller) :
                             _httpRouterEndpoint(_router.read, _router.update, this, server, "/rest/heliostat", securityManager),
+                            _eventEndpoint(_router.read, _router.update, this, socket, "heliostat-service"),
                             _fsPersistence(_router.readForSave, _router.update, this, fs, "/config/heliostat.json"),
                             _stateService(socket, fs, controller),
                             StatefulService(controller) {}
@@ -132,6 +182,7 @@ public:
 
 private:
     HeliostatControllerStateService _stateService;
+    EventEndpoint<HeliostatController&> _eventEndpoint;
     HttpRouterEndpoint<HeliostatController&> _httpRouterEndpoint;
     FSPersistence<HeliostatController&> _fsPersistence;
     HeliostatControllerJsonRouter _router;
@@ -145,7 +196,7 @@ private:
 //         file(filePath, fs),
 //         server(server),
 //         controller(controller) {}
-//     void begin() 
+//     void begin()
 //     {
 //         // socket->registerEvent(eventName);
 //         // socket->onEvent(eventName, [&](JsonObject &root, int originID) {
@@ -157,7 +208,7 @@ private:
 //         // socket->onSubscribe(eventName, [&](const String &originID) {
 //         //     JsonDocument doc;
 //         //     JsonObject obj = doc.to<JsonObject>();
-//         //     router.serialize(controller, obj); 
+//         //     router.serialize(controller, obj);
 //         // });
 //         // ESP_LOGI("Heliostat Service", "Registered Json Event : %s", eventName);
 //         JsonDocument savedState = file.readFromFS();
@@ -180,7 +231,7 @@ private:
 //             JsonDocument requestBody;
 //             if (deserializeJson(requestBody, request->body()) == DeserializationError::Ok) {
 //                 obj.set(requestBody.as<JsonObject>());
-//                 ESP_LOGV("HTTP GET", "Json %s", requestBody.as<String>().c_str());   
+//                 ESP_LOGV("HTTP GET", "Json %s", requestBody.as<String>().c_str());
 //             }
 //             router.serialize(controller, response.getRoot());
 //             response.getRoot() = obj;
@@ -250,7 +301,7 @@ private:
 //         doc["azimuth"] = closedLoopControllerRouter.getSaveMap();
 //         return doc;
 //     }
-//     void emitEvent(JsonObject &json) 
+//     void emitEvent(JsonObject &json)
 //     {
 //         String jsonStr;
 //         serializeJson(json, jsonStr);
@@ -284,9 +335,10 @@ private:
 //         {"elevation", [&](HeliostatController &controller, JsonVariant content) {
 //             closedLoopControllerRouter.router.serialize(controller.elevationController, content);
 //         }}
-//     } 
+//     }
 //     //, [&](JsonObject event) {emitEvent(event);}
 //     );
 // };
 
 #endif
+

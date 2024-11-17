@@ -12,26 +12,37 @@
 	import type { ControllerState } from '$lib/types/models'
 	import ControllerSettings from './ControllerSettings.svelte';
 
-	type HeliostatControllerState = {
+	type Direction = {
 		azimuth: number;
 		elevation: number;
 	}
 
-	let heliostatControllerStateEvent = "heliostat-control"
+	type HeliostatControllerState = {
+		currentSource: string;
+		currentTarget: string;
+		sourcesMap: {
+			[key: string]: Direction
+		}
+		targetsMap: {
+			[key: string]: Direction
+		}
+	}
+
+	let heliostatControllerStateEvent = "heliostat-service"
 
 	let heliostatControllerState : HeliostatControllerState;
 
+	let selectedTarget: Direction;
+	$: selectedTarget = heliostatControllerState?.targetsMap[heliostatControllerState.currentTarget];
 
-	type HeliostatControlState = {
-		azimuth?: ControllerState;
-		elevation?: ControllerState;
-	}
+	let selectedSource: Direction;
+	$: selectedSource = heliostatControllerState?.sourcesMap[heliostatControllerState.currentSource];
 
-	let controlState : HeliostatControlState = {};
 
 	onMount(() => {
 		socket.on<HeliostatControllerState>(heliostatControllerStateEvent, (data) => {
 			heliostatControllerState = data;
+			console.log(data);
 		});
 		// socket.on("heliostat-service", (data) => {
 		// 	controlState = Object.assign(controlState, data);
@@ -49,23 +60,29 @@
 <SettingsCard collapsible={false}>
 	<Light slot="icon" class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
 	<span slot="title">Heliostat Control</span>
-	{#if heliostatControllerState}
+	{#if selectedTarget}
 	<div class="w-full">
 		<Slider 
 			label="Azimuth" 
-			bind:value={heliostatControllerState.azimuth}
+			bind:value={selectedTarget.azimuth}
 			min={0} 
 			max={360} 
 			step={0.01}
-			onChange={() => socket.sendEvent(heliostatControllerStateEvent, heliostatControllerState)}
+			onChange={() => {
+				heliostatControllerState.targetsMap[heliostatControllerState.currentTarget] = selectedTarget;
+				socket.sendEvent(heliostatControllerStateEvent, heliostatControllerState);
+			}}
 		></Slider>
 		<Slider 
 			label="Elevation" 
-			bind:value={heliostatControllerState.elevation}
+			bind:value={selectedTarget.elevation}
 			min={0} 
 			max={360} 
 			step={0.01}
-			onChange={() => socket.sendEvent(heliostatControllerStateEvent, heliostatControllerState)}
+			onChange={() => {
+				heliostatControllerState.targetsMap[heliostatControllerState.currentTarget] = selectedTarget;
+				socket.sendEvent(heliostatControllerStateEvent, heliostatControllerState);
+			}}
 		></Slider>
 	</div>
 	{/if}
