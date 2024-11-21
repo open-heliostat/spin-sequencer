@@ -28,12 +28,12 @@ void StepperSettingsService::begin()
     _eventEndpoint.begin();
     _fsPersistence.readFromFS();
     // _stepper->init();
-    onConfigUpdated();
+    // onConfigUpdated();
     for (int i = 0; i < _steppers.size(); i++) {
         if (_state.settings[i].enableOnStart) _steppers[i]->enable();
         else _steppers[i]->disable();
     }
-    // updateState();
+    updateState();
 }
 
 // int32_t StepperSettingsService::getMaxSpeed() {
@@ -50,7 +50,8 @@ MultiStepperSettings StepperSettingsService::getState() {
 
 void StepperSettingsService::onConfigUpdated()
 {
-    for (int i = 0; i < _steppers.size(); i++) {        auto settings = _state.settings[i];
+    for (int i = 0; i < _steppers.size(); i++) {        
+        auto settings = _state.settings[i];
         auto stepper = *_steppers[i];
         stepper.maxSpeed = settings.maxSpeed;
         stepper.maxAccel = settings.maxAcceleration;
@@ -59,10 +60,14 @@ void StepperSettingsService::onConfigUpdated()
     }
 }
 
-// void StepperSettingsService::updateState() {
-    
-//     DynamicJsonDocument json(1024);
-//     JsonObject jsonObject = json.to<JsonObject>();
-//     _state.readState(_stepper, jsonObject);
-//     update(jsonObject, _state.update, "timer");
-// }
+void StepperSettingsService::updateState() 
+{
+    for (int i = 0; i < _steppers.size(); i++) {           
+        auto settings = _state.settings[i];
+        auto stepper = *_steppers[i];  
+        JsonDocument json;
+        JsonObject jsonObject = json.to<JsonObject>();
+        settings.readState(stepper, jsonObject);
+        update(jsonObject, _state.update, "timer");
+    }
+}

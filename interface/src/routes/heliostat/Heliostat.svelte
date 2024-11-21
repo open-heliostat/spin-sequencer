@@ -10,7 +10,7 @@
 	import Slider from '$lib/components/Slider.svelte';
 	import Checkbox from '$lib/components/Checkbox.svelte';
 	import type { ControllerState } from '$lib/types/models'
-	import ControllerSettings from './ControllerSettings.svelte';
+	import ControllerSettings from '../../lib/components/ControllerSettings.svelte';
 
 	type Direction = {
 		azimuth: number;
@@ -42,7 +42,7 @@
 	onMount(() => {
 		socket.on<HeliostatControllerState>(heliostatControllerStateEvent, (data) => {
 			heliostatControllerState = data;
-			console.log(data);
+			// console.log(data);
 		});
 		// socket.on("heliostat-service", (data) => {
 		// 	controlState = Object.assign(controlState, data);

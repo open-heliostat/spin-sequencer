@@ -18,9 +18,11 @@
 	onMount(() => {
 		socket.on<MultiStepperControl>(stepperControlEvent, (data) => {
 			steppersControl = data;
+			// console.log(data)
 		});
 		socket.on<MultiStepperSettings>(stepperSettingsEvent, (data) => {
 			steppersSettings = data;
+			// console.log(data)
 		});
 	});
 
@@ -43,7 +45,10 @@
 		></StepperControlComp>
 		<StepperSettingsComp
 			stepperSettings={steppersSettings?.steppers[i]}
-			onChange={() => socket.sendEvent(stepperSettingsEvent, steppersSettings)}
+			onChange={() => {
+					steppersSettings.steppers[i] = steppersSettings?.steppers[i];
+					socket.sendEvent(stepperSettingsEvent, steppersSettings);
+			}}
 		></StepperSettingsComp>
 	</div>
 </SettingsCard>

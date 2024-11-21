@@ -6,6 +6,8 @@
 #include <StatelessService.h>
 #include <HttpRouterEndpoint.h>
 
+#include <StepperService.h>
+
 #include <closedloopcontroller.h>
 
 #define CL_CONTROLLER_STATE_EVENT "controller"
@@ -42,6 +44,7 @@ public:
         root["limits"]["enabled"] = true;
         root["limits"]["begin"] = true;
         root["limits"]["end"] = true;
+        root["enabled"] = true;
     }
     static const JsonDocument getSaveMap() 
     {

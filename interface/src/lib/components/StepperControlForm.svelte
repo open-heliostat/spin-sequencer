@@ -2,9 +2,9 @@
 	import Stop from '~icons/tabler/hand-stop';
 	import Slider from '$lib/components/Slider.svelte';
 	import Checkbox from '$lib/components/Checkbox.svelte';
-	import type { StepperControl, StepperDiag } from '$lib/types/models';
+	import type { StepperControlState, StepperDiag } from '$lib/types/models';
 
-	export let stepperControl: StepperControl;
+	export let stepperControl: StepperControlState;
 	export let onChange: () => void;
 
 </script>
@@ -16,7 +16,7 @@
 </style>
 
 <div class="w-full grid grid-flow-row grid-form items-center">
-	<Checkbox
+	<!-- <Checkbox
 		label="Enable"
 		bind:value={stepperControl.isEnabled}
 		{onChange}
@@ -25,7 +25,7 @@
 		label="Direction"
 		bind:value={stepperControl.direction}
 		{onChange}
-	></Checkbox>
+	></Checkbox> -->
 	<Slider
 		label="Speed"
 		min={0}
@@ -36,8 +36,8 @@
 	></Slider>
 	<Slider
 		label="Move"
-		min={0}
-		max={1}
+		min={-180.}
+		max={180.}
 		step={0.01}
 		bind:value={stepperControl.move}
 		{onChange}
@@ -47,7 +47,7 @@
 		min={0}
 		max={1}
 		step={0.01}
-		bind:value={stepperControl.acceleration}
+		bind:value={stepperControl.accel}
 		{onChange}
 	></Slider>
 </div>

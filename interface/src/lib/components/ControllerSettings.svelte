@@ -1,15 +1,19 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
     import Collapsible from '$lib/components/Collapsible.svelte';
-	import type { ControllerState } from '$lib/types/models'
+	import type { ControllerState, StepperDiag } from '$lib/types/models'
 	import Slider from '$lib/components/Slider.svelte';
 	import Checkbox from '$lib/components/Checkbox.svelte';
 	import GridForm from '$lib/components/GridForm.svelte';
 	import { user } from '$lib/stores/user';
 	import { page } from '$app/stores';
 	import { notifications } from '$lib/components/toasts/notifications';
-	import ChartComp from './ChartComp.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
+	import StepperStatusComp from '$lib/components/StepperStatusComp.svelte';
+	import ChartComp from '$lib/components/ChartComp.svelte';
+	import SettingsCard from './SettingsCard.svelte';
+	import StepperControlForm from './StepperControlForm.svelte';
+	import StepperSettingsForm from './StepperSettingsForm.svelte';
 
     export let label: string;
     export let restPath : string;
@@ -50,7 +54,7 @@
 			});
 			if (response.status == 200) {
 				data = await response.json();
-                // console.log(data);
+                console.log(data);
 			} else {
 				notifications.error('Wrong Path.', 3000);
 			}
@@ -65,6 +69,7 @@
         const res = await fetch(restPath);
         const data = await res.json();
         controllerState = data;
+        // console.log(data);
         return data;
         // return updateJsonRest(restPath, controllerState);
     }
@@ -105,12 +110,16 @@
 
 </script>
 
-<Collapsible open={true} class="shadow-lg">
+<SettingsCard>
 	<span slot="title">{label} Controller</span>
     {#await getControllerState()}
     <Spinner></Spinner>
     {:then nothing}
         <div>
+            {#await fetch(restPath + '/stepper/diag').then(async (res) => await res.json())}
+            {:then data} 
+                <StepperStatusComp stepperControl={data}></StepperStatusComp>
+            {/await}
             <!-- <Slider 
                 label="Position" 
                 bind:value={controllerState.position}
@@ -121,6 +130,11 @@
             ></Slider> -->
             <span class="text-lg">Control</span>
             <GridForm>
+                <Checkbox 
+                    label="Enable" 
+                    bind:value={controllerState.enabled}
+                    onChange={postControllerState}
+                ></Checkbox>
                 <Slider 
                     label="Target" 
                     bind:value={controllerState.target}
@@ -213,14 +227,32 @@
                     on:click={getCalibrationOffsets}
                     ><span>Get Data</span></button
                 >
-                {#if calibrationOffsets?.length == controllerState.calibration.steps}
+                <!-- {#if calibrationOffsets?.length == controllerState.calibration.steps}
                 <button class="btn btn-primary inline-flex items-center" 
                     on:click={saveCalibration}
                     ><span>Save</span></button
                 >
-                {/if}
+                {/if} -->
             </div>
         </div>
     {/await}
+    
+    <Collapsible>
+        <span slot="title">{label} Stepper</span>
+        {#await fetch(restPath + '/stepper/control').then(async (res) => await res.json())}
+        {:then data} 
+            <StepperControlForm 
+                stepperControl={data}
+                onChange={()=>{}}
+            ></StepperControlForm>
+        {/await}
+        {#await fetch(restPath + '/stepper/config').then(async (res) => await res.json())}
+        {:then data} 
+            <StepperSettingsForm 
+                stepperSettings={data}
+                onChange={()=>{}}
+            ></StepperSettingsForm>
+        {/await}
+    </Collapsible>
 
-</Collapsible>
+</SettingsCard>

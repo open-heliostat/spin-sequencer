@@ -53,9 +53,9 @@
 			feature: true,
 		},
 		{
-			title: 'Controller',
+			title: 'Controllers',
 			icon: Control,
-			href: '/controller',
+			href: '/controllers',
 			feature: true,
 		},
 		{

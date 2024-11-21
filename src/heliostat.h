@@ -45,7 +45,7 @@ public:
     }
 
     void reflectCurrentSource() {
-        setPosition(reflect(sourcesMap[currentSource], targetsMap[currentTarget]));
+        // setPosition(reflect(sourcesMap[currentSource], targetsMap[currentTarget]));
     }
 
     void run() 

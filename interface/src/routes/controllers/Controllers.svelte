@@ -8,6 +8,7 @@
 	import Checkbox from '$lib/components/Checkbox.svelte';
 	import Text from '$lib/components/Text.svelte';
 	import Collapsible from '$lib/components/Collapsible.svelte';
+	import ControllerSettings from '$lib/components/ControllerSettings.svelte';
 
 	const closedLoopControllerEvent = "controller"
 	const closedLoopSettingsEvent = "controllersettings"
@@ -35,19 +36,20 @@
 	let closedLoopControllers: ClosedLoopControllers = {controllers: []};
 	let closedLoopSettings: ClosedLoopSettingsMulti = {controllers: []};
 
-	onMount(() => {
-		socket.on<ClosedLoopControllers>(closedLoopControllerEvent, (data) => {
-			closedLoopControllers = data;
-		});
-		socket.on<ClosedLoopSettingsMulti>(closedLoopSettingsEvent, (data) => {
-			closedLoopSettings = data;
-		});
-	});
+	// onMount(() => {
+	// 	socket.on<ClosedLoopControllers>(closedLoopControllerEvent, (data) => {
+	// 		closedLoopControllers = data;
+	// 	});
+	// 	socket.on<ClosedLoopSettingsMulti>(closedLoopSettingsEvent, (data) => {
+	// 		closedLoopSettings = data;
+	// 	});
+	// });
 
-	onDestroy(() => {
-		socket.off(closedLoopControllerEvent);
-		socket.off(closedLoopSettingsEvent);
-	});
+	// onDestroy(() => {
+	// 	socket.off(closedLoopControllerEvent);
+	// 	socket.off(closedLoopSettingsEvent);
+	// });
+
 
 </script>
 
@@ -128,3 +130,16 @@
 	</Collapsible>
 </SettingsCard>
 {/each}
+
+
+<ControllerSettings
+	label="Azimuth"
+	restPath="/rest/heliostat/azimuth"
+	>
+</ControllerSettings>
+
+<ControllerSettings 
+	label="Elevation"
+	restPath="/rest/heliostat/elevation"
+	>
+</ControllerSettings>

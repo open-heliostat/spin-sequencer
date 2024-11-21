@@ -34,10 +34,18 @@ public:
         settings.name = root["name"] | "Stepper";
         settings.enableOnStart = root["enableOnStart"] | false;
         settings.invertDirection = root["invertDirection"] | false;
-        settings.maxSpeed = root["maxSpeed"] | 50;
-        settings.maxAcceleration = root["maxAcceleration"] | 50;
-        settings.current = root["current"] | 350;
+        settings.maxSpeed = root["maxSpeed"].as<double>();
+        settings.maxAcceleration = root["maxAcceleration"].as<double>();
+        settings.current = root["current"].as<double>();
+        Serial.println(root["current"].as<String>());
         return StateUpdateResult::CHANGED;
+    }
+
+    static void readState(TMC5160Controller &stepper, JsonObject &root) {
+        root["invertDirection"] = stepper.driver.shaft();
+        root["maxSpeed"] = stepper.getMaxSpeed();
+        root["maxAcceleration"] = stepper.getAcceleration();
+        root["current"] = stepper.driver.rms_current();
     }
 };
 
@@ -72,6 +80,7 @@ public:
                            FS *fs,
                            std::vector<TMC5160Controller*>& steppers);
     void begin();
+    void updateState();
     int32_t getMaxSpeed();
     int32_t getMaxAccel();
     MultiStepperSettings getState();
