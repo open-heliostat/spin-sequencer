@@ -127,6 +127,13 @@ JsonRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::router = JsonRo
         }
         else return false;
     }},
+    {"offset", [](JsonVariant content, ClosedLoopController &controller) {
+        if (content.is<double>()) {
+            controller.setEncoderOffset(content.as<double>());
+            return true;
+        }
+        else return false;
+    }},
     {"calibration", [](JsonVariant content, ClosedLoopController &controller) {
         return calibrationRouter.parse(content, controller);
     }},
@@ -147,8 +154,11 @@ JsonRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::router = JsonRo
     {"tolerance", [](ClosedLoopController &controller, const JsonVariant target) {
         target.set(controller.tolerance);
     }},
+    {"offset", [](ClosedLoopController &controller, const JsonVariant target) {
+        target.set(controller.encoderOffset);
+    }},
     {"enabled", [](ClosedLoopController &controller, const JsonVariant target) {
-        target.set(controller.enabled);
+        target.set(controller.encoderOffset);
     }},
     {"limits", [](ClosedLoopController &controller, const JsonVariant target) {
         target["enabled"] = controller.hasLimits;

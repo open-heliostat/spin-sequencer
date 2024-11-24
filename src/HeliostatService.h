@@ -175,13 +175,13 @@ public:
                             _httpRouterEndpoint(_router.read, _router.update, this, server, "/rest/heliostat", securityManager),
                             _eventEndpoint(_router.read, _router.update, this, socket, "heliostat-service"),
                             _fsPersistence(_router.readForSave, _router.update, this, fs, "/config/heliostat.json"),
-                            _stateService(socket, fs, controller),
+                            // _stateService(socket, fs, controller),
                             StatefulService(controller) {}
     void begin();
     void loop();
 
 private:
-    HeliostatControllerStateService _stateService;
+    // HeliostatControllerStateService _stateService;
     EventEndpoint<HeliostatController&> _eventEndpoint;
     HttpRouterEndpoint<HeliostatController&> _httpRouterEndpoint;
     FSPersistence<HeliostatController&> _fsPersistence;

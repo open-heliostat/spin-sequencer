@@ -57,6 +57,14 @@
 							bind:value={stepperSettings.driverCurrent}
 							{onChange}
 						></Slider>
+						<Slider
+							label="Steps Per Rotation"
+							min={0}
+							max={4000}
+							step={1}
+							bind:value={stepperSettings.stepsPerRot}
+							{onChange}
+						></Slider>
 					</div>
 				</div>
 			</form>

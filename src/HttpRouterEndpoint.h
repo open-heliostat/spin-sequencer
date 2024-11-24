@@ -52,7 +52,7 @@ public:
         while ((index = path.indexOf('/')) != -1)
         {
             String segment = path.substring(0, index);
-            ESP_LOGI("HTTP SUBPATH", "%s", segment.c_str());
+            ESP_LOGV("HTTP SUBPATH", "%s", segment.c_str());
             if (index > 0) obj = obj[segment].to<JsonObject>();
             path = path.substring(index+1);
         }
@@ -83,24 +83,24 @@ public:
                         [this](PsychicRequest *request)
                         {
                             PsychicJsonResponse response = PsychicJsonResponse(request, false);
-                            ESP_LOGI("HTTP GET", "Path : %s, Body: %s", request->path().c_str(), request->body().c_str());
+                            ESP_LOGV("HTTP GET", "Path : %s, Body: %s", request->path().c_str(), request->body().c_str());
                             JsonObject jsonObject = response.getRoot();
                             String path(request->path());
                             path = path.substring(_pathLength);
-                            ESP_LOGI("HTTP GET", "Subpath %s", path.c_str());
+                            ESP_LOGV("HTTP GET", "Subpath %s", path.c_str());
                             JsonObject obj = resolvePath(path, jsonObject);
                             JsonDocument requestBody;
                             if (deserializeJson(requestBody, request->body()) == DeserializationError::Ok) {
                                 obj.set(requestBody.as<JsonObject>());
-                                ESP_LOGI("HTTP GET", "Json %s", requestBody.as<String>().c_str());   
+                                ESP_LOGV("HTTP GET", "Json %s", requestBody.as<String>().c_str());   
                             }
                             _statefulService->read(jsonObject, _stateReader);
                             response.getRoot() = obj;
-                            ESP_LOGI("HTTP GET", "Response %s", response.getRoot().as<String>().c_str());
+                            ESP_LOGV("HTTP GET", "Response %s", response.getRoot().as<String>().c_str());
                             return response.send();
                         },
                         _authenticationPredicate));
-        ESP_LOGI("HttpRouterEndpoint", "Registered GET endpoint: %s", wildcardPath.c_str());
+        ESP_LOGV("HttpRouterEndpoint", "Registered GET endpoint: %s", wildcardPath.c_str());
 
         // POST
         _server->on(wildcardPath.c_str(),
@@ -108,7 +108,7 @@ public:
                     _securityManager->wrapCallback(
                         [this](PsychicRequest *request, JsonVariant &json)
                         {
-                            ESP_LOGI("HTTP POST", "Path : %s, Json : %s", request->path().c_str(), json.as<String>().c_str());
+                            ESP_LOGV("HTTP POST", "Path : %s, Json : %s", request->path().c_str(), json.as<String>().c_str());
 
                             if (!json.is<JsonObject>())
                             {
@@ -143,7 +143,7 @@ public:
                         },
                         _authenticationPredicate));
 
-        ESP_LOGI("HttpRouterEndpoint", "Registered POST endpoint: %s", wildcardPath.c_str());
+        ESP_LOGV("HttpRouterEndpoint", "Registered POST endpoint: %s", wildcardPath.c_str());
     }
 };
 

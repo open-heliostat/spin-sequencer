@@ -34,10 +34,10 @@ public:
     static const void getSaveMap(JsonObject &root) 
     {
         root["config"]["enabled"] = true;
-        root["config"]["invertDir"] = true;
+        root["config"]["invertDirection"] = true;
         root["config"]["maxSpeed"] = true;
         root["config"]["maxAccel"] = true;
-        root["config"]["stepsPerRotation"] = true;
+        root["config"]["stepsPerRot"] = true;
         root["config"]["driverCurrent"] = true;
     }
     static const JsonDocument getSaveMap() 

@@ -51,7 +51,7 @@ public:
     void run() 
     {
         unsigned long now = millis();
-        if (now - lastCommand > 100) {
+        if (now - lastCommand > 1000) {
             reflectCurrentSource();
             lastCommand = now;
         }
@@ -61,6 +61,8 @@ public:
 
     void init() 
     {
+        azimuthController.setAngle(azimuthController.getAngle());
+        elevationController.setAngle(elevationController.getAngle());
     }
 
     String currentSource = "Sun";

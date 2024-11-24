@@ -19,6 +19,7 @@
 	import MQTT from '~icons/tabler/topology-star-3';
 	import NTP from '~icons/tabler/clock-check';
 	import GPS from '~icons/tabler/satellite';
+	import Rotation from '~icons/tabler/rotate-dot'
 	import Metrics from '~icons/tabler/report-analytics';
 	import { page } from '$app/stores';
 	import { user } from '$lib/stores/user';
@@ -54,16 +55,15 @@
 		},
 		{
 			title: 'Controllers',
-			icon: Control,
+			icon: Rotation,
 			href: '/controllers',
 			feature: true,
 		},
 		{
-			title: 'Stepper',
+			title: 'Steppers',
 			icon: Control,
-			href: '/stepper',
-			feature: $page.data.features.stepper,
-			active: false
+			href: '/steppers',
+			feature: true
 		},
 		{
 			title: 'Connections',

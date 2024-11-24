@@ -43,9 +43,9 @@ JsonRouter<HeliostatController> HeliostatControllerJsonRouter::router = JsonRout
     {"targetsMap", [&](JsonVariant content, HeliostatController &controller) {
         return updateDirectionsMap(content, controller.targetsMap);
     }},
-    {"sourcesMap", [&](JsonVariant content, HeliostatController &controller) {
-        return updateDirectionsMap(content, controller.sourcesMap);
-    }}
+    // {"sourcesMap", [&](JsonVariant content, HeliostatController &controller) {
+    //     return updateDirectionsMap(content, controller.sourcesMap);
+    // }}
 },
 {
     {"azimuth", [&](HeliostatController &controller, JsonVariant content) {
@@ -75,6 +75,7 @@ void HeliostatControllerJsonRouter::readDirectionsMap(DirectionsMap &map, JsonOb
         JsonObject obj = object[dir.first].to<JsonObject>();
         obj["elevation"] = dir.second.elevation;
         obj["azimuth"] = dir.second.azimuth;
+        Serial.println(dir.first);
     }
 }
 
@@ -105,10 +106,11 @@ bool HeliostatControllerJsonRouter::removeFromMap(String target, DirectionsMap &
 
 void HeliostatService::begin() 
 {
-    _stateService.begin();
+    // _stateService.begin();
     _eventEndpoint.begin();
     _httpRouterEndpoint.begin();
     _fsPersistence.readFromFS();
+    _state.init();
 }
 void HeliostatService::loop() 
 {

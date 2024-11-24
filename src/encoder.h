@@ -24,7 +24,7 @@ public:
         if (now - lastPoll >= maxPollInterval) {
             int value = readEncoder();
             lastPoll = now;
-            if (value >= 0) {
+            if (value > 0) {
                 angle = value*360./16384.;
                 newData = true;
                 return true;

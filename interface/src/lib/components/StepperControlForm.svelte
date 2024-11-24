@@ -3,9 +3,30 @@
 	import Slider from '$lib/components/Slider.svelte';
 	import Checkbox from '$lib/components/Checkbox.svelte';
 	import type { StepperControlState, StepperDiag } from '$lib/types/models';
+	import { postJsonRest, getJsonRest} from "$lib/stores/rest"
+	import { onDestroy, onMount } from "svelte";
+	import Stepper from '../../routes/stepper/Stepper.svelte';
 
-	export let stepperControl: StepperControlState;
-	export let onChange: () => void;
+	export let restPath : string;
+	let stepperControl : StepperControlState;
+
+	let intervalID : any = null;
+	onMount(() => {
+		intervalID = setInterval(() => {
+			getStepperControl();
+		}, 2000);
+	});
+	onDestroy(() => {
+		clearInterval(intervalID);
+	});
+
+	async function getStepperControl() {
+		return getJsonRest(restPath, stepperControl).then(data => stepperControl = data);
+	}
+	async function postStepperControl(control: StepperControlState) {
+		return postJsonRest(restPath, control);
+	}
+
 
 </script>
 
@@ -15,6 +36,7 @@
 	}
 </style>
 
+{#await getStepperControl() then nothing}
 <div class="w-full grid grid-flow-row grid-form items-center">
 	<!-- <Checkbox
 		label="Enable"
@@ -28,19 +50,19 @@
 	></Checkbox> -->
 	<Slider
 		label="Speed"
-		min={0}
-		max={1}
+		min={-1.}
+		max={1.}
 		step={0.01}
 		bind:value={stepperControl.speed}
-		{onChange}
+		onChange={()=>{postStepperControl(stepperControl)}}
 	></Slider>
 	<Slider
 		label="Move"
 		min={-180.}
 		max={180.}
-		step={0.01}
+		step={0.1}
 		bind:value={stepperControl.move}
-		{onChange}
+		onChange={()=>{postJsonRest(restPath, {move: stepperControl.move})}}
 	></Slider>
 	<Slider
 		label="Acceleration"
@@ -48,14 +70,15 @@
 		max={1}
 		step={0.01}
 		bind:value={stepperControl.accel}
-		{onChange}
+		onChange={()=>{postStepperControl(stepperControl)}}
 	></Slider>
 </div>
+{/await}
 <div class="flex flex-row flex-wrap justify-between gap-x-2">
 	<div class="flex-grow"></div>
 	<div>
 		<div>
-			<button class="btn btn-primary inline-flex items-center" on:click={() => {stepperControl.speed=0; onChange();}}
+			<button class="btn btn-primary inline-flex items-center" on:click={() => {stepperControl.speed=0; postStepperControl(stepperControl);}}
 				><Stop class="mr-2 h-5 w-5" /><span>Stop</span></button
 			>
 		</div>

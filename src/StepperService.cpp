@@ -3,13 +3,12 @@
 
 JsonRouter<TMC5160Controller> TMC5160ControllerJsonRouter::router = JsonRouter<TMC5160Controller>(
 {
-    
+    {"config", [](JsonVariant content, TMC5160Controller &controller) {
+        return configRouter.parse(content, controller);
+    }},
     {"control", [](JsonVariant content, TMC5160Controller &controller) {
         return controlRouter.parse(content, controller);
     }},
-    {"config", [](JsonVariant content, TMC5160Controller &controller) {
-        return configRouter.parse(content, controller);
-    }}
 },
 {
     {"control", [](TMC5160Controller &controller, const JsonVariant target) {
@@ -28,20 +27,15 @@ JsonRouter<TMC5160Controller> TMC5160ControllerJsonRouter::router = JsonRouter<T
         target["maxAccel"] = controller.maxAccel;
         target["invertDirection"] = controller.driver.shaft();
         target["driverCurrent"] = controller.driver.rms_current();
+        target["stepsPerRot"] = controller.stepsPerRotation;
     }}
 });
 
 JsonEventRouter<TMC5160Controller> TMC5160ControllerJsonRouter::controlRouter = JsonEventRouter<TMC5160Controller>({
-    {"speed", [](JsonVariant content, TMC5160Controller &controller) {
-        if (content.is<double>()) {
-            controller.setSpeed(content.as<double>());
-            return true;
-        }
-        else return false;
-    }},
-    {"move", [](JsonVariant content, TMC5160Controller &controller) {
-        if (content.is<double>()) {
-            controller.moveR(content.as<double>());
+    {"enabled", [](JsonVariant content, TMC5160Controller &controller) {
+        if (content.is<bool>()) {
+            if (content.as<bool>() == true) controller.enable();
+            else controller.disable();
             return true;
         }
         else return false;
@@ -53,17 +47,24 @@ JsonEventRouter<TMC5160Controller> TMC5160ControllerJsonRouter::controlRouter = 
         }
         else return false;
     }},
-    {"stop", [](JsonVariant content, TMC5160Controller &controller) {
-        controller.setSpeed(0);
-        return true;
-    }},
-    {"enabled", [](JsonVariant content, TMC5160Controller &controller) {
-        if (content.is<bool>()) {
-            if (content.as<bool>() == true) controller.enable();
-            else controller.disable();
+    {"speed", [](JsonVariant content, TMC5160Controller &controller) {
+        if (content.is<double>()) {
+            controller.setSpeed(content.as<double>());
             return true;
         }
         else return false;
+    }},
+    {"move", [](JsonVariant content, TMC5160Controller &controller) {
+        if (content.is<double>()) {
+            controller.setMaxSpeed();
+            controller.moveR(content.as<double>());
+            return true;
+        }
+        else return false;
+    }},
+    {"stop", [](JsonVariant content, TMC5160Controller &controller) {
+        controller.setSpeed(0);
+        return true;
     }},
 });
 
@@ -100,6 +101,13 @@ JsonEventRouter<TMC5160Controller> TMC5160ControllerJsonRouter::configRouter = J
     {"invertDirection", [](JsonVariant content, TMC5160Controller &controller) {
         if (content.is<bool>()) {
             controller.driver.shaft(content.as<bool>());
+            return true;
+        }
+        else return false;
+    }},
+    {"stepsPerRot", [](JsonVariant content, TMC5160Controller &controller) {
+        if (content.is<int>()) {
+            controller.stepsPerRotation = content.as<int>();
             return true;
         }
         else return false;

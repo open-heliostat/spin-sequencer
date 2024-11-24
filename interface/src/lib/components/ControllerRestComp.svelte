@@ -5,16 +5,11 @@
 	import Slider from '$lib/components/Slider.svelte';
 	import Checkbox from '$lib/components/Checkbox.svelte';
 	import GridForm from '$lib/components/GridForm.svelte';
-	import { user } from '$lib/stores/user';
-	import { page } from '$app/stores';
-	import { notifications } from '$lib/components/toasts/notifications';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import StepperStatusComp from '$lib/components/StepperStatusComp.svelte';
 	import ChartComp from '$lib/components/ChartComp.svelte';
 	import SettingsCard from './SettingsCard.svelte';
-	import StepperControlForm from './StepperControlForm.svelte';
-	import StepperSettingsForm from './StepperSettingsForm.svelte';
-	import StepperRestComp from './StepperRestComp.svelte';
+	import { getJsonRest, postJsonRest } from '$lib/stores/rest';
 
     export let label: string;
     export let restPath : string;
@@ -22,65 +17,35 @@
     let controllerState : ControllerState;
     let calibrationOffsets : number[] | undefined;
 
-    // onMount(() => {
-    //     getControllerState();
-    // });
+    let intervalID: any;
+    onMount(() => {
+        intervalID = setInterval(()=>{
+            getPosition();
+        }, 987);
+    });
+    onDestroy(()=> {
+        clearInterval(intervalID);
+    });
 
-    async function updateJsonRest<T>(path: string, destination : T) {
-		try {
-			const response = await fetch(path, {
-				method: 'GET',
-				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
-					'Content-Type': 'application/json'
-				}
-			});
-			let json = await response.json();
-            destination = json;
-		} catch (error) {
-			console.error('Error:', error);
-		}
-		return destination;
-	}
-
-    async function postJsonRest<T>(path: string, data: T) {
-		try {
-			const response = await fetch(path, {
-				method: 'POST',
-				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify(data)
-			});
-			if (response.status == 200) {
-				data = await response.json();
-                console.log(data);
-			} else {
-				notifications.error('Wrong Path.', 3000);
-			}
-		} catch (error) {
-			notifications.error('Error: ' + error, 3000);
-		}
-        // console.log(data);
-        return data;
-	}
+    async function getPosition() {
+        getJsonRest(restPath + "/position", controllerState.position).then((data) => controllerState.position = data);
+    }
 
     async function getControllerState() {
-        const res = await fetch(restPath);
-        const data = await res.json();
-        controllerState = data;
+        // const res = await fetch(restPath);
+        // const data = await res.json();
+        // controllerState = data;
         // console.log(data);
-        return data;
-        // return updateJsonRest(restPath, controllerState);
+        // return data;
+        return getJsonRest(restPath, controllerState).then((data) => controllerState = data);
     }
 
     function postControllerState() {
-        postJsonRest(restPath, controllerState).then((data) => controllerState = data);
+        postJsonRest(restPath, controllerState);
     }
 
     function getCalibrationOffsets() {
-        return updateJsonRest(restPath + '/calibration/offsets/', calibrationOffsets).then((data) => calibrationOffsets = data);
+        return getJsonRest(restPath + '/calibration/offsets/', calibrationOffsets).then((data) => calibrationOffsets = data);
     }
 
     let calibrationIntervalID : any;
@@ -118,6 +83,7 @@
     {:then nothing}
         <div>
             {#await fetch(restPath + '/stepper/diag').then(async (res) => await res.json())}
+            <Spinner></Spinner>
             {:then data} 
                 <StepperStatusComp stepperControl={data}></StepperStatusComp>
             {/await}
@@ -144,7 +110,14 @@
                     step={0.01}
                     onChange={postControllerState}
                 ></Slider>
-
+                <Slider 
+                    label="Offset" 
+                    bind:value={controllerState.offset}
+                    min={0} 
+                    max={360} 
+                    step={0.01}
+                    onChange={postControllerState}
+                ></Slider>
                 <Slider 
                     label="Tolerance" 
                     bind:value={controllerState.tolerance}
@@ -237,27 +210,4 @@
             </div>
         </div>
     {/await}
-    
-    <!-- <Collapsible>
-        <span slot="title">{label} Stepper</span>
-        {#await fetch(restPath + '/stepper/control').then(async (res) => await res.json())}
-        {:then data} 
-            <StepperControlForm 
-                stepperControl={data}
-                onChange={()=>{}}
-            ></StepperControlForm>
-        {/await}
-        {#await fetch(restPath + '/stepper/config').then(async (res) => await res.json())}
-        {:then data} 
-            <StepperSettingsForm 
-                stepperSettings={data}
-                onChange={()=>{}}
-            ></StepperSettingsForm>
-        {/await}
-    </Collapsible> -->
-    <!-- <Collapsible>
-        <span slot="title">{label} Stepper</span>
-        <StepperRestComp restPath={restPath + "/stepper"}></StepperRestComp>
-    </Collapsible> -->
-
 </SettingsCard>
