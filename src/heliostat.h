@@ -61,8 +61,16 @@ public:
 
     void init() 
     {
-        azimuthController.setAngle(azimuthController.getAngle());
-        elevationController.setAngle(elevationController.getAngle());
+        azimuthController.getAngle();
+        if (azimuthController.encoder.hasNewData()) {
+            azimuthController.targetAngle =  azimuthController.getAngle();
+            azimuthController.run();
+        }
+        elevationController.getAngle();
+        if (elevationController.encoder.hasNewData()) {
+            elevationController.targetAngle =  elevationController.getAngle();
+            elevationController.run();
+        }
     }
 
     String currentSource = "Sun";
