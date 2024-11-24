@@ -114,7 +114,7 @@ struct TMC5160Controller {
 
     void moveR(double angle) {
         stepper->moveTo(stepper->getCurrentPosition() + angle*stepsPerRotation/360. * microsteps);
-        ESP_LOGI("Driver", "MoveR %f", angle);
+        // ESP_LOGI("Driver", "MoveR %f", angle);
         // Serial.println(driver.XACTUAL());
         // driver.RAMPMODE(0);
         // driver.VSTART(100);

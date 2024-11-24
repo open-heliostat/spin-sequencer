@@ -10,6 +10,8 @@
 	import ChartComp from '$lib/components/ChartComp.svelte';
 	import SettingsCard from './SettingsCard.svelte';
 	import { getJsonRest, postJsonRest } from '$lib/stores/rest';
+	import DisableButton from './DisableButton.svelte';
+	import StopButton from './StopButton.svelte';
 
     export let label: string;
     export let restPath : string;
@@ -214,4 +216,13 @@
             </Collapsible>
         </div>
     {/await}
+    <div class="flex flex-row flex-wrap justify-between gap-x-2">
+        <div class="flex-grow"></div>
+        <div>
+            <div>
+                <DisableButton onClick={() => postJsonRest(restPath, {enabled: false, stepper: {control: {enabled: false}}})}></DisableButton>
+                <StopButton onClick={() => postJsonRest(restPath, {enabled: false, stepper: {control: {stop: {}}}})}></StopButton>
+            </div>
+        </div>
+    </div>
 </SettingsCard>

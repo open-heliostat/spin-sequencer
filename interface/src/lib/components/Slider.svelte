@@ -32,7 +32,7 @@
         max={max}
         step={step}
         class="input input-bordered"
-        style="height: 2rem;"
+        style="height: 2rem; width: 5rem"
         id={label}
         {disabled}
         bind:value={value}

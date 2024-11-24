@@ -158,7 +158,7 @@ JsonRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::router = JsonRo
         target.set(controller.encoderOffset);
     }},
     {"enabled", [](ClosedLoopController &controller, const JsonVariant target) {
-        target.set(controller.encoderOffset);
+        target.set(controller.enabled);
     }},
     {"limits", [](ClosedLoopController &controller, const JsonVariant target) {
         target["enabled"] = controller.hasLimits;

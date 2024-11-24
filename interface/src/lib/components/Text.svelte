@@ -12,5 +12,5 @@
     class="input"
     id={label}
     bind:value={value}
-    on:input={onChange}
+    on:change={onChange}
 />

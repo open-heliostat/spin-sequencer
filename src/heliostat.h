@@ -45,13 +45,16 @@ public:
     }
 
     void reflectCurrentSource() {
-        // setPosition(reflect(sourcesMap[currentSource], targetsMap[currentTarget]));
+        auto directionsMap = getDirectionsMap();
+        if (directionsMap.find(currentSource) != directionsMap.end() && directionsMap.find(currentTarget) != directionsMap.end()) {
+            setPosition(reflect(directionsMap[currentSource], directionsMap[currentTarget]));
+        }
     }
 
     void run() 
     {
         unsigned long now = millis();
-        if (now - lastCommand > 1000) {
+        if (enabled & now - lastCommand > 1000) {
             reflectCurrentSource();
             lastCommand = now;
         }
@@ -73,14 +76,51 @@ public:
         }
     }
 
+    bool enabled = true;
+
     String currentSource = "Sun";
     String currentTarget = "Default Target";
 
-    DirectionsMap sourcesMap = 
+    DirectionsMap getDirectionsMap() 
     {
-        {"Sun", {180., 90.}},
-        {"Target", {120., 15.}},
-    };
+        DirectionsMap map = 
+        {
+            {"Sun", {180., 90.}}
+        };
+        map.insert(targetsMap.begin(), targetsMap.end());
+        return map;
+    }
+
+    void addTarget(String name) 
+    {
+        targetsMap.insert({name, {120., 45.}});
+    }
+    
+    bool deleteTarget(String name) 
+    {
+        return targetsMap.erase(name) > 0;
+    }
+    
+    bool renameTarget(String oldName, String newName) 
+    {
+        if (targetsMap.find(oldName) != targetsMap.end()) {
+            targetsMap.insert({newName, targetsMap[oldName]});
+            deleteTarget(oldName);
+            return true;
+        }
+        else return false;
+    }
+
+    bool setTarget(String name, double azimuth, double elevation) 
+    {
+        if (targetsMap.find(name) != targetsMap.end()) {
+            targetsMap[name].azimuth = azimuth;
+            targetsMap[name].elevation = elevation;
+            return true;
+        }
+        else return false;
+    }
+
     DirectionsMap targetsMap = 
     {
         {"Default Target", {120., 15.}}

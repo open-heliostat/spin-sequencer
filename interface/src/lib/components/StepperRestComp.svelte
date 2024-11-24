@@ -48,10 +48,11 @@
 {/await}
 <StepperControlForm 
 	restPath={restPath + "/control"}
-></StepperControlForm>
-{#await getStepperConfig() then nothing} 
+	>
+	{#await getStepperConfig() then nothing} 
 	<StepperSettingsForm 
 		stepperSettings={stepperConfig}
 		onChange={()=>{postStepperConfig(stepperConfig).then((data) => stepperConfig = data)}}
 	></StepperSettingsForm>
-{/await}
+	{/await}
+</StepperControlForm>

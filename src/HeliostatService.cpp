@@ -10,42 +10,35 @@ JsonRouter<HeliostatController> HeliostatControllerJsonRouter::router = JsonRout
     }},
     {"currentTarget", [&](JsonVariant content, HeliostatController &controller) {
         if (content.is<String>()) {
-            if (controller.targetsMap.find(content.as<String>()) != controller.targetsMap.end()) {
-                controller.currentTarget = content.as<String>();
-                return true;
-            }
+            controller.currentTarget = content.as<String>();
+            return true;
         }
         return false;
     }},
     {"currentSource", [&](JsonVariant content, HeliostatController &controller) {
         if (content.is<String>()) {
-            if (controller.sourcesMap.find(content.as<String>()) != controller.sourcesMap.end()) {
-                controller.currentSource = content.as<String>();
-                return true;
-            }
+            controller.currentSource = content.as<String>();
+            return true;
         }
-        return false ;
+        return false;
     }},
-    {"addTarget", [&](JsonVariant content, HeliostatController &controller) {
+    {"add", [&](JsonVariant content, HeliostatController &controller) {
         JsonObject obj = content.as<JsonObject>();
         controller.targetsMap.insert({obj["name"] | "New target", {obj["azimuth"] | 180., obj["elevation"] | 30.}});
         return true;
     }},
-    {"removeTarget", [&](JsonVariant content, HeliostatController &controller) {
-        if (content.is<JsonObject>() && content["name"].is<String>()) {
-            return removeFromMap(content["name"].as<String>(), controller.targetsMap);
-        }
-        else if (content.is<String>()) {
-            return removeFromMap(content.as<String>(), controller.targetsMap);
-        }
-        else return false;
+    {"remove", [&](JsonVariant content, HeliostatController &controller) {
+        return controller.deleteTarget(content.as<String>());
     }},
-    {"targetsMap", [&](JsonVariant content, HeliostatController &controller) {
-        return updateDirectionsMap(content, controller.targetsMap);
+    {"rename", [&](JsonVariant content, HeliostatController &controller) {
+        return controller.renameTarget(content["oldName"].as<String>(), content["newName"].as<String>());
     }},
-    // {"sourcesMap", [&](JsonVariant content, HeliostatController &controller) {
-    //     return updateDirectionsMap(content, controller.sourcesMap);
-    // }}
+    {"set", [&](JsonVariant content, HeliostatController &controller) {
+        return controller.setTarget(content["name"].as<String>(), content["azimuth"].as<double>(), content["elevation"].as<double>());
+    }},
+    {"sourcesMap", [&](JsonVariant content, HeliostatController &controller) {
+        return updateDirectionsMap(content, controller.getDirectionsMap());
+    }}
 },
 {
     {"azimuth", [&](HeliostatController &controller, JsonVariant content) {
@@ -60,16 +53,13 @@ JsonRouter<HeliostatController> HeliostatControllerJsonRouter::router = JsonRout
     {"currentSource", [&](HeliostatController &controller, JsonVariant content)  {
         content.set(controller.currentSource);
     }},
-    {"targetsMap", [&](HeliostatController &controller, JsonVariant content)  {
-        readDirectionsMap(controller.targetsMap, content.to<JsonObject>());
-    }},
     {"sourcesMap", [&](HeliostatController &controller, JsonVariant content)  {
-        readDirectionsMap(controller.sourcesMap, content.to<JsonObject>());
-    }}
+        readDirectionsMap(controller.getDirectionsMap(), content.to<JsonObject>());
+    }},
 });
 
 
-void HeliostatControllerJsonRouter::readDirectionsMap(DirectionsMap &map, JsonObject object) 
+void HeliostatControllerJsonRouter::readDirectionsMap(DirectionsMap map, JsonObject object) 
 {
     for (auto &dir : map) { 
         JsonObject obj = object[dir.first].to<JsonObject>();
@@ -79,7 +69,7 @@ void HeliostatControllerJsonRouter::readDirectionsMap(DirectionsMap &map, JsonOb
     }
 }
 
-bool HeliostatControllerJsonRouter::updateDirectionsMap(JsonVariant content, DirectionsMap &map) 
+bool HeliostatControllerJsonRouter::updateDirectionsMap(JsonVariant content, DirectionsMap map) 
 {
     bool updated = false;
     if (content.is<JsonObject>()) {
@@ -95,7 +85,7 @@ bool HeliostatControllerJsonRouter::updateDirectionsMap(JsonVariant content, Dir
     return updated;
 }
 
-bool HeliostatControllerJsonRouter::removeFromMap(String target, DirectionsMap &map) 
+bool HeliostatControllerJsonRoutenameFromMap(String target, DirectionsMap &map) 
 {
     if (map.count(target) > 0) {
         map.erase(target);

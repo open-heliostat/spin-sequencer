@@ -78,19 +78,19 @@ LightStateService lightStateService = LightStateService(
 //     steppers,
 //     esp32sveltekit.getFeatureService());
 
-// SerialGPS gpsneo = SerialGPS(Serial1, TX, RX);
+SerialGPS gpsneo = SerialGPS(Serial1, TX, RX);
 
-// GPSSettingsService gpsSettingsService = GPSSettingsService(
-//     &server,
-//     esp32sveltekit.getFS(),
-//     esp32sveltekit.getSecurityManager(),
-//     &gpsneo);
+GPSSettingsService gpsSettingsService = GPSSettingsService(
+    &server,
+    esp32sveltekit.getFS(),
+    esp32sveltekit.getSecurityManager(),
+    &gpsneo);
 
-// GPSStateService gpsStateService =  GPSStateService(
-//     esp32sveltekit.getSocket(),
-//     &gpsSettingsService,
-//     &gpsneo,
-//     esp32sveltekit.getFeatureService());
+GPSStateService gpsStateService =  GPSStateService(
+    esp32sveltekit.getSocket(),
+    &gpsSettingsService,
+    &gpsneo,
+    esp32sveltekit.getFeatureService());
 
 // EncoderStateService encoderService = EncoderStateService(
 //     esp32sveltekit.getSocket(),
@@ -123,14 +123,9 @@ void setup()
     stepper1.init();
     stepper2.init();
 
-    // stepperSettingsService.begin();
-    // stepperControlService.begin();
-
-    // gpsneo.init();
-    // gpsSettingsService.begin();
-    // gpsStateService.begin();
-
-    // encoderService.begin();
+    gpsneo.init();
+    gpsSettingsService.begin();
+    gpsStateService.begin();
 
     heliostatService.begin();
     
@@ -147,7 +142,7 @@ void loop()
     unsigned long now = millis();
     if (now - lastTick > 1000) {
         lastTick = now;
-        // gpsStateService.loop();
+        gpsStateService.loop();
         if (WiFi.status() == WL_CONNECTED) {
             lightStateService.updateState(LightState{true, 0, 0.2, 0.1});
         }

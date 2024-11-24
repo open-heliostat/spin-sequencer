@@ -6,6 +6,8 @@
 	import { postJsonRest, getJsonRest} from "$lib/stores/rest"
 	import { onDestroy, onMount } from "svelte";
 	import Stepper from '../../routes/stepper/Stepper.svelte';
+	import StopButton from './StopButton.svelte';
+	import DisableButton from './DisableButton.svelte';
 
 	export let restPath : string;
 	let stepperControl : StepperControlState;
@@ -74,13 +76,13 @@
 	></Slider>
 </div>
 {/await}
+<slot></slot>
 <div class="flex flex-row flex-wrap justify-between gap-x-2">
 	<div class="flex-grow"></div>
 	<div>
 		<div>
-			<button class="btn btn-primary inline-flex items-center" on:click={() => {stepperControl.speed=0; postStepperControl(stepperControl);}}
-				><Stop class="mr-2 h-5 w-5" /><span>Stop</span></button
-			>
+			<DisableButton onClick={() => postJsonRest(restPath, {enabled: false})}></DisableButton>
+			<StopButton onClick={() => {stepperControl.speed=0; postStepperControl(stepperControl);}}></StopButton>
 		</div>
 	</div>
 </div>
