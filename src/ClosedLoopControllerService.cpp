@@ -106,16 +106,29 @@ void ClosedLoopControllerSettingsService::onConfigUpdated()
 
 JsonRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::router = JsonRouter<ClosedLoopController>(
 {
-    {"target", [](JsonVariant content, ClosedLoopController &controller) {
+    {"calibration", [](JsonVariant content, ClosedLoopController &controller) {
+        return calibrationRouter.parse(content, controller);
+    }},
+    {"offset", [](JsonVariant content, ClosedLoopController &controller) {
         if (content.is<double>()) {
-            controller.setAngle(content.as<double>());
+            controller.setEncoderOffset(content.as<double>());
             return true;
         }
         else return false;
     }},
+    {"limits", [](JsonVariant content, ClosedLoopController &controller) {
+        return limitsRouter.parse(content, controller);
+    }},
     {"enabled", [](JsonVariant content, ClosedLoopController &controller) {
         if (content.is<bool>()) {
             controller.enabled = content.as<bool>();
+            return true;
+        }
+        else return false;
+    }},
+    {"target", [](JsonVariant content, ClosedLoopController &controller) {
+        if (content.is<double>()) {
+            controller.setAngle(content.as<double>());
             return true;
         }
         else return false;
@@ -126,19 +139,6 @@ JsonRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::router = JsonRo
             return true;
         }
         else return false;
-    }},
-    {"offset", [](JsonVariant content, ClosedLoopController &controller) {
-        if (content.is<double>()) {
-            controller.setEncoderOffset(content.as<double>());
-            return true;
-        }
-        else return false;
-    }},
-    {"calibration", [](JsonVariant content, ClosedLoopController &controller) {
-        return calibrationRouter.parse(content, controller);
-    }},
-    {"limits", [](JsonVariant content, ClosedLoopController &controller) {
-        return limitsRouter.parse(content, controller);
     }},
     {"stepper", [](JsonVariant content, ClosedLoopController &controller) {
         return TMC5160ControllerJsonRouter::router.parse(content, controller.stepper);
