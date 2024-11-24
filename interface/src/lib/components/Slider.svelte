@@ -19,7 +19,7 @@
         min={min} 
         max={max}
         step={step}
-        class="range range-primary"
+        class={"range " + (disabled == false ? "range-primary" : "range-secondary")}
         id={label}
         {disabled}
         bind:value={value}
