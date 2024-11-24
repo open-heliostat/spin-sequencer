@@ -127,8 +127,8 @@ private:
             }
         }
         if (hasLimits) {
-            if (abs(angularDistance(targetAngle, getAngle())) < tolerance) {
-                if (abs(angularDistance(rawAngle, limitA)) > abs(angularDistance(rawAngle, limitB))) {
+            if (abs(error) < tolerance) {
+                if (abs(angularDistance(getAngle(), limitA)) > abs(angularDistance(getAngle(), limitB))) {
                     setAngle(limitA);
                     ESP_LOGI("Calibration", "Goto A");
                 }
