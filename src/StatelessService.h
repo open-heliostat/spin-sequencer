@@ -10,7 +10,10 @@ template <typename T>
 using JsonEventTrigger = const std::function<bool (const JsonVariant& content, T &state)>;
 
 template <typename T>
-using JsonEventTriggerMap = std::map<const String, JsonEventTrigger<T>>;
+using TriggerPair = std::pair<const String, JsonEventTrigger<T>>;
+
+template <typename T>
+using JsonEventTriggerMap = std::list<TriggerPair<T>>;
 
 template <class T>
 class JsonEventRouter
@@ -38,7 +41,10 @@ template <typename T>
 using StatelessReader = const std::function<void (T &state, const JsonVariant& target)>;
 
 template <typename T>
-using JsonStatelessReaderMap = std::map<const String, StatelessReader<T>>;
+using ReaderPair = std::pair<const String, StatelessReader<T>>;
+
+template <typename T>
+using JsonStatelessReaderMap = std::list<ReaderPair<T>>;
 
 using EventEmitter = std::function<void (JsonObject event)>;
 
