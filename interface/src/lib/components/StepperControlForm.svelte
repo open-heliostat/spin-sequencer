@@ -5,7 +5,6 @@
 	import type { StepperControlState, StepperDiag } from '$lib/types/models';
 	import { postJsonRest, getJsonRest} from "$lib/stores/rest"
 	import { onDestroy, onMount } from "svelte";
-	import Stepper from '../../routes/stepper/Stepper.svelte';
 	import StopButton from './StopButton.svelte';
 	import DisableButton from './DisableButton.svelte';
 
