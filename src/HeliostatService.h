@@ -25,7 +25,9 @@ public:
     {
         getSaveMap(root);
         router.serialize(state, root);
-        JsonDocument ref = getSaveMap();
+        JsonDocument ref = root;
+        Serial.println(ref.as<String>());
+        ref = getSaveMap();
         JsonSaveManager::filterFieldsRecursively(ref.as<JsonObject>(), root);
     }
     static StateUpdateResult update(JsonObject &root, HeliostatController &state)
@@ -40,7 +42,6 @@ public:
         root["currentTarget"] = true;
         root["currentSource"] = true;
         root["sourcesMap"] = true;
-        root["targetsMap"] = true;
     }
     static const JsonDocument getSaveMap()
     {
@@ -50,8 +51,8 @@ public:
         return doc;
     }
     static bool removeFromMap(String target, DirectionsMap &map);
-    static bool updateDirectionsMap(JsonVariant content, DirectionsMap map);
-    static void readDirectionsMap(DirectionsMap map, JsonObject object);
+    static bool updateDirectionsMap(JsonVariant content, DirectionsMap &map);
+    static void readDirectionsMap(DirectionsMap map, JsonObject &object);
     static JsonRouter<HeliostatController> router;
 };
 

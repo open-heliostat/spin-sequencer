@@ -123,7 +123,7 @@ public:
 
     DirectionsMap targetsMap = 
     {
-        {"Default Target", {120., 15.}}
+        // {"Default Target", {120., 15.}}
     };
 
     ClosedLoopController &azimuthController;

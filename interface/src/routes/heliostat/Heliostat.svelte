@@ -40,7 +40,7 @@
 
 	let heliostatControllerState : HeliostatControllerState;
 
-	let selectedEditor = "None";
+	let selectedEditor = "Sun";
 	let selectedDirection: Direction;
 	$: selectedDirection = heliostatControllerState?.sourcesMap[selectedEditor];
 
@@ -81,7 +81,7 @@
 		<div class="grid w-full grid-cols-1 content-center gap-x-4 sm:grid-cols-2">
 			<div>
 				<Select label="Source" bind:value={heliostatControllerState.currentSource} onChange={()=>{postJsonRest(restPath, {currentSource: heliostatControllerState.currentSource})}}>
-					<option>None</option>
+					<option>Sun</option>
 					{#each Object.entries(heliostatControllerState?.sourcesMap) as [name, value]}
 						<option>{name}</option>
 					{/each}
@@ -89,7 +89,7 @@
 			</div>
 			<div>
 				<Select label="Target" bind:value={heliostatControllerState.currentTarget} onChange={()=>{postJsonRest(restPath, {currentTarget: heliostatControllerState.currentTarget})}}>
-					<option>None</option>
+					<option>Sun</option>
 					{#each Object.entries(heliostatControllerState?.sourcesMap) as [name, value]}
 						<option>{name}</option>
 					{/each}
@@ -98,7 +98,6 @@
 		</div>
 		<div class="w-full mb-4">
 			<Select label="Select" bind:value={selectedEditor} onChange={()=>{newName=selectedEditor}}>
-				<option>None</option>
 				{#each Object.entries(heliostatControllerState?.sourcesMap) as [name, value]}
 					<option>{name}</option>
 				{/each}
@@ -109,7 +108,7 @@
 			<Text
 				label="Name"
 				bind:value={newName}
-				onChange={()=>{postJsonRest(restPath + "/rename", {oldName: selectedEditor, newName: newName});getHeliostatControllerState()}}
+				onChange={()=>{postJsonRest(restPath + "/rename", {oldName: selectedEditor, newName: newName});getHeliostatControllerState().then(()=>selectedEditor=newName)}}
 			></Text>
 			<Slider 
 				label="Azimuth" 
