@@ -34,9 +34,9 @@
 		sourcesMap: {
 			[key: string]: Direction
 		}
+		latitude: number;
+		longitude: number;
 	}
-
-	let heliostatControllerStateEvent = "heliostat-service"
 
 	let heliostatControllerState : HeliostatControllerState;
 
@@ -44,31 +44,12 @@
 	let selectedDirection: Direction;
 	$: selectedDirection = heliostatControllerState?.sourcesMap[selectedEditor];
 
-	let selectedTarget: Direction;
-	$: selectedTarget = heliostatControllerState?.sourcesMap[heliostatControllerState.currentTarget];
-
-	let selectedSource: Direction;
-	$: selectedSource = heliostatControllerState?.sourcesMap[heliostatControllerState.currentSource];
-
-
-	onMount(() => {
-		// socket.on<HeliostatControllerState>(heliostatControllerStateEvent, (data) => {
-		// 	heliostatControllerState = data;
-		// 	// console.log(data);
-		// });
-		// socket.on("heliostat-service", (data) => {
-		// 	controlState = Object.assign(controlState, data);
-		// 	console.log(data);
-		// });
-		// socket.sendEvent("heliostat-service", {azimuth:{limits:{enabled:false}}});
-	});
-
-	// onDestroy(() => {
-	// 	socket.off(heliostatControllerStateEvent);
-	// });
-
 	async function getHeliostatControllerState() {
 		return getJsonRest(restPath, heliostatControllerState).then((data)=>heliostatControllerState=data);
+	}
+
+	async function postHeliostatControllerState() {
+		return postJsonRest(restPath, heliostatControllerState).then((data)=>heliostatControllerState=data);
 	}
 
 </script>
@@ -81,6 +62,7 @@
 		<div class="grid w-full grid-cols-1 content-center gap-x-4 sm:grid-cols-2">
 			<div>
 				<Select label="Source" bind:value={heliostatControllerState.currentSource} onChange={()=>{postJsonRest(restPath, {currentSource: heliostatControllerState.currentSource})}}>
+					<option>None</option>
 					<option>Sun</option>
 					{#each Object.entries(heliostatControllerState?.sourcesMap) as [name, value]}
 						<option>{name}</option>
@@ -89,6 +71,7 @@
 			</div>
 			<div>
 				<Select label="Target" bind:value={heliostatControllerState.currentTarget} onChange={()=>{postJsonRest(restPath, {currentTarget: heliostatControllerState.currentTarget})}}>
+					<option>None</option>
 					<option>Sun</option>
 					{#each Object.entries(heliostatControllerState?.sourcesMap) as [name, value]}
 						<option>{name}</option>
@@ -136,6 +119,22 @@
 				bind:value={heliostatControllerState.enabled}
 			></Checkbox> -->
 		</GridForm>
+		<Slider 
+			label="Latitude" 
+			bind:value={heliostatControllerState.latitude}
+			min={0} 
+			max={360} 
+			step={0.01}
+			onChange={postHeliostatControllerState}
+		></Slider>
+		<Slider 
+			label="Longitude" 
+			bind:value={heliostatControllerState.longitude}
+			min={0} 
+			max={360} 
+			step={0.01}
+			onChange={postHeliostatControllerState}
+		></Slider>
 		<div class="flex flex-row flex-wrap justify-between gap-x-2">
 			<Button
 				label="Add"

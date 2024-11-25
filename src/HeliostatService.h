@@ -42,6 +42,8 @@ public:
         root["currentTarget"] = true;
         root["currentSource"] = true;
         root["sourcesMap"] = true;
+        root["latitude"] = true;
+        root["longitude"] = true;
     }
     static const JsonDocument getSaveMap()
     {

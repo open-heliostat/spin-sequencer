@@ -2,12 +2,8 @@
 #define HELIOSTAT_CLASS_H
 
 #include <closedloopcontroller.h>
-
-struct SphericalCoordinate
-{
-    double azimuth;
-    double elevation;
-};
+#include <sun.h>
+#include "esp_sntp.h"
 
 using DirectionsMap = std::map<String, SphericalCoordinate>;
 
@@ -41,13 +37,18 @@ public:
 
     SphericalCoordinate reflect(SphericalCoordinate source, SphericalCoordinate target) 
     {
-        return target;
+        vec3 bisector = toCartesian({source.azimuth, 90. - source.elevation}) + toCartesian({target.azimuth, 90. - target.elevation});
+        vec2 result = toSpherical(bisector);
+        // ESP_LOGI("Reflector", "%f %f", result.x, result.y);
+        return {result.x, 90. - result.y};
     }
 
     void reflectCurrentSource() {
         auto directionsMap = getDirectionsMap();
         if (directionsMap.find(currentSource) != directionsMap.end() && directionsMap.find(currentTarget) != directionsMap.end()) {
-            setPosition(reflect(directionsMap[currentSource], directionsMap[currentTarget]));
+            auto reflection = reflect(directionsMap[currentSource], directionsMap[currentTarget]);
+            setPosition(reflection);
+            // ESP_LOGI("Reflector", "%f %f", reflection.azimuth, reflection.elevation);
         }
     }
 
@@ -64,6 +65,7 @@ public:
 
     void init() 
     {
+        setupSolarTracker();
         azimuthController.getAngle();
         if (azimuthController.encoder.hasNewData()) {
             azimuthController.targetAngle =  azimuthController.getAngle();
@@ -76,17 +78,24 @@ public:
         }
     }
 
+    bool isTimeSet() 
+    {
+        // return sntp_get_sync_status() == SNTP_SYNC_STATUS_COMPLETED;
+        return true;
+    }
+
     bool enabled = true;
 
     String currentSource = "Sun";
     String currentTarget = "Default Target";
 
+    double latitude;
+    double longitude;
+
     DirectionsMap getDirectionsMap() 
     {
-        DirectionsMap map = 
-        {
-            {"Sun", {180., 90.}}
-        };
+        DirectionsMap map = {};
+        if (isTimeSet()) map.insert({"Sun", computeSolarPosition(latitude, longitude)});
         map.insert(targetsMap.begin(), targetsMap.end());
         return map;
     }

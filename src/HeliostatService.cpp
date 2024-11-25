@@ -39,6 +39,20 @@ JsonRouter<HeliostatController> HeliostatControllerJsonRouter::router = JsonRout
     {"set", [&](JsonVariant content, HeliostatController &controller) {
         return controller.setTarget(content["name"].as<String>(), content["azimuth"].as<double>(), content["elevation"].as<double>());
     }},
+    {"latitude", [&](JsonVariant content, HeliostatController &controller) {
+        if (content.is<double>()) {
+            controller.latitude = content.as<double>();
+            return true;
+        }
+        return false;
+    }},
+    {"longitude", [&](JsonVariant content, HeliostatController &controller) {
+        if (content.is<double>()) {
+            controller.longitude = content.as<double>();
+            return true;
+        }
+        return false;
+    }},
 },
 {
     {"sourcesMap", [&](HeliostatController &controller, JsonVariant content)  {
@@ -56,6 +70,12 @@ JsonRouter<HeliostatController> HeliostatControllerJsonRouter::router = JsonRout
     }},
     {"elevation", [&](HeliostatController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) ClosedLoopControllerJsonRouter::router.serialize(controller.elevationController, content);
+    }},
+    {"latitude", [&](HeliostatController &controller, JsonVariant content) {
+        content.set(controller.latitude);
+    }},
+    {"longitude", [&](HeliostatController &controller, JsonVariant content) {
+        content.set(controller.longitude);
     }},
 });
 
