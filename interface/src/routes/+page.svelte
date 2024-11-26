@@ -4,7 +4,7 @@
 	import { notifications } from '$lib/components/toasts/notifications';
 	import { goto } from '$app/navigation';
     
-	goto('/stepper');
+	goto('/heliostat');
 
 	// export let data: PageData;
 </script>

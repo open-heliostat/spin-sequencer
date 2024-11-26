@@ -2,7 +2,7 @@
 	import Stop from '~icons/tabler/hand-stop';
 	import Slider from '$lib/components/Slider.svelte';
 	import Checkbox from '$lib/components/Checkbox.svelte';
-	import type { StepperControl, StepperSettings } from '$lib/types/models';
+	import type { StepperControl, StepperDiag } from '$lib/types/models';
 
 	export let stepperControl: StepperControl;
 	export let onChange: () => void;

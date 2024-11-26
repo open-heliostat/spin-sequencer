@@ -2,6 +2,6 @@ import type { PageLoad } from './$types';
 
 export const load = (async ({ fetch }) => {
 	return {
-		title: 'Controller'
+		title: 'Controllers'
 	};
 }) satisfies PageLoad;

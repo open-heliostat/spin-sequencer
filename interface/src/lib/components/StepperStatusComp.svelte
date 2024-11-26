@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Info from '~icons/tabler/info-circle';
-	import type { StepperControl, StepperSettings } from '$lib/types/models';
+	import type { StepperControl, StepperDiag } from '$lib/types/models';
+	import Button from './Button.svelte';
 
 	class StepperStatus {
 		stst: boolean = false;
@@ -16,7 +17,7 @@
 		infoclass: string = "";
 	}
 
-	function readStatus(stepper: StepperControl) {
+	function readStatus(stepper: StepperControl | StepperDiag) {
         let status = new StepperStatus;
         let mainFlags = stepper.status >>> 24;
         status.stst = (mainFlags & 0b10000000) > 0;
@@ -33,9 +34,11 @@
         return status;
 	}
 
-	export let stepperControl: StepperControl;
+	export let stepperControl: StepperControl | StepperDiag;
     let stepperStatus: StepperStatus;
 	$: stepperStatus = readStatus(stepperControl);
+
+    export let enableCb: () => void = () => {};
 
 </script>
 
@@ -62,4 +65,7 @@
             {/if}
         {/if}
     </span>
+    {#if !stepperControl.isEnabled}
+        <Button label="Enable" onClick={enableCb}></Button>
+    {/if}
 </div>

@@ -135,7 +135,7 @@ public:
                             }
 
                             PsychicJsonResponse response = PsychicJsonResponse(request, false);
-                            jsonObject = response.getRoot();
+                            response.getRoot() = obj;
 
                             _statefulService->read(jsonObject, _stateReader);
 

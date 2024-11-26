@@ -7,10 +7,9 @@
 <label class="label cursor-pointer" for={label}>
     <span class="mr-4">{label}</span>
 </label>
-<input 
-    type="text"
-    class="input"
-    id={label}
+<select 
     bind:value={value}
     on:change={onChange}
-/>
+    class="select select-bordered w-full">
+    <slot></slot>
+</select>

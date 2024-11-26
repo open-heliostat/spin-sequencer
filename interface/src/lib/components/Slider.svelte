@@ -19,7 +19,7 @@
         min={min} 
         max={max}
         step={step}
-        class="range range-primary"
+        class={"range " + (disabled == false ? "range-primary" : "range-secondary")}
         id={label}
         {disabled}
         bind:value={value}
@@ -32,7 +32,7 @@
         max={max}
         step={step}
         class="input input-bordered"
-        style="height: 2rem;"
+        style="height: 2rem; width: 5rem"
         id={label}
         {disabled}
         bind:value={value}

@@ -16,8 +16,8 @@ struct TMC5160Controller {
     uint16_t stepsPerRotation = 200;
     uint16_t microsteps = 256;
     uint16_t current = 30;
-    uint32_t maxSpeed = 400;
-    uint32_t maxAccel = 200;
+    uint32_t maxSpeed = 40;
+    uint32_t maxAccel = 20;
     const char* msteps;
     const char* pwmfr;
     const char* freewh;
@@ -43,25 +43,28 @@ struct TMC5160Controller {
         stepper = engine.stepperConnectToPin(STEP);
         if (stepper) {
             stepper->setDirectionPin(DIR);
-            stepper->setSpeedInHz(200*microsteps);       // 200 steps/s
-            stepper->setAcceleration(40*microsteps);    // 40 steps/s²
+            stepper->setSpeedInHz(maxSpeed*microsteps);       // 200 steps/s
+            stepper->setAcceleration(maxAccel*microsteps);    // 40 steps/s²
         }
         else Serial.println("Stepper ERROR");
     }
 
     void initDriver() {
         driver.GSTAT(1);
-        driver.defaults();
+        // driver.defaults();
         // driver.toff(3);
         // enable();
-        driver.rms_current(500);
+        // driver.rms_current(500);
         driver.en_pwm_mode(true);
         driver.s2g_level(9);
         driver.s2vs_level(9);
         driver.bbmclks(2);
-        driver.shaft(true);
-        disable();
+        // driver.shaft(true);
+        // disable();
         // stepper->attachToPulseCounter(6, -200*microsteps, 200*microsteps);
+    }
+    void setMaxSpeed() {
+        stepper->setSpeedInHz(maxSpeed*microsteps);
     }
 
     void setMaxSpeed(uint32_t sp) {
@@ -111,6 +114,7 @@ struct TMC5160Controller {
 
     void moveR(double angle) {
         stepper->moveTo(stepper->getCurrentPosition() + angle*stepsPerRotation/360. * microsteps);
+        // ESP_LOGI("Driver", "MoveR %f", angle);
         // Serial.println(driver.XACTUAL());
         // driver.RAMPMODE(0);
         // driver.VSTART(100);

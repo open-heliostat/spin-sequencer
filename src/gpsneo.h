@@ -49,6 +49,7 @@ public:
             if (gps.time.isValid()) {
                 sprintf(timeStr, "%i:%i:%i", gps.time.hour(), gps.time.minute(), gps.time.second());
                 sprintf(dateStr, "%i/%i/%i", gps.date.day(), gps.date.month(), gps.date.year());
+                setTime(gps.time.hour(), gps.time.minute(), gps.time.second(), gps.date.day(), gps.date.month(), gps.date.year());
                 // updated = true;
             }
             if (gps.location.isUpdated()) {

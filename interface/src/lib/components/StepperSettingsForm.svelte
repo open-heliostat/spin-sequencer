@@ -5,9 +5,9 @@
 	import Slider from '$lib/components/Slider.svelte';
 	import Checkbox from '$lib/components/Checkbox.svelte';
 	import Text from '$lib/components/Text.svelte';
-	import type { StepperSettings, MultiStepperControl } from '$lib/types/models';
+	import type { StepperConfig, MultiStepperControl } from '$lib/types/models';
 
-	export let stepperSettings: StepperSettings;
+	export let stepperSettings: StepperConfig;
     export let onChange: () => void;
 </script>
 
@@ -26,14 +26,9 @@
 			>
 				<div class="w-full">
 					<div class="w-full grid grid-flow-row grid-form items-center">
-						<Text 
-							label="Name" 
-							bind:value={stepperSettings.name} 
-							{onChange}
-						></Text>
 						<Checkbox
-							label="Enable on Start"
-							bind:value={stepperSettings.enableOnStart}
+							label="Enable"
+							bind:value={stepperSettings.enabled}
 							{onChange}
 						></Checkbox>
 						<Checkbox
@@ -44,29 +39,28 @@
 						<Slider
 							label="Max Speed"
 							min={0}
-							max={400}
+							max={100}
 							bind:value={stepperSettings.maxSpeed}
 							{onChange}
 						></Slider>
 						<Slider
 							label="Max Acceleration"
 							min={0}
-							max={200}
-							bind:value={stepperSettings.maxAcceleration}
+							max={50}
+							bind:value={stepperSettings.maxAccel}
 							{onChange}
 						></Slider>
 						<Slider
 							label="Driver Current"
 							min={0}
 							max={1000}
-							step={1}
-							bind:value={stepperSettings.current}
+							bind:value={stepperSettings.driverCurrent}
 							{onChange}
 						></Slider>
 						<Slider
 							label="Steps Per Rotation"
 							min={0}
-							max={4000}
+							max={12000}
 							step={1}
 							bind:value={stepperSettings.stepsPerRot}
 							{onChange}

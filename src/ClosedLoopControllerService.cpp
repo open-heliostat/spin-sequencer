@@ -106,6 +106,33 @@ void ClosedLoopControllerSettingsService::onConfigUpdated()
 
 JsonRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::router = JsonRouter<ClosedLoopController>(
 {
+    {"calibration", [](JsonVariant content, ClosedLoopController &controller) {
+        return calibrationRouter.parse(content, controller);
+    }},
+    {"offset", [](JsonVariant content, ClosedLoopController &controller) {
+        if (content.is<double>()) {
+            controller.setEncoderOffset(content.as<double>());
+            return true;
+        }
+        else return false;
+    }},
+    {"limits", [](JsonVariant content, ClosedLoopController &controller) {
+        return limitsRouter.parse(content, controller);
+    }},
+    {"invert", [](JsonVariant content, ClosedLoopController &controller) {
+        if (content.is<bool>()) {
+            controller.encoder.invert = content.as<bool>();
+            return true;
+        }
+        else return false;
+    }},
+    {"enabled", [](JsonVariant content, ClosedLoopController &controller) {
+        if (content.is<bool>()) {
+            controller.enabled = content.as<bool>();
+            return true;
+        }
+        else return false;
+    }},
     {"target", [](JsonVariant content, ClosedLoopController &controller) {
         if (content.is<double>()) {
             controller.setAngle(content.as<double>());
@@ -120,12 +147,9 @@ JsonRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::router = JsonRo
         }
         else return false;
     }},
-    {"calibration", [](JsonVariant content, ClosedLoopController &controller) {
-        return calibrationRouter.parse(content, controller);
+    {"stepper", [](JsonVariant content, ClosedLoopController &controller) {
+        return TMC5160ControllerJsonRouter::router.parse(content, controller.stepper);
     }},
-    {"limits", [](JsonVariant content, ClosedLoopController &controller) {
-        return limitsRouter.parse(content, controller);
-    }}
 },
 {
     {"position", [](ClosedLoopController &controller, const JsonVariant target) {
@@ -136,6 +160,15 @@ JsonRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::router = JsonRo
     }},
     {"tolerance", [](ClosedLoopController &controller, const JsonVariant target) {
         target.set(controller.tolerance);
+    }},
+    {"offset", [](ClosedLoopController &controller, const JsonVariant target) {
+        target.set(controller.encoderOffset);
+    }},
+    {"enabled", [](ClosedLoopController &controller, const JsonVariant target) {
+        target.set(controller.enabled);
+    }},
+    {"invert", [](ClosedLoopController &controller, const JsonVariant target) {
+        target.set(controller.encoder.invert);
     }},
     {"limits", [](ClosedLoopController &controller, const JsonVariant target) {
         target["enabled"] = controller.hasLimits;
@@ -152,7 +185,10 @@ JsonRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::router = JsonRo
             auto array = target["offsets"].to<JsonArray>();
             copyArray(controller.calibrationOffsets, array);
         }
-    }}
+    }},
+    {"stepper", [](ClosedLoopController &controller, const JsonVariant target) {
+        if (target.is<JsonObject>()) TMC5160ControllerJsonRouter::router.serialize(controller.stepper, target);
+    }},
 });
 
 JsonEventRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::calibrationRouter = JsonEventRouter<ClosedLoopController>({

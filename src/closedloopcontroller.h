@@ -14,6 +14,7 @@ public:
     bool enabled;
     double targetAngle;
     double tolerance = 0.1;
+    double encoderOffset = 0.;
     double error;
     double limitA = 0.;
     double limitB = 360.;
@@ -22,7 +23,7 @@ public:
     bool hasLimits = false;
     bool hasCalibration = false;
     bool calibrationRunning = false;
-    static const int calibrationSteps = 32;
+    static const int calibrationSteps = 128;
     float calibrationOffsets[calibrationSteps];
     double calibrationStepperStartOffset = 0.;
     ClosedLoopController(TMC5160Controller &stepper, Encoder &encoder) : stepper(stepper), encoder(encoder) {}
@@ -48,12 +49,15 @@ public:
             }
             else error = mod(targetAngle - curAngle + 180., 360.) - 180.;
             // ESP_LOGI("Controller", "Command : %f, Target: %f, Current: %f, To Go: %f\n", angle, targetAngle, curAngle, error);
-            if (abs(error) > tolerance) stepper.moveR(error);
+            if (abs(error) > tolerance && enabled) {
+                stepper.setMaxSpeed();
+                stepper.moveR(error);
+            }
         }
     }
     double getAngle(){
         if (hasCalibration) return getCalibratedAngle();
-        else return encoder.getAngle();
+        else return mod(encoder.getAngle()+encoderOffset, 360.);
     }
     double lerp(double a, double b, double t) {
         return b * t + a * (1. - t);
@@ -88,14 +92,20 @@ public:
         calibrationSpeed = speed;
         if (calibrationRunning) stepper.setSpeed(calibrationSpeed);
     }
+    void setEncoderOffset(double offset) {
+        double offsetDiff = offset - encoderOffset;
+        encoderOffset = offset;
+        limitA = mod(limitA + offsetDiff, 360.);
+        limitB = mod(limitB + offsetDiff, 360.);
+    }
 private:
     double getCalibratedAngle() {
-        double readAngle = encoder.getAngle();
-        double index = readAngle*360./calibrationSteps;
+        double rawAngle = encoder.getAngle();
+        double index = rawAngle*calibrationSteps/360.;
         double current = calibrationOffsets[int(floor(index)) % calibrationSteps];
         double next = calibrationOffsets[int(ceil(index)) % calibrationSteps];
         double offset = lerp(current, next, mod(index, 1.));
-        return mod(readAngle + offset, 360.);
+        return mod(rawAngle + offset + encoderOffset, 360.);
     }
     void runCalibration() {
         double rawAngle = encoder.getAngle();
@@ -117,8 +127,8 @@ private:
             }
         }
         if (hasLimits) {
-            if (abs(angularDistance(targetAngle, getAngle())) < tolerance) {
-                if (abs(angularDistance(rawAngle, limitA)) > abs(angularDistance(rawAngle, limitB))) {
+            if (abs(error) < tolerance) {
+                if (abs(angularDistance(getAngle(), limitA)) > abs(angularDistance(getAngle(), limitB))) {
                     setAngle(limitA);
                     ESP_LOGI("Calibration", "Goto A");
                 }

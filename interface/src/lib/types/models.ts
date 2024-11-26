@@ -170,6 +170,7 @@ export type StepperSettings = {
 	maxSpeed: number;
 	maxAcceleration: number;
 	current: number;
+	stepsPerRot: number;
 };
 
 export type MultiStepperSettings = {
@@ -186,6 +187,27 @@ export type StepperControl = {
 	version: number;
 };
 
+export type StepperControlState = {
+	speed: number;
+	move: number;
+	accel: number;
+}
+
+export type StepperConfig = {
+	enabled: boolean;
+	maxSpeed: number;
+	maxAccel: number;
+	invertDirection: boolean;
+	driverCurrent: number;
+	stepsPerRot: number;
+}
+
+export type StepperDiag = {
+	status: number;
+	version: number;
+	isEnabled: boolean;
+}
+
 export type MultiStepperControl = {
 	steppers: StepperControl[];
 };
@@ -194,6 +216,9 @@ export type ControllerState = {
 	position: number;
 	target: number;
 	tolerance: number;
+	offset: number;
+	enabled: boolean;
+	invert: boolean;
 	limits: {
 		enabled: boolean;
 		begin: number;

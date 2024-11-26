@@ -162,7 +162,7 @@ void WiFiSettingsService::connectToWiFi()
                         memcpy(network.bssid, BSSID_scan, 6);
                     }
                 }
-                break;
+                // break;
             }
         }
 

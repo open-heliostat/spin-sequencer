@@ -8,51 +8,59 @@ JsonRouter<HeliostatController> HeliostatControllerJsonRouter::router = JsonRout
     {"elevation", [&](JsonVariant content, HeliostatController &controller) {
         return ClosedLoopControllerJsonRouter::router.parse(content, controller.elevationController);
     }},
+    {"sourcesMap", [&](JsonVariant content, HeliostatController &controller) {
+        return updateDirectionsMap(content.as<JsonObject>(), controller.targetsMap);
+    }},
     {"currentTarget", [&](JsonVariant content, HeliostatController &controller) {
         if (content.is<String>()) {
-            if (controller.targetsMap.find(content.as<String>()) != controller.targetsMap.end()) {
-                controller.currentTarget = content.as<String>();
-                return true;
-            }
+            controller.currentTarget = content.as<String>();
+            return true;
         }
         return false;
     }},
     {"currentSource", [&](JsonVariant content, HeliostatController &controller) {
         if (content.is<String>()) {
-            if (controller.sourcesMap.find(content.as<String>()) != controller.sourcesMap.end()) {
-                controller.currentSource = content.as<String>();
-                return true;
-            }
+            controller.currentSource = content.as<String>();
+            return true;
         }
-        return false ;
+        return false;
     }},
-    {"addTarget", [&](JsonVariant content, HeliostatController &controller) {
+    {"add", [&](JsonVariant content, HeliostatController &controller) {
         JsonObject obj = content.as<JsonObject>();
         controller.targetsMap.insert({obj["name"] | "New target", {obj["azimuth"] | 180., obj["elevation"] | 30.}});
         return true;
     }},
-    {"removeTarget", [&](JsonVariant content, HeliostatController &controller) {
-        if (content.is<JsonObject>() && content["name"].is<String>()) {
-            return removeFromMap(content["name"].as<String>(), controller.targetsMap);
-        }
-        else if (content.is<String>()) {
-            return removeFromMap(content.as<String>(), controller.targetsMap);
-        }
-        else return false;
+    {"remove", [&](JsonVariant content, HeliostatController &controller) {
+        return controller.deleteTarget(content.as<String>());
     }},
-    {"targetsMap", [&](JsonVariant content, HeliostatController &controller) {
-        return updateDirectionsMap(content, controller.targetsMap);
+    {"rename", [&](JsonVariant content, HeliostatController &controller) {
+        return controller.renameTarget(content["oldName"].as<String>(), content["newName"].as<String>());
     }},
-    {"sourcesMap", [&](JsonVariant content, HeliostatController &controller) {
-        return updateDirectionsMap(content, controller.sourcesMap);
-    }}
+    {"set", [&](JsonVariant content, HeliostatController &controller) {
+        return controller.setTarget(content["name"].as<String>(), content["azimuth"].as<double>(), content["elevation"].as<double>());
+    }},
+    {"sunTracker", [&](JsonVariant content, HeliostatController &controller) {
+        if (content.is<JsonObject>()) {
+            JsonObject obj = content.as<JsonObject>();
+            if (obj["latitude"].is<double>()) controller.latitude = obj["latitude"].as<double>();
+            if (obj["longitude"].is<double>()) controller.longitude = obj["longitude"].as<double>();
+            if (obj["getFromGPS"].is<JsonVariant>()) controller.getLocationFromGPS();
+            return true;
+        }
+        return false;
+    }},
+    {"longitude", [&](JsonVariant content, HeliostatController &controller) {
+        if (content.is<double>()) {
+            controller.longitude = content.as<double>();
+            return true;
+        }
+        return false;
+    }},
 },
 {
-    {"azimuth", [&](HeliostatController &controller, JsonVariant content) {
-        if (content.is<JsonObject>()) ClosedLoopControllerJsonRouter::router.serialize(controller.azimuthController, content);
-    }},
-    {"elevation", [&](HeliostatController &controller, JsonVariant content) {
-        if (content.is<JsonObject>()) ClosedLoopControllerJsonRouter::router.serialize(controller.elevationController, content);
+    {"sourcesMap", [&](HeliostatController &controller, JsonVariant content)  {
+        JsonObject obj = content.to<JsonObject>();
+        readDirectionsMap(controller.targetsMap, obj);
     }},
     {"currentTarget", [&](HeliostatController &controller, JsonVariant content)  {
         content.set(controller.currentTarget);
@@ -60,21 +68,30 @@ JsonRouter<HeliostatController> HeliostatControllerJsonRouter::router = JsonRout
     {"currentSource", [&](HeliostatController &controller, JsonVariant content)  {
         content.set(controller.currentSource);
     }},
-    {"targetsMap", [&](HeliostatController &controller, JsonVariant content)  {
-        readDirectionsMap(controller.targetsMap, content.to<JsonObject>());
+    {"sunTracker", [&](HeliostatController &controller, JsonVariant content) {
+        JsonObject obj = content.to<JsonObject>();
+        obj["latitude"] = controller.latitude;
+        obj["longitude"] = controller.longitude;
+        obj["isTimeSet"] = controller.isTimeSet();
+        obj["azimuth"] = controller.getSolarPosition().azimuth;
+        obj["elevation"] = controller.getSolarPosition().elevation;
     }},
-    {"sourcesMap", [&](HeliostatController &controller, JsonVariant content)  {
-        readDirectionsMap(controller.sourcesMap, content.to<JsonObject>());
-    }}
+    {"azimuth", [&](HeliostatController &controller, JsonVariant content) {
+        if (content.is<JsonObject>()) ClosedLoopControllerJsonRouter::router.serialize(controller.azimuthController, content);
+    }},
+    {"elevation", [&](HeliostatController &controller, JsonVariant content) {
+        if (content.is<JsonObject>()) ClosedLoopControllerJsonRouter::router.serialize(controller.elevationController, content);
+    }},
 });
 
 
-void HeliostatControllerJsonRouter::readDirectionsMap(DirectionsMap &map, JsonObject object) 
+void HeliostatControllerJsonRouter::readDirectionsMap(DirectionsMap map, JsonObject &object) 
 {
     for (auto &dir : map) { 
         JsonObject obj = object[dir.first].to<JsonObject>();
         obj["elevation"] = dir.second.elevation;
         obj["azimuth"] = dir.second.azimuth;
+        ESP_LOGI("Read Map", "%s", dir.first);
     }
 }
 
@@ -83,18 +100,22 @@ bool HeliostatControllerJsonRouter::updateDirectionsMap(JsonVariant content, Dir
     bool updated = false;
     if (content.is<JsonObject>()) {
         for (auto kv : content.as<JsonObject>()) {
+            JsonObject obj = kv.value().as<JsonObject>();
             if (map.find(String(kv.key().c_str())) != map.end()) {
-                SphericalCoordinate target = map[String(kv.key().c_str())];
-                target.azimuth = kv.value()["azimuth"] | target.azimuth;
-                target.elevation = kv.value()["elevation"] | target.elevation;
-                updated = true;
+                SphericalCoordinate &target = map[String(kv.key().c_str())];
+                target.azimuth = obj["azimuth"] | target.azimuth;
+                target.elevation = obj["elevation"] | target.elevation;
+                ESP_LOGI("Update Map", "%s", kv.key().c_str());
             }
+            else map.insert({kv.key().c_str(), {obj["azimuth"] | 120., obj["elevation"] | 45.}});
+            ESP_LOGI("Update Map", "%s", kv.key().c_str());
+            updated = true;
         }
     }
     return updated;
 }
 
-bool HeliostatControllerJsonRouter::removeFromMap(String target, DirectionsMap &map) 
+bool HeliostatControllerJsonRoutenameFromMap(String target, DirectionsMap &map) 
 {
     if (map.count(target) > 0) {
         map.erase(target);
@@ -105,10 +126,11 @@ bool HeliostatControllerJsonRouter::removeFromMap(String target, DirectionsMap &
 
 void HeliostatService::begin() 
 {
-    _stateService.begin();
+    // _stateService.begin();
     _eventEndpoint.begin();
     _httpRouterEndpoint.begin();
     _fsPersistence.readFromFS();
+    _state.init();
 }
 void HeliostatService::loop() 
 {

@@ -8,6 +8,7 @@ class Encoder
 {
 public:
     double angle;
+    bool invert = false;
     Encoder(int SDA = SDA, int SCL = SCL, TwoWire &I2C_ = Wire) : I2C(I2C_) {
         I2C.begin(SDA, SCL);
         // I2C.setClock(50000);
@@ -24,8 +25,9 @@ public:
         if (now - lastPoll >= maxPollInterval) {
             int value = readEncoder();
             lastPoll = now;
-            if (value >= 0) {
+            if (value > 0) {
                 angle = value*360./16384.;
+                if (invert) angle = 360. - angle;
                 newData = true;
                 return true;
             }
