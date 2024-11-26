@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Info from '~icons/tabler/info-circle';
 	import type { StepperControl, StepperDiag } from '$lib/types/models';
+	import Button from './Button.svelte';
 
 	class StepperStatus {
 		stst: boolean = false;
@@ -37,6 +38,8 @@
     let stepperStatus: StepperStatus;
 	$: stepperStatus = readStatus(stepperControl);
 
+    export let enableCb: () => void = () => {};
+
 </script>
 
 <div class="alert {stepperStatus.infoclass} my-2 shadow-lg">
@@ -62,4 +65,7 @@
             {/if}
         {/if}
     </span>
+    {#if !stepperControl.isEnabled}
+        <Button label="Enable" onClick={enableCb}></Button>
+    {/if}
 </div>

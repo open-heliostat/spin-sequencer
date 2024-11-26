@@ -42,7 +42,9 @@ Encoder encoder2 = Encoder(4, 3, Wire1);
 ClosedLoopController closedLoopController1 = {stepper1, encoder1};
 ClosedLoopController closedLoopController2 = {stepper2, encoder2};
 
-HeliostatController heliostatController = {closedLoopController1, closedLoopController2};
+SerialGPS gpsneo = SerialGPS(Serial1, TX, RX);
+
+HeliostatController heliostatController = {closedLoopController1, closedLoopController2, gpsneo};
 
 HeliostatService heliostatService = HeliostatService(
     &server,
@@ -51,7 +53,19 @@ HeliostatService heliostatService = HeliostatService(
     esp32sveltekit.getSecurityManager(),
     heliostatController);
 
-std::vector<TMC5160Controller*> steppers = {&stepper1, &stepper2};
+GPSSettingsService gpsSettingsService = GPSSettingsService(
+    &server,
+    esp32sveltekit.getFS(),
+    esp32sveltekit.getSecurityManager(),
+    &gpsneo);
+
+GPSStateService gpsStateService =  GPSStateService(
+    esp32sveltekit.getSocket(),
+    &gpsSettingsService,
+    &gpsneo,
+    esp32sveltekit.getFeatureService());
+
+// std::vector<TMC5160Controller*> steppers = {&stepper1, &stepper2};
 // std::vector<ClosedLoopController*> closedLoopControllers = {&closedLoopController1, &closedLoopController2};
 
 LightMqttSettingsService lightMqttSettingsService = LightMqttSettingsService(
@@ -77,20 +91,6 @@ LightStateService lightStateService = LightStateService(
 //     &stepperSettingsService,
 //     steppers,
 //     esp32sveltekit.getFeatureService());
-
-SerialGPS gpsneo = SerialGPS(Serial1, TX, RX);
-
-GPSSettingsService gpsSettingsService = GPSSettingsService(
-    &server,
-    esp32sveltekit.getFS(),
-    esp32sveltekit.getSecurityManager(),
-    &gpsneo);
-
-GPSStateService gpsStateService =  GPSStateService(
-    esp32sveltekit.getSocket(),
-    &gpsSettingsService,
-    &gpsneo,
-    esp32sveltekit.getFeatureService());
 
 // EncoderStateService encoderService = EncoderStateService(
 //     esp32sveltekit.getSocket(),

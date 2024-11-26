@@ -218,6 +218,7 @@ export type ControllerState = {
 	tolerance: number;
 	offset: number;
 	enabled: boolean;
+	invert: boolean;
 	limits: {
 		enabled: boolean;
 		begin: number;

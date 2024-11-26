@@ -36,14 +36,15 @@
 		return postJsonRest(restPath + '/config', config).then(data => stepperConfig = data);
 	}
 	async function getStepperDiag() {
-		return getJsonRest(restPath + '/diag', stepperDiag);
+		return getJsonRest(restPath + '/diag', stepperDiag).then(data => stepperDiag = data);
 	}
 
 </script>
 
-{#await getStepperDiag() then diag} 
+{#await getStepperDiag() then nothing} 
 	<StepperStatusComp 
-		stepperControl={diag}
+		stepperControl={stepperDiag}
+		enableCb={()=>{postJsonRest(restPath + '/config', {enabled: true})}}
 	></StepperStatusComp>
 {/await}
 <StepperControlForm 

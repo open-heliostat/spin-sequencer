@@ -119,6 +119,13 @@ JsonRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::router = JsonRo
     {"limits", [](JsonVariant content, ClosedLoopController &controller) {
         return limitsRouter.parse(content, controller);
     }},
+    {"invert", [](JsonVariant content, ClosedLoopController &controller) {
+        if (content.is<bool>()) {
+            controller.encoder.invert = content.as<bool>();
+            return true;
+        }
+        else return false;
+    }},
     {"enabled", [](JsonVariant content, ClosedLoopController &controller) {
         if (content.is<bool>()) {
             controller.enabled = content.as<bool>();
@@ -159,6 +166,9 @@ JsonRouter<ClosedLoopController> ClosedLoopControllerJsonRouter::router = JsonRo
     }},
     {"enabled", [](ClosedLoopController &controller, const JsonVariant target) {
         target.set(controller.enabled);
+    }},
+    {"invert", [](ClosedLoopController &controller, const JsonVariant target) {
+        target.set(controller.encoder.invert);
     }},
     {"limits", [](ClosedLoopController &controller, const JsonVariant target) {
         target["enabled"] = controller.hasLimits;

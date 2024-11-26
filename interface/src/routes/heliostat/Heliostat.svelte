@@ -34,8 +34,13 @@
 		sourcesMap: {
 			[key: string]: Direction
 		}
-		latitude: number;
-		longitude: number;
+		sunTracker : {
+			latitude: number;
+			longitude: number;
+			isTimeSet: boolean;
+			azimuth: number;
+			elevation: number;
+		}
 	}
 
 	let heliostatControllerState : HeliostatControllerState;
@@ -45,7 +50,7 @@
 	$: selectedDirection = heliostatControllerState?.sourcesMap[selectedEditor];
 
 	async function getHeliostatControllerState() {
-		return getJsonRest(restPath, heliostatControllerState).then((data)=>heliostatControllerState=data);
+		return getJsonRest(restPath, heliostatControllerState).then((data)=>{heliostatControllerState=data;console.log(heliostatControllerState)});
 	}
 
 	async function postHeliostatControllerState() {
@@ -119,22 +124,6 @@
 				bind:value={heliostatControllerState.enabled}
 			></Checkbox> -->
 		</GridForm>
-		<Slider 
-			label="Latitude" 
-			bind:value={heliostatControllerState.latitude}
-			min={0} 
-			max={360} 
-			step={0.01}
-			onChange={postHeliostatControllerState}
-		></Slider>
-		<Slider 
-			label="Longitude" 
-			bind:value={heliostatControllerState.longitude}
-			min={0} 
-			max={360} 
-			step={0.01}
-			onChange={postHeliostatControllerState}
-		></Slider>
 		<div class="flex flex-row flex-wrap justify-between gap-x-2">
 			<Button
 				label="Add"
@@ -154,17 +143,41 @@
 	</div>
 </SettingsCard>
 
-<!-- <SettingsCard collapsible={false}>
-	<Light slot="icon" class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">Settings</span>
-	<ControllerSettings
-		label="Azimuth"
-		restPath="/rest/heliostat/azimuth"
-	>
-	</ControllerSettings>
-	<ControllerSettings 
-		label="Elevation"
-		restPath="/rest/heliostat/elevation"
-	>
-	</ControllerSettings>
-</SettingsCard> -->
+<SettingsCard>
+	<span slot="title">Sun Tracker</span>
+	{#await getHeliostatControllerState() then nothing}
+	<div class="alert {heliostatControllerState.sunTracker.isTimeSet ? 'alert-info' : 'alert-warning'} my-2 shadow-lg">
+		<Info class="h-6 w-6 flex-shrink-0 stroke-current" />
+		<span>
+			{#if heliostatControllerState.sunTracker.isTimeSet}
+			Azimuth : {heliostatControllerState.sunTracker.azimuth}, Elevation : {heliostatControllerState.sunTracker.elevation}
+			{:else}
+			Time is not set !
+			{/if}
+		</span>
+	</div>
+	<span class="text-lg">Location</span>
+	<GridForm>
+		<Slider 
+		label="Latitude" 
+		bind:value={heliostatControllerState.sunTracker.latitude}
+		min={0} 
+		max={360} 
+		step={0.01}
+		onChange={postHeliostatControllerState}
+		></Slider>
+		<Slider 
+			label="Longitude" 
+			bind:value={heliostatControllerState.sunTracker.longitude}
+			min={0} 
+			max={360} 
+			step={0.01}
+			onChange={postHeliostatControllerState}
+		></Slider>
+	</GridForm>
+	<Button
+		label="Get from GPS"
+		onClick={()=>{postJsonRest(restPath + '/sunTracker/getFromGPS', {}).then(() => getHeliostatControllerState())}}>
+	</Button>
+	{/await}
+</SettingsCard>

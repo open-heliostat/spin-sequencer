@@ -39,9 +39,12 @@ JsonRouter<HeliostatController> HeliostatControllerJsonRouter::router = JsonRout
     {"set", [&](JsonVariant content, HeliostatController &controller) {
         return controller.setTarget(content["name"].as<String>(), content["azimuth"].as<double>(), content["elevation"].as<double>());
     }},
-    {"latitude", [&](JsonVariant content, HeliostatController &controller) {
-        if (content.is<double>()) {
-            controller.latitude = content.as<double>();
+    {"sunTracker", [&](JsonVariant content, HeliostatController &controller) {
+        if (content.is<JsonObject>()) {
+            JsonObject obj = content.as<JsonObject>();
+            if (obj["latitude"].is<double>()) controller.latitude = obj["latitude"].as<double>();
+            if (obj["longitude"].is<double>()) controller.longitude = obj["longitude"].as<double>();
+            if (obj["getFromGPS"].is<JsonVariant>()) controller.getLocationFromGPS();
             return true;
         }
         return false;
@@ -65,17 +68,19 @@ JsonRouter<HeliostatController> HeliostatControllerJsonRouter::router = JsonRout
     {"currentSource", [&](HeliostatController &controller, JsonVariant content)  {
         content.set(controller.currentSource);
     }},
+    {"sunTracker", [&](HeliostatController &controller, JsonVariant content) {
+        JsonObject obj = content.to<JsonObject>();
+        obj["latitude"] = controller.latitude;
+        obj["longitude"] = controller.longitude;
+        obj["isTimeSet"] = controller.isTimeSet();
+        obj["azimuth"] = controller.getSolarPosition().azimuth;
+        obj["elevation"] = controller.getSolarPosition().elevation;
+    }},
     {"azimuth", [&](HeliostatController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) ClosedLoopControllerJsonRouter::router.serialize(controller.azimuthController, content);
     }},
     {"elevation", [&](HeliostatController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) ClosedLoopControllerJsonRouter::router.serialize(controller.elevationController, content);
-    }},
-    {"latitude", [&](HeliostatController &controller, JsonVariant content) {
-        content.set(controller.latitude);
-    }},
-    {"longitude", [&](HeliostatController &controller, JsonVariant content) {
-        content.set(controller.longitude);
     }},
 });
 

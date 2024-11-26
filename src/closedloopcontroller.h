@@ -49,7 +49,7 @@ public:
             }
             else error = mod(targetAngle - curAngle + 180., 360.) - 180.;
             // ESP_LOGI("Controller", "Command : %f, Target: %f, Current: %f, To Go: %f\n", angle, targetAngle, curAngle, error);
-            if (abs(error) > tolerance) {
+            if (abs(error) > tolerance && enabled) {
                 stepper.setMaxSpeed();
                 stepper.moveR(error);
             }

@@ -45,6 +45,7 @@ public:
         root["limits"]["begin"] = true;
         root["limits"]["end"] = true;
         root["enabled"] = true;
+        root["invert"] = true;
         root["offset"] = true;
         root["stepper"] = TMC5160ControllerJsonRouter::getSaveMap();
     }

@@ -3,15 +3,15 @@
 
 #include <closedloopcontroller.h>
 #include <sun.h>
-#include "esp_sntp.h"
+#include <gpsneo.h>
 
 using DirectionsMap = std::map<String, SphericalCoordinate>;
 
 class HeliostatController
 {
 public:
-    HeliostatController(ClosedLoopController &azimuthController, ClosedLoopController &elevationController) : 
-        azimuthController(azimuthController), elevationController(elevationController) {}
+    HeliostatController(ClosedLoopController &azimuthController, ClosedLoopController &elevationController, SerialGPS &gps) : 
+        azimuthController(azimuthController), elevationController(elevationController), gps(gps) {}
 
     SphericalCoordinate getTarget() 
     {
@@ -81,7 +81,8 @@ public:
     bool isTimeSet() 
     {
         // return sntp_get_sync_status() == SNTP_SYNC_STATUS_COMPLETED;
-        return true;
+        // return timeStatus() == timeSet;
+        return year() > 2020;
     }
 
     bool enabled = true;
@@ -92,10 +93,22 @@ public:
     double latitude;
     double longitude;
 
+    void getLocationFromGPS() {
+        if (gps.numSats > 3) {
+            latitude = gps.coords.latitude;
+            longitude = gps.coords.longitude;
+        }
+    }
+
+    SphericalCoordinate getSolarPosition() 
+    {
+        return computeSolarPosition(latitude, longitude);
+    }
+
     DirectionsMap getDirectionsMap() 
     {
         DirectionsMap map = {};
-        if (isTimeSet()) map.insert({"Sun", computeSolarPosition(latitude, longitude)});
+        if (isTimeSet()) map.insert({"Sun", getSolarPosition()});
         map.insert(targetsMap.begin(), targetsMap.end());
         return map;
     }
@@ -139,5 +152,6 @@ public:
     ClosedLoopController &elevationController;
 
     unsigned long lastCommand = 0;
+    SerialGPS &gps;
 };
 #endif

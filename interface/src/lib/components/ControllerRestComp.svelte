@@ -87,7 +87,10 @@
             {#await fetch(restPath + '/stepper/diag').then(async (res) => await res.json())}
             <Spinner></Spinner>
             {:then data} 
-                <StepperStatusComp stepperControl={data}></StepperStatusComp>
+                <StepperStatusComp 
+                    stepperControl={data}
+                    enableCb={()=>{postJsonRest(restPath + '/stepper/config', {enabled: true})}}
+                ></StepperStatusComp>
             {/await}
             <GridForm>
                 <Slider 
@@ -115,6 +118,11 @@
                     <Checkbox 
                         label="Enable" 
                         bind:value={controllerState.enabled}
+                        onChange={postControllerState}
+                    ></Checkbox>
+                    <Checkbox 
+                        label="Invert" 
+                        bind:value={controllerState.invert}
                         onChange={postControllerState}
                     ></Checkbox>
                     <Slider 
@@ -160,7 +168,7 @@
                     ></Slider>
                     {/if}
                 </GridForm>
-                <span class="text-lg">Calibration</span>
+                <!-- <span class="text-lg">Calibration</span>
                 <GridForm>
                     <Checkbox 
                         label="Enable" 
@@ -212,7 +220,7 @@
                         ><span>Save</span></button
                     >
                     {/if}
-                </div>
+                </div> -->
             </Collapsible>
         </div>
     {/await}
