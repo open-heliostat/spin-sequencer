@@ -29,7 +29,7 @@ struct TMC5160Controller {
     void init() {
         pinMode(STEP, OUTPUT);
         driver.begin();                 //  SPI: Init CS pins and possible SW SPI pins
-        if (driver.version() == 0xFF || driver.version() == 0) Serial.println("Driver communication error");
+        if (!isConnected()) Serial.println("Driver communication error");
         Serial.print("Driver firmware version: ");
         Serial.println(driver.version());
         if (driver.sd_mode()) Serial.println("Driver is hardware configured for Step & Dir mode");
@@ -47,6 +47,10 @@ struct TMC5160Controller {
             stepper->setAcceleration(maxAccel*microsteps);    // 40 steps/s²
         }
         else Serial.println("Stepper ERROR");
+    }
+
+    bool isConnected() {
+        return !(driver.version() == 0xFF || driver.version() == 0);
     }
 
     void initDriver() {
