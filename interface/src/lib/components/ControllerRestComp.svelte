@@ -99,7 +99,6 @@
                     min={controllerState.limits.enabled ? (controllerState.limits.begin < controllerState.limits.end ? controllerState.limits.begin : controllerState.limits.end) : 0} 
                     max={controllerState.limits.enabled ? (controllerState.limits.begin > controllerState.limits.end ? controllerState.limits.begin : controllerState.limits.end) : 360}
                     step={0.01}
-                    onChange={postControllerState}
                     disabled
                 ></Slider>
                 <Slider 
@@ -108,7 +107,7 @@
                     min={controllerState.limits.enabled ? (controllerState.limits.begin < controllerState.limits.end ? controllerState.limits.begin : controllerState.limits.end) : 0} 
                     max={controllerState.limits.enabled ? (controllerState.limits.begin > controllerState.limits.end ? controllerState.limits.begin : controllerState.limits.end) : 360}
                     step={0.01}
-                    onChange={postControllerState}
+                    onChange={() => postJsonRest(restPath, {target: controllerState.target})}
                 ></Slider>
             </GridForm>
             <Collapsible>

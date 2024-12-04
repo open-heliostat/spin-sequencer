@@ -127,12 +127,12 @@
 		<div class="flex flex-row flex-wrap justify-between gap-x-2">
 			<Button
 				label="Add"
-				onClick={()=>{postJsonRest(restPath + "/add", {}).then(()=>getHeliostatControllerState())}}>
+				onClick={()=>{postJsonRest(restPath + "/add", {}).then(()=>{getHeliostatControllerState().then(() => selectedEditor = "New target")})}}>
 			</Button>
 			{#if selectedDirection}
 			<Button
 				label="Remove"
-				onClick={()=>{postJsonRest(restPath, {remove: selectedEditor}).then(()=>getHeliostatControllerState())}}>
+				onClick={()=>{postJsonRest(restPath, {remove: selectedEditor}).then(()=>{getHeliostatControllerState();})}}>
 			</Button>
 			{/if}
 			<div class="flex-grow"></div>
