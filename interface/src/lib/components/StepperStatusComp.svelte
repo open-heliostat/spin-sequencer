@@ -39,6 +39,7 @@
 	$: stepperStatus = readStatus(stepperControl);
 
     export let enableCb: () => void = () => {};
+    export let encoderError = false;
 
 </script>
 
@@ -63,6 +64,9 @@
             {:else if stepperStatus.otpw}
             <br> Driver temperature pre-warning, you may want to try lowering the current and/or reducing the load.
             {/if}
+        {/if}
+        {#if encoderError}
+            <br> Encoder seems disconnected !
         {/if}
     </span>
     {#if !stepperControl.isEnabled}
