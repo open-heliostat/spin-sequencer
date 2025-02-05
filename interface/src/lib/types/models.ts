@@ -219,6 +219,7 @@ export type ControllerState = {
 	offset: number;
 	enabled: boolean;
 	invert: boolean;
+	encoderError: boolean;
 	limits: {
 		enabled: boolean;
 		begin: number;

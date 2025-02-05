@@ -9,6 +9,7 @@ class Encoder
 public:
     double angle;
     bool invert = false;
+    bool error = false;
     Encoder(int SDA = SDA, int SCL = SCL, TwoWire &I2C_ = Wire) : I2C(I2C_) {
         I2C.begin(SDA, SCL);
         // I2C.setClock(50000);
@@ -29,11 +30,13 @@ public:
                 angle = value*360./16384.;
                 if (invert) angle = 360. - angle;
                 newData = true;
+                error = false;
                 return true;
             }
             else {
-                Serial.printf("Bad I2C Data : %d\n", value);
+                Serial.printf("Bad I2C Data : %d, Delay : %d\n", value, millis()-now);
                 newData = false;
+                error = true;
             }
         }
         return newData;

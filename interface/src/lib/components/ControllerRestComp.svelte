@@ -89,6 +89,7 @@
             {:then data} 
                 <StepperStatusComp 
                     stepperControl={data}
+                    bind:encoderError={controllerState.encoderError}
                     enableCb={()=>{postJsonRest(restPath + '/stepper/config', {enabled: true})}}
                 ></StepperStatusComp>
             {/await}
