@@ -9,9 +9,9 @@ export const load = (async ({ fetch }) => {
 	const item = await result.json();
 	return {
 		features: item,
-		title: 'Open Helistat',
-		github: 'open-heliostat/open-heliostat',
+		title: 'Spin Sequencer',
+		github: 'open-heliostat/spin-sequencer',
 		copyright: '2024 leokeba',
-		appName: 'Open Heliostat'
+		appName: 'Spin Sequencer'
 	};
 }) satisfies LayoutLoad;
