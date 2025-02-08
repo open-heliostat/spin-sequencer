@@ -48,12 +48,6 @@
 
 	let menuItems = [
 		{
-			title: 'Status',
-			icon: Status,
-			href: '/heliostat',
-			feature: true,
-		},
-		{
 			title: 'Controllers',
 			icon: Rotation,
 			href: '/controllers',
