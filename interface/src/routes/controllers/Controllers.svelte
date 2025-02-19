@@ -3,13 +3,7 @@
 </script>
 
 <ControllerRestComp
-	label="Azimuth"
-	restPath="/rest/heliostat/azimuth"
-	>
-</ControllerRestComp>
-
-<ControllerRestComp 
-	label="Elevation"
-	restPath="/rest/heliostat/elevation"
+	label="Controller"
+	restPath="/rest/spin-seq/controller"
 	>
 </ControllerRestComp>

@@ -53,7 +53,7 @@
 						<Slider
 							label="Driver Current"
 							min={0}
-							max={1000}
+							max={3064}
 							bind:value={stepperSettings.driverCurrent}
 							{onChange}
 						></Slider>

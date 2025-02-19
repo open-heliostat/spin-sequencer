@@ -55,7 +55,7 @@
 		max={1.}
 		step={0.01}
 		bind:value={stepperControl.speed}
-		onChange={()=>{postStepperControl(stepperControl)}}
+		onChange={()=>{postJsonRest(restPath, {speed: stepperControl.speed})}}
 	></Slider>
 	<Slider
 		label="Move"

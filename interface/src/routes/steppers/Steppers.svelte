@@ -12,10 +12,6 @@
 </script>
 
 <SettingsCard>
-	<span slot="title">Azimuth Stepper</span>
-	<StepperRestComp restPath={"/rest/heliostat/azimuth/stepper"}></StepperRestComp>
-</SettingsCard>
-<SettingsCard>
-	<span slot="title">Elevation Stepper</span>
-	<StepperRestComp restPath={"/rest/heliostat/elevation/stepper"}></StepperRestComp>
+	<span slot="title">Stepper</span>
+	<StepperRestComp restPath={"/rest/spin-seq/controller/stepper"}></StepperRestComp>
 </SettingsCard>
