@@ -40,7 +40,7 @@ struct TMC5160Controller {
         Serial.println(driver.DRV_STATUS(), BIN);
         initDriver();
 
-        stepper = engine.stepperConnectToPin(STEP);
+        stepper = engine.stepperConnectToPin(STEP, 1);
         if (stepper) {
             stepper->setDirectionPin(DIR);
             stepper->setSpeedInHz(maxSpeed*microsteps);       // 200 steps/s
