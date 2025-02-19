@@ -41,7 +41,7 @@ jobs:
         run: python3 -m pip install platformio cryptography
 
       - name: Build firmware
-        run: platformio run -e "esp32-s3-super-mini"
+        run: platformio run -e "seeed_xiao_esp32s3"
 
       - name: Archive
         uses: actions/upload-artifact@v4
