@@ -105,7 +105,7 @@ struct TMC5160Controller {
     }
 
     void stop() {
-        setSpeed(0);
+        setSpeed(int32_t(0));
     }
 
     int32_t move() {

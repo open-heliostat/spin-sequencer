@@ -2,44 +2,44 @@
 
 JsonRouter<HeliostatController> HeliostatControllerJsonRouter::router = JsonRouter<HeliostatController>(
 {
-    {"azimuth", [&](JsonVariant content, HeliostatController &controller) {
+    {"azimuth", [](JsonVariant content, HeliostatController &controller) {
         return ClosedLoopControllerJsonRouter::router.parse(content, controller.azimuthController);
     }},
-    {"elevation", [&](JsonVariant content, HeliostatController &controller) {
+    {"elevation", [](JsonVariant content, HeliostatController &controller) {
         return ClosedLoopControllerJsonRouter::router.parse(content, controller.elevationController);
     }},
-    {"sourcesMap", [&](JsonVariant content, HeliostatController &controller) {
+    {"sourcesMap", [](JsonVariant content, HeliostatController &controller) {
         return updateDirectionsMap(content.as<JsonObject>(), controller.targetsMap);
     }},
-    {"currentTarget", [&](JsonVariant content, HeliostatController &controller) {
+    {"currentTarget", [](JsonVariant content, HeliostatController &controller) {
         if (content.is<String>()) {
             controller.currentTarget = content.as<String>();
             return true;
         }
         return false;
     }},
-    {"currentSource", [&](JsonVariant content, HeliostatController &controller) {
+    {"currentSource", [](JsonVariant content, HeliostatController &controller) {
         if (content.is<String>()) {
             controller.currentSource = content.as<String>();
             return true;
         }
         return false;
     }},
-    {"add", [&](JsonVariant content, HeliostatController &controller) {
+    {"add", [](JsonVariant content, HeliostatController &controller) {
         JsonObject obj = content.as<JsonObject>();
         controller.targetsMap.insert({obj["name"] | "New target", {obj["azimuth"] | 180., obj["elevation"] | 30.}});
         return true;
     }},
-    {"remove", [&](JsonVariant content, HeliostatController &controller) {
+    {"remove", [](JsonVariant content, HeliostatController &controller) {
         return controller.deleteTarget(content.as<String>());
     }},
-    {"rename", [&](JsonVariant content, HeliostatController &controller) {
+    {"rename", [](JsonVariant content, HeliostatController &controller) {
         return controller.renameTarget(content["oldName"].as<String>(), content["newName"].as<String>());
     }},
-    {"set", [&](JsonVariant content, HeliostatController &controller) {
+    {"set", [](JsonVariant content, HeliostatController &controller) {
         return controller.setTarget(content["name"].as<String>(), content["azimuth"].as<double>(), content["elevation"].as<double>());
     }},
-    {"sunTracker", [&](JsonVariant content, HeliostatController &controller) {
+    {"sunTracker", [](JsonVariant content, HeliostatController &controller) {
         if (content.is<JsonObject>()) {
             JsonObject obj = content.as<JsonObject>();
             if (obj["latitude"].is<double>()) controller.latitude = obj["latitude"].as<double>();
@@ -49,7 +49,7 @@ JsonRouter<HeliostatController> HeliostatControllerJsonRouter::router = JsonRout
         }
         return false;
     }},
-    {"longitude", [&](JsonVariant content, HeliostatController &controller) {
+    {"longitude", [](JsonVariant content, HeliostatController &controller) {
         if (content.is<double>()) {
             controller.longitude = content.as<double>();
             return true;
@@ -58,17 +58,17 @@ JsonRouter<HeliostatController> HeliostatControllerJsonRouter::router = JsonRout
     }},
 },
 {
-    {"sourcesMap", [&](HeliostatController &controller, JsonVariant content)  {
+    {"sourcesMap", [](HeliostatController &controller, JsonVariant content)  {
         JsonObject obj = content.to<JsonObject>();
         readDirectionsMap(controller.targetsMap, obj);
     }},
-    {"currentTarget", [&](HeliostatController &controller, JsonVariant content)  {
+    {"currentTarget", [](HeliostatController &controller, JsonVariant content)  {
         content.set(controller.currentTarget);
     }},
-    {"currentSource", [&](HeliostatController &controller, JsonVariant content)  {
+    {"currentSource", [](HeliostatController &controller, JsonVariant content)  {
         content.set(controller.currentSource);
     }},
-    {"sunTracker", [&](HeliostatController &controller, JsonVariant content) {
+    {"sunTracker", [](HeliostatController &controller, JsonVariant content) {
         JsonObject obj = content.to<JsonObject>();
         obj["latitude"] = controller.latitude;
         obj["longitude"] = controller.longitude;
@@ -76,10 +76,10 @@ JsonRouter<HeliostatController> HeliostatControllerJsonRouter::router = JsonRout
         obj["azimuth"] = controller.getSolarPosition().azimuth;
         obj["elevation"] = controller.getSolarPosition().elevation;
     }},
-    {"azimuth", [&](HeliostatController &controller, JsonVariant content) {
+    {"azimuth", [](HeliostatController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) ClosedLoopControllerJsonRouter::router.serialize(controller.azimuthController, content);
     }},
-    {"elevation", [&](HeliostatController &controller, JsonVariant content) {
+    {"elevation", [](HeliostatController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) ClosedLoopControllerJsonRouter::router.serialize(controller.elevationController, content);
     }},
 });
