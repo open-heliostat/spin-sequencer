@@ -19,7 +19,7 @@ public:
     double limitA = 0.;
     double limitB = 360.;
     double calibrationDecay = 0.1;
-    int calibrationSpeed = 5;
+    int32_t calibrationSpeed = 5;
     bool hasLimits = false;
     bool hasCalibration = false;
     bool calibrationRunning = false;

@@ -63,7 +63,7 @@ JsonEventRouter<TMC5160Controller> TMC5160ControllerJsonRouter::controlRouter = 
         else return false;
     }},
     {"stop", [](JsonVariant content, TMC5160Controller &controller) {
-        controller.setSpeed(0);
+        controller.setSpeed(int32_t(0));
         return true;
     }},
 });
