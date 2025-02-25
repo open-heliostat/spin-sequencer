@@ -7,6 +7,7 @@
 #include <StatelessService.h>
 
 #include <tmcdriver.h>
+#include <TmcDriverService.h>
 
 class TMC5160ControllerJsonRouter
 {
@@ -50,6 +51,7 @@ public:
     static JsonRouter<TMC5160Controller> router;
     static JsonEventRouter<TMC5160Controller> controlRouter;
     static JsonEventRouter<TMC5160Controller> configRouter;
+    static TMC5160StepperJsonRouter driverRouter;
 };
 
 class StepperService : public StatefulService<TMC5160Controller&>
