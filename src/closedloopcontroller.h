@@ -16,6 +16,8 @@ public:
     double tolerance = 0.1;
     double encoderOffset = 0.;
     double error;
+    double dist;
+    double speed;
     double limitA = 0.;
     double limitB = 360.;
     double calibrationDecay = 0.1;
@@ -23,6 +25,7 @@ public:
     bool hasLimits = false;
     bool hasCalibration = false;
     bool calibrationRunning = false;
+    bool pingPong = false;
     static const int calibrationSteps = 128;
     float calibrationOffsets[calibrationSteps];
     double calibrationStepperStartOffset = 0.;

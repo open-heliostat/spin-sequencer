@@ -15,6 +15,7 @@
 #include <ESP32SvelteKit.h>
 #include <PsychicHttpServer.h>
 #include <SpinSequencerService.h>
+#include <controller.h>
 
 #define SERIAL_BAUD_RATE 115200
 
@@ -31,8 +32,9 @@ TMC5160Controller stepper1 = {driver1, engine, D1, D0};
 Encoder encoder1 = Encoder(D4, D5);
 
 ClosedLoopController closedLoopController1 = {stepper1, encoder1};
+MotorController motorController = {stepper1, encoder1};
 
-SpinSequencerController spinSequencer = SpinSequencerController{closedLoopController1};
+SpinSequencerController spinSequencer = SpinSequencerController{motorController, closedLoopController1};
 
 SpinSequencerService spinSequencerService = SpinSequencerService{&server, 
                                                                  &esp32sveltekit, 
