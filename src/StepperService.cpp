@@ -9,6 +9,9 @@ JsonRouter<TMC5160Controller> TMC5160ControllerJsonRouter::router = JsonRouter<T
     {"control", [](JsonVariant content, TMC5160Controller &controller) {
         return controlRouter.parse(content, controller);
     }},
+    {"driver", [](JsonVariant content, TMC5160Controller &controller) {
+        return driverRouter.router.parse(content, controller.driver);
+    }},
 },
 {
     {"control", [](TMC5160Controller &controller, const JsonVariant target) {
@@ -28,6 +31,9 @@ JsonRouter<TMC5160Controller> TMC5160ControllerJsonRouter::router = JsonRouter<T
         target["invertDirection"] = controller.driver.shaft();
         target["driverCurrent"] = controller.driver.rms_current();
         target["stepsPerRot"] = controller.stepsPerRotation;
+    }},
+    {"driver", [](TMC5160Controller &controller, const JsonVariant target) {
+        driverRouter.router.serialize(controller.driver, target);
     }}
 });
 
