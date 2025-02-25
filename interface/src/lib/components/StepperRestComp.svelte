@@ -2,8 +2,9 @@
 	import StepperControlForm from "./StepperControlForm.svelte";
 	import StepperSettingsForm from "./StepperSettingsForm.svelte";
     import StepperStatusComp from "./StepperStatusComp.svelte";
+	import StepperDriverForm from "./StepperDriverForm.svelte";
 
-	import type { StepperConfig, StepperControlState, StepperDiag } from '$lib/types/models'
+	import type { StepperConfig, StepperControlState, StepperDiag, StepperDriver } from '$lib/types/models'
 	import { postJsonRest, getJsonRest} from "$lib/stores/rest"
 	import { onDestroy, onMount } from "svelte";
 
@@ -12,12 +13,15 @@
 	let stepperControl : StepperControlState;
 	let stepperDiag : StepperDiag;
 	let stepperConfig : StepperConfig;
+	let stepperDriver : StepperDriver;
+
 
 	let intervalID : any = null;
 	onMount(() => {
 		intervalID = setInterval(() => {
 			getStepperDiag();
 		}, 5000);
+		getStepperDriver();
 	});
 	onDestroy(() => {
 		clearInterval(intervalID);
@@ -38,6 +42,9 @@
 	async function getStepperDiag() {
 		return getJsonRest(restPath + '/diag', stepperDiag).then(data => stepperDiag = data);
 	}
+	async function getStepperDriver() {
+		return getJsonRest(restPath + '/driver', stepperDriver).then(data => stepperDriver = data);
+	}
 
 </script>
 
@@ -54,6 +61,13 @@
 	<StepperSettingsForm 
 		stepperSettings={stepperConfig}
 		onChange={()=>{postStepperConfig(stepperConfig).then((data) => stepperConfig = data)}}
-	></StepperSettingsForm>
+	>
+	{#if stepperDriver}
+	<StepperDriverForm 
+		driverSettings={stepperDriver}
+		onChange={()=>{postJsonRest(restPath + '/driver', stepperDriver).then((data) => stepperDriver = data)}}
+	></StepperDriverForm>
+	{/if}
+	</StepperSettingsForm>
 	{/await}
 </StepperControlForm>
