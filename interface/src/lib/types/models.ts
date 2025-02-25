@@ -233,3 +233,35 @@ export type ControllerState = {
 		decay: number;
 	};
 }
+
+export type StepperDriver = {
+  status: {
+    enabled: boolean;
+    stallguard: boolean;
+    overtemp: boolean;
+    overtemp_warning: boolean; 
+    cs_actual: number;
+    current_scale: number;
+  };
+  chopConfig: {
+    toff: number;
+    hstrt: number;
+    hend: number;
+    tbl: number;
+    mres: number;
+  };
+  stallConfig: {
+    sg_stop: boolean;
+    semin: number;
+    semax: number;
+    sedn: number;
+    sgt: number;
+  };
+  pwmConfig: {
+    pwm_ofs: number;
+    pwm_grad: number;
+    pwm_freq: number;
+    pwm_autoscale: boolean;
+    pwm_autograd: boolean;
+  };
+};

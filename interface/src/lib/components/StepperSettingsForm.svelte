@@ -68,5 +68,6 @@
 					</div>
 				</div>
 			</form>
+			<slot></slot>
 		</div>
 	</Collapsible>
