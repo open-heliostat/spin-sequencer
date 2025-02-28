@@ -21,6 +21,7 @@ public:
     {
         controller.run();
         motorController.tick();
+        jsonSeq.tick();
     }
 };
 #endif

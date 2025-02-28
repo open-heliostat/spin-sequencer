@@ -4,11 +4,17 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
 {
     {"controller", [&](JsonVariant content, SpinSequencerController &controller) {
         return ClosedLoopControllerJsonRouter::router.parse(content, controller.controller);
+    }},
+    {"sequencer", [&](JsonVariant content, SpinSequencerController &controller) {
+        return JsonSeqJsonRouter::router.parse(content, controller.jsonSeq);
     }}
 },
 {
     {"controller", [&](SpinSequencerController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) ClosedLoopControllerJsonRouter::router.serialize(controller.controller, content);
+    }},
+    {"sequencer", [&](SpinSequencerController &controller, JsonVariant content) {
+        if (content.is<JsonObject>()) JsonSeqJsonRouter::router.serialize(controller.jsonSeq, content);
     }}
 });
 

@@ -7,6 +7,7 @@
 #include <StatelessService.h>
 #include <HttpRouterEndpoint.h>
 #include <ClosedLoopControllerService.h>
+#include <JseqService.h>
 
 #include <spinsequencer.h>
 

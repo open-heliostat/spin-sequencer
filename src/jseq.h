@@ -30,30 +30,30 @@ public:
     bool commandRunning = false;
     JsonSeq(MotorController &controller):
         controller(controller) {}
-    void loadJson() {
-        preferences.begin("json");
-        int commandsNum = preferences.getInt("commandsNum", 1);
-        for (int i = 0; i < commandsNum; i++) {
-            String command = preferences.getString((String("seq")+String(i)).c_str(), String("null"));
-            // if (command == String("null") || i > 100) break;
-            if (commands.size() <= i) commands.push_back(JsonDocument());
-            deserializeJson(commands[i], command);
-        }
-        preferences.end();
-        loadSettings();
-    }
-    void saveJson() {
-        preferences.begin("json");
-        int commandsNum = min(int(commands.size()), 32);
-        preferences.putInt("commandsNum", commandsNum);
-        for (int i = 0; i < commandsNum; i++) {
-            String data;
-            serializeJson(commands[i], data);
-            preferences.putString((String("seq")+String(i)).c_str(), data);
-        }
-        preferences.end();
-        saveSettings();
-    }
+    // void loadJson() {
+    //     preferences.begin("json");
+    //     int commandsNum = preferences.getInt("commandsNum", 1);
+    //     for (int i = 0; i < commandsNum; i++) {
+    //         String command = preferences.getString((String("seq")+String(i)).c_str(), String("null"));
+    //         // if (command == String("null") || i > 100) break;
+    //         if (commands.size() <= i) commands.push_back(JsonDocument());
+    //         deserializeJson(commands[i], command);
+    //     }
+    //     preferences.end();
+    //     loadSettings();
+    // }
+    // void saveJson() {
+    //     preferences.begin("json");
+    //     int commandsNum = min(int(commands.size()), 32);
+    //     preferences.putInt("commandsNum", commandsNum);
+    //     for (int i = 0; i < commandsNum; i++) {
+    //         String data;
+    //         serializeJson(commands[i], data);
+    //         preferences.putString((String("seq")+String(i)).c_str(), data);
+    //     }
+    //     preferences.end();
+    //     saveSettings();
+    // }
     void selectCommand(int select) {
         while (select >= commands.size()) commands.push_back(JsonDocument());
         selectedCommand = select;
@@ -193,18 +193,18 @@ public:
             commandRunning = false;
         }
     }
-    void saveSettings() {
-        preferences.begin("jseq");
-        preferences.putInt("selCmd", selectedCommand);
-        preferences.putBool("running", isRunning);
-        preferences.end();
-    }
-    void loadSettings() {
-        preferences.begin("jseq");
-        selectCommand(preferences.getInt("selCmd", 0));
-        isRunning = preferences.getBool("running", isRunning);
-        if (isRunning) readCommand();
-        preferences.end();
-    }
+    // void saveSettings() {
+    //     preferences.begin("jseq");
+    //     preferences.putInt("selCmd", selectedCommand);
+    //     preferences.putBool("running", isRunning);
+    //     preferences.end();
+    // }
+    // void loadSettings() {
+    //     preferences.begin("jseq");
+    //     selectCommand(preferences.getInt("selCmd", 0));
+    //     isRunning = preferences.getBool("running", isRunning);
+    //     if (isRunning) readCommand();
+    //     preferences.end();
+    // }
 };
 #endif
