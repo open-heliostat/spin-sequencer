@@ -2,6 +2,7 @@
 	import type { PageData } from '../$types';
 	import SequencerRestComp from '$lib/components/SequencerRestComp.svelte';
 	import Select from '$lib/components/Select.svelte';
+	import ClassicControllerRestComp from '$lib/components/ClassicControllerRestComp.svelte';
 
 	export let data: PageData;
 </script>
@@ -11,4 +12,5 @@
      sm:mx-8 sm:my-8"
 >
 	<SequencerRestComp restPath={'/rest/spin-seq/sequencer'} />
+	<ClassicControllerRestComp restPath={'/rest/spin-seq/sequencer/controller'} />
 </div>
