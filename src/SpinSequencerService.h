@@ -47,6 +47,7 @@ public:
     static const void getSaveMap(JsonObject &root)
     {
         root["controller"] = ClosedLoopControllerJsonRouter::getSaveMap();
+        root["sequencer"] = JsonSeqJsonRouter::getSaveMap();
     }
     static JsonRouter<SpinSequencerController> router;
 };

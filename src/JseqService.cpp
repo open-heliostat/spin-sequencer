@@ -1,5 +1,35 @@
 #include <JseqService.h>
 
+// Convert vector of JsonDocument to JsonArray of String
+JsonArray jsonDocumentVectorToStringsArray(std::vector<JsonDocument> commands)
+{
+    JsonDocument doc;
+    JsonArray result = doc.to<JsonArray>();
+    for (auto& command : commands) {
+        String commandStr;
+        serializeJson(command, commandStr);
+        result.add(commandStr);
+        Serial.println(commandStr);
+    }
+    Serial.println(doc.as<String>());
+    return result;
+}
+// Convert String array to JsonDocument vector
+std::vector<JsonDocument> stringArrayToJsonDocumentVector(JsonArray array) {
+    std::vector<JsonDocument> result;
+    for (JsonVariant value : array) {
+        if (value.is<const char*>() || value.is<String>()) {
+            JsonDocument doc;
+            DeserializationError error = deserializeJson(doc, value.as<String>());
+            if (!error) {
+                result.push_back(doc);
+            }
+            else Serial.println(error.c_str());
+        }
+    }
+    return result;
+}
+
 // Define the main router
 JsonRouter<JsonSeq> JsonSeqJsonRouter::router = JsonRouter<JsonSeq>(
 {
@@ -19,7 +49,12 @@ JsonRouter<JsonSeq> JsonSeqJsonRouter::router = JsonRouter<JsonSeq>(
         target["lostCommands"] = sequencer.lostCommands;
     }},
     {"config", [](JsonSeq &sequencer, const JsonVariant target) {
-        // target["commands"] = sequencer.commands;
+        JsonArray commands = target["commands"].to<JsonArray>();
+        for (auto& command : sequencer.commands) {
+            String commandStr;
+            serializeJson(command, commandStr);
+            commands.add(commandStr);
+        }
         target["selectedCommand"] = sequencer.selectedCommand;
         target["isRunning"] = sequencer.isRunning;
     }}
@@ -69,6 +104,14 @@ JsonEventRouter<JsonSeq> JsonSeqJsonRouter::configRouter = JsonEventRouter<JsonS
             }
             return true;
         }
+        return false;
+    }},
+    {"commands", [](JsonVariant content, JsonSeq &sequencer) {
+        if (content.is<JsonArray>()) {
+            sequencer.commands = stringArrayToJsonDocumentVector(content);
+            return true;
+        }
+        Serial.println("Failed to parse : " + content.as<String>());
         return false;
     }}
 });

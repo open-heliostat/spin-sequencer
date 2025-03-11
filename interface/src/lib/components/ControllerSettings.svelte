@@ -117,8 +117,7 @@
     <Spinner></Spinner>
     {:then nothing}
         <div>
-            {#await fetch(restPath + '/stepper/diag').then(async (res) => await res.json())}
-            {:then data} 
+            {#await fetch(restPath + '/stepper/diag').then(async (res) => await res.json()) then data}
                 <StepperStatusComp stepperControl={data}></StepperStatusComp>
             {/await}
             <Slider 

@@ -21,6 +21,7 @@
 	import GPS from '~icons/tabler/satellite';
 	import Rotation from '~icons/tabler/rotate-dot'
 	import Metrics from '~icons/tabler/report-analytics';
+	import Sequencer from '~icons/tabler/mist';
 	import { page } from '$app/stores';
 	import { user } from '$lib/stores/user';
 	import { createEventDispatcher } from 'svelte';
@@ -47,6 +48,12 @@
 	};
 
 	let menuItems = [
+		{
+			title: 'Sequencer',
+			icon: Sequencer,
+			href: '/sequencer',
+			feature: true,
+		},
 		{
 			title: 'Controllers',
 			icon: Rotation,
