@@ -49,7 +49,7 @@ struct MotorController {
         return sensor.getAngle();
     }
     void move(double toGo) {
-        controller.moveR(toGo*200./360.);
+        controller.moveR(toGo);
     }
     double getDistanceToStop() {
         double toStop = controller.getStepsToStop() * 360. / 200.;

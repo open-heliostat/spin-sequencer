@@ -38,6 +38,9 @@ JsonRouter<JsonSeq> JsonSeqJsonRouter::router = JsonRouter<JsonSeq>(
     }},
     {"control", [](JsonVariant content, JsonSeq &sequencer) {
         return controlRouter.parse(content, sequencer);
+    }},
+    {"controller", [](JsonVariant content, JsonSeq &sequencer) {
+        return ClassicControllerJsonRouter::router.parse(content, sequencer.controller);
     }}
 },
 {
@@ -57,6 +60,9 @@ JsonRouter<JsonSeq> JsonSeqJsonRouter::router = JsonRouter<JsonSeq>(
         }
         target["selectedCommand"] = sequencer.selectedCommand;
         target["isRunning"] = sequencer.isRunning;
+    }},
+    {"controller", [](JsonSeq &sequencer, const JsonVariant target) {
+        ClassicControllerJsonRouter::router.serialize(sequencer.controller, target);
     }}
 });
 

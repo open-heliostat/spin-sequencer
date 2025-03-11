@@ -5,6 +5,7 @@
 #include <HttpRouterEndpoint.h>
 #include <FSPersistence.h>
 #include <StatelessService.h>
+#include <ClassicControllerService.h>
 #include "jseq.h"
 
 class JsonSeqJsonRouter
