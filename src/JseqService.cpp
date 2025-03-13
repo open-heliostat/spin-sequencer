@@ -1,19 +1,5 @@
 #include <JseqService.h>
 
-// Convert vector of JsonDocument to JsonArray of String
-JsonArray jsonDocumentVectorToStringsArray(std::vector<JsonDocument> commands)
-{
-    JsonDocument doc;
-    JsonArray result = doc.to<JsonArray>();
-    for (auto& command : commands) {
-        String commandStr;
-        serializeJson(command, commandStr);
-        result.add(commandStr);
-        Serial.println(commandStr);
-    }
-    Serial.println(doc.as<String>());
-    return result;
-}
 // Convert String array to JsonDocument vector
 std::vector<JsonDocument> stringArrayToJsonDocumentVector(JsonArray array) {
     std::vector<JsonDocument> result;
@@ -85,7 +71,12 @@ JsonEventRouter<JsonSeq> JsonSeqJsonRouter::controlRouter = JsonEventRouter<Json
     }},
     {"execute", [](JsonVariant content, JsonSeq &sequencer) {
         if (content.is<String>()) {
-            sequencer.readCommand(content.as<String>());
+            JsonDocument command;
+            DeserializationError error = deserializeJson(command, content.as<String>());
+            if (!error) {
+                sequencer.readCommand(command);
+            }
+            else content.to<JsonObject>()["error"] = String(error.c_str());
         }
         return true;
     }}

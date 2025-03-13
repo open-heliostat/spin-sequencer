@@ -5,10 +5,11 @@
     import GridForm from '$lib/components/GridForm.svelte';
     import Collapsible from '$lib/components/Collapsible.svelte';
     import { getJsonRest, postJsonRest } from '$lib/stores/rest';
-    import DisableButton from './DisableButton.svelte';
+    import { notifications } from "$lib/components/toasts/notifications";
     import StopButton from './StopButton.svelte';
 	import Text from './Text.svelte';
 	import Slider from './Slider.svelte';
+	import Button from './Button.svelte';
 
     export let restPath: string;
 
@@ -21,6 +22,7 @@
             lostCommands: number;
         };
         config: {
+            commands: string[];
             selectedCommand: number;
             isRunning: boolean;
         };
@@ -28,6 +30,9 @@
 
     let sequencerState: SequencerState;
     let commandInput = '';
+    let commandError = '';
+
+    $: commandsCount = sequencerState?.config.commands.length - 1 || 0;
 
     let intervalID: any;
     onMount(() => {
@@ -51,6 +56,9 @@
     }
 
     function selectCommand(index: number) {
+        if (index >= 0) {
+            commandInput = sequencerState.config.commands[index];
+        }
         return postJsonRest(restPath + '/control', { select: index });
     }
 
@@ -64,8 +72,13 @@
         if (commandInput) {
             postJsonRest(restPath + '/control', { 
                 execute: commandInput 
-            }).then((data) => {
-                console.log(data);
+            }).then((data) => { // @ts-ignore
+                if (data.execute.error) { // @ts-ignore
+                    commandError = data.execute.error;
+                    notifications.error(commandError, 3000);
+                } else {
+                    notifications.success("Command succesfully parsed : " + data.execute, 3000);
+                }
                 commandInput = '';
             });
         }
@@ -82,9 +95,10 @@
                 <Slider
                     label="Select"
                     bind:value={sequencerState.config.selectedCommand}
-                    min={0} 
-                    max={32} 
-                    step={1}>
+                    min={-1} 
+                    bind:max={commandsCount} 
+                    step={1}
+                    onChange={() => selectCommand(sequencerState.config.selectedCommand)}>
                 </Slider>
                 <Text
                     label="Command"
@@ -108,12 +122,16 @@
                 </div>
             </Collapsible>
             <div class="flex flex-row flex-wrap justify-between gap-x-2">
-                <button class="btn btn-primary" 
-                    on:click={toggleRun}
-                >{sequencerState?.status.isRunning ? 'Stop' : 'Run'} Sequence</button>
+                <Button 
+                    onClick={toggleRun}
+                    label="Run Command"
+                />
+                <Button 
+                    onClick={toggleRun}
+                    label="Write Commands"
+                />
                 <div class="flex-grow"></div>
                 <div>
-                    <DisableButton onClick={() => postJsonRest(restPath + '/control', { run: false })}></DisableButton>
                     <StopButton onClick={() => postJsonRest(restPath + '/control', { run: false })}></StopButton>
                 </div>
             </div>
