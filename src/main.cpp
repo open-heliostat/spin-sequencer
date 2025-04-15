@@ -16,8 +16,17 @@
 #include <PsychicHttpServer.h>
 #include <SpinSequencerService.h>
 #include <controller.h>
-#include <CAN.h>
 #include <ESP32-TWAI-CAN.hpp>
+#include <CAN.h>        // https://github.com/adafruit/arduino-CAN
+#include <CanIsoTp.hpp> // https://github.com/MLeganes/arduino-can-iso-tp
+
+// CanIsoTp
+CanIsoTp cantp;  // CAN IsoTp protocol to send and receive the pdus
+pdu_t cantp_pdu; // Pdu used in CAN IsoTp to transmit the data.
+
+uint8_t buff[128]; // Buffer used in the pdu.data.
+uint8_t msgSF[] = { 0x00, 0x01, 0x02, 0x03, 0x04};
+uint8_t msgCF[] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15};
 
 #define SERIAL_BAUD_RATE 115200
 
@@ -66,11 +75,17 @@ void setup()
     // else {
     //     ESP_LOGI("CAN", "CAN started");
     // }
-    if(ESP32Can.begin(ESP32Can.convertSpeed(500), D6, D7, 5, 5)) {
-        ESP_LOGI("CAN", "CAN bus started!");
-    } else {
-        ESP_LOGI("CAN", "CAN bus failed!");
-    }
+    // if(ESP32Can.begin(ESP32Can.convertSpeed(500), D6, D7, 5, 5)) {
+    //     ESP_LOGI("CAN", "CAN bus started!");
+    // } else {
+    //     ESP_LOGI("CAN", "CAN bus failed!");
+    // }
+
+    // CanIsoTp setup
+    CAN.setPins(D6, D7);
+    cantp.begin(100000);    // Baud Rate
+    cantp_pdu.rxId = 0x200; // CanId rx.
+    cantp_pdu.txId = 0x100; // CanId tx.
 }
 
 // void receiveCanPacket() {
@@ -154,19 +169,28 @@ void loop()
     // vTaskDelete(NULL);
     spinSequencerService.loop();
     unsigned long now = millis();
-    if(ESP32Can.readFrame(rxFrame, 1000)) {
-        // Comment out if too many requests 
-        Serial.printf("Received frame: %03X \r\n", rxFrame.identifier);
-        if(rxFrame.identifier == 0x7E8) {   // Standard OBD2 frame responce ID
-            Serial.printf("Collant temp: %3d°C \r\n", rxFrame.data[3] - 40); // Convert to °C
-        }
+    cantp_pdu.data = buff;
+    if (cantp.receive(&cantp_pdu)) {
+        ESP_LOGI("CAN", "Received packet ... ");
     }
+    // if(ESP32Can.readFrame(rxFrame, 1000)) {
+    //     // Comment out if too many requests 
+    //     Serial.printf("Received frame: %03X \r\n", rxFrame.identifier);
+    //     if(rxFrame.identifier == 0x7E8) {   // Standard OBD2 frame responce ID
+    //         Serial.printf("Collant temp: %3d°C \r\n", rxFrame.data[3] - 40); // Convert to °C
+    //     }
+    // }
     // receiveCanPacket();
     if (now - lastTick > 1000) {
         ESP_LOGI("CAN", "Sending packet ... ");
         lastTick = now;
+
+        // Multiframe
+        cantp_pdu.data = msgCF;
+        cantp_pdu.len = 22;
+        cantp.send(&cantp_pdu);
         // sendCanPacket();
-        sendObdFrame(5); // For coolant temperature
+        // sendObdFrame(5); // For coolant temperature
     //     if (WiFi.status() == WL_CONNECTED) {
     //         lightStateService.updateState(LightState{true, 0, 0.2, 0.1});
     //     }
