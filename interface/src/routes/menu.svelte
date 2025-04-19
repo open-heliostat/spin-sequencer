@@ -19,6 +19,7 @@
 	import MQTT from '~icons/tabler/topology-star-3';
 	import NTP from '~icons/tabler/clock-check';
 	import GPS from '~icons/tabler/satellite';
+	import CAN from '~icons/tabler/topology-bus';
 	import Rotation from '~icons/tabler/rotate-dot'
 	import Metrics from '~icons/tabler/report-analytics';
 	import Sequencer from '~icons/tabler/mist';
@@ -91,7 +92,13 @@
 					href: '/connections/gps',
 					feature: $page.data.features.gps,
 					
-				}
+				},
+				{
+					title: "CAN",
+					icon: CAN,
+					href: "/connections/can",
+					feature: true//$page.data.features.can,
+				},
 			]
 		},
 		{
