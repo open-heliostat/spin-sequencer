@@ -12,6 +12,14 @@ std::vector<JsonDocument> stringArrayToJsonDocumentVector(JsonArray array) {
             }
             else Serial.println(error.c_str());
         }
+        else if (value.is<JsonObject>()) {
+            JsonDocument doc;
+            doc = value.as<JsonObject>();
+            result.push_back(doc);
+        }
+        else {
+            Serial.println("Invalid type in array");
+        }
     }
     return result;
 }
@@ -40,12 +48,11 @@ JsonRouter<JsonSeq> JsonSeqJsonRouter::router = JsonRouter<JsonSeq>(
     {"config", [](JsonSeq &sequencer, const JsonVariant target) {
         JsonArray commands = target["commands"].to<JsonArray>();
         for (auto& command : sequencer.commands) {
-            String commandStr;
-            serializeJson(command, commandStr);
-            commands.add(commandStr);
+            // String commandStr;
+            // serializeJson(command, commandStr);
+            commands.add(command.as<JsonObject>());
         }
         target["selectedCommand"] = sequencer.selectedCommand;
-        target["isRunning"] = sequencer.isRunning;
     }},
     {"controller", [](JsonSeq &sequencer, const JsonVariant target) {
         ClassicControllerJsonRouter::router.serialize(sequencer.controller, target);

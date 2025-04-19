@@ -10,6 +10,7 @@
 	import Text from './Text.svelte';
 	import Slider from './Slider.svelte';
 	import Button from './Button.svelte';
+	import Checkbox from './Checkbox.svelte';
 
     export let restPath: string;
 
@@ -22,17 +23,19 @@
             lostCommands: number;
         };
         config: {
-            commands: string[];
+            commands: Object[];
             selectedCommand: number;
             isRunning: boolean;
         };
     }
 
     let sequencerState: SequencerState;
-    let commandInput = '';
+    // let commandInput = '';
     let commandError = '';
+    let commandsJsonString = "";
 
     $: commandsCount = sequencerState?.config.commands.length - 1 || 0;
+    $: commandInput = JSON.stringify(sequencerState?.config.commands[sequencerState?.config.selectedCommand]) || '';
 
     let intervalID: any;
     onMount(() => {
@@ -48,16 +51,24 @@
         return getJsonRest(restPath + "/status", sequencerState?.status)
             .then((data) => {
                 sequencerState.status = data;
+                // sequencerState.config.selectedCommand = data.selectedCommand;
+                // commandInput = JSON.stringify(sequencerState.config.commands[data.selectedCommand]);
             });
     }
 
     async function getSequencerState() {
-        return getJsonRest(restPath, sequencerState).then((data) => sequencerState = data);
+        return getJsonRest(restPath, sequencerState).then((data) => {
+            sequencerState = data;
+            commandsJsonString = JSON.stringify(sequencerState.config.commands)
+                .replaceAll("[{", "[\n    {")
+                .replaceAll("},{", "},\n    {")
+                .replaceAll("}]", "}\n]");
+        });
     }
 
     function selectCommand(index: number) {
         if (index >= 0) {
-            commandInput = sequencerState.config.commands[index];
+            commandInput = JSON.stringify(sequencerState.config.commands[index]);
         }
         return postJsonRest(restPath + '/control', { select: index });
     }
@@ -83,6 +94,15 @@
             });
         }
     }
+    
+    function writeCommands() {
+        if (commandsJsonString) {
+            sequencerState.config.commands = JSON.parse(commandsJsonString);
+            console.log(sequencerState.config.commands);
+            postJsonRest(restPath + '/config', sequencerState.config)
+                .then((data) => {sequencerState.config = data; console.log(data);});
+        }
+    }
 </script>
 
 <SettingsCard>
@@ -92,10 +112,15 @@
     {:then nothing}
         <div>
             <GridForm>
+                <Checkbox
+                    label="Enabled"
+                    bind:value={sequencerState.status.isRunning}
+                    onChange={() => postJsonRest(restPath + '/control', { run: sequencerState.status.isRunning })}>
+                </Checkbox>
                 <Slider
                     label="Select"
                     bind:value={sequencerState.config.selectedCommand}
-                    min={-1} 
+                    min={0} 
                     bind:max={commandsCount} 
                     step={1}
                     onChange={() => selectCommand(sequencerState.config.selectedCommand)}>
@@ -107,6 +132,17 @@
                 </Text>
 
             </GridForm>
+            <div class="flex flex-row flex-wrap justify-between gap-x-2">
+                <div class="flex-grow"></div>
+                <Button 
+                    onClick={executeCommand}
+                    label="Run"
+                />
+                <Button 
+                    onClick={writeCommands}
+                    label="Write"
+                />
+            </div>
             <Collapsible> 
                 <span slot="title">Status</span>
                 <div class="status-grid">
@@ -120,14 +156,17 @@
                     <div>Next: {sequencerState?.status.nextCommand}</div>
                     <div>Lost Commands: {sequencerState?.status.lostCommands}</div>
                 </div>
+
+                <textarea
+                    class="textarea"
+                    bind:value={commandsJsonString}
+                    on:change={executeCommand}
+                    placeholder="Commands JSON"
+                />
             </Collapsible>
             <div class="flex flex-row flex-wrap justify-between gap-x-2">
                 <Button 
-                    onClick={toggleRun}
-                    label="Run Command"
-                />
-                <Button 
-                    onClick={toggleRun}
+                    onClick={writeCommands}
                     label="Write Commands"
                 />
                 <div class="flex-grow"></div>
@@ -149,5 +188,8 @@
     .active {
         color: var(--success);
         font-weight: bold;
+    }
+    textarea {
+        field-sizing: content; /* used to be `form-sizing` but changed to this */
     }
 </style>
