@@ -26,21 +26,24 @@ class CanIsoTPController
     uint8_t pinTX = D6;
     uint8_t pinRX = D7;
 
-    uint32_t txId = 0x123;
-    uint32_t rxId = 0x456;
-
     CanIsoTp isoTpReceiver;
     T rxData, txData;
     pdu_t rxPdu, txPdu;
 
+    T messageHistory[10]; // Array to store the last 10 messages
+    int messageIndex = 0; // Index for the next message to be stored
+
 public:
+    uint32_t txId = 0x123;
+    uint32_t rxId = 0x456;
+    
     CanIsoTPController(uint32_t txId = 0x123, uint32_t rxId = 0x456) : txId(txId), rxId(rxId) {
         // Constructor
     }
 
-    void CanIsoTPController::begin() {
+    void begin() {
         if (!isoTpReceiver.begin(500, pinTX, pinRX)) {
-            Serial.println("Failed to start TWAI");
+            ESP_LOGI("CAN", "Failed to start TWAI");
             while (1);
         }
     
@@ -61,25 +64,48 @@ public:
         txPdu.cantpState = CANTP_IDLE;
         txPdu.blockSize = 0;
         txPdu.separationTimeMin = 5;
+
+        started = true;
     }
-    void CanIsoTPController::loop() {
+    void loop() {
         int result = isoTpReceiver.receive(&rxPdu);
         if (result == 0 && rxPdu.cantpState == CANTP_END) {
-            ESP_LOGI("CAN", "Receiver: Received counter = %i", rxData.counter);
-    
-            // Prepare response
-            txData.counter = rxData.counter + 100; // Just an example modification
-            txPdu.data = (uint8_t*)&txData;
-            txPdu.len = sizeof(txData);
-    
-            // Send response
-            if (isoTpReceiver.send(&txPdu) == 0) {
-                ESP_LOGI("CAN", "Receiver: Sent response counter = %i", txData.counter);
-            } else {
-                ESP_LOGI("CAN", "Receiver: Error sending response");
-            }
+            ESP_LOGI("CAN", "Receiver: Received message : %s", rxData);
+            // Store the received message in history
+            messageHistory[messageIndex] = rxData;
+            messageIndex = (messageIndex + 1) % 10; // Wrap around the index
         }
     }
+
+    bool sendMessage(const T& message) {
+        if (!started) {
+            ESP_LOGI("CAN", "CAN controller not started");
+            return false;
+        }
+
+        // Prepare message for transmission
+        txData = message;
+        txPdu.data = (uint8_t*)&txData;
+        txPdu.len = sizeof(txData);
+        txPdu.cantpState = CANTP_IDLE;
+
+        // Attempt to send the message
+        int result = isoTpReceiver.send(&txPdu);
+        if (result == 0) {
+            ESP_LOGI("CAN", "Sender: Message sent successfully");
+            return true;
+        } else {
+            ESP_LOGI("CAN", "Sender: Failed to send message (error: %d)", result);
+            return false;
+        }
+    }
+
+    T* getMessageHistory() {
+        return messageHistory;
+    }
+
+private:
+    bool started = false;
 };
 
 #endif

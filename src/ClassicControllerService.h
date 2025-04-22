@@ -8,8 +8,8 @@
 #include <StepperService.h>
 #include "controller.h"
 
-#define CL_CONTROLLER_STATE_EVENT "classiccontroller"
-#define CL_SETTINGS_FILE "/config/classiccontroller.json"
+#define CLASSIC_CONTROLLER_STATE_EVENT "classiccontroller"
+#define CLASSIC_SETTINGS_FILE "/config/classiccontroller.json"
 
 class ClassicControllerJsonRouter
 {
@@ -108,8 +108,8 @@ public:
                            SecurityManager *securityManager,
                            MotorController &controller) :
         _httpRouterEndpoint(_router.read, _router.update, this, server, "/rest/classic", securityManager),
-        _fsPersistence(_router.readForSave, _router.update, this, fs, CL_SETTINGS_FILE),
-        _eventEndpoint(_router.read, _router.update, this, socket, CL_CONTROLLER_STATE_EVENT),
+        _fsPersistence(_router.readForSave, _router.update, this, fs, CLASSIC_SETTINGS_FILE),
+        _eventEndpoint(_router.read, _router.update, this, socket, CLASSIC_CONTROLLER_STATE_EVENT),
         StatefulService(controller)
     {}
 

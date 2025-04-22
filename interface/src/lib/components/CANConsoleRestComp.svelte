@@ -22,7 +22,6 @@
         address: 0,
         message: ''
     };
-    let canHistory: CanMessage[] = [];
 
     function postCANMessage() {
         postJsonRest(restPath + "/send", canMessage);
