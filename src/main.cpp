@@ -61,7 +61,7 @@ void setup()
     spinSequencerService.begin();
     
     // start CAN controller
-    canControllerService.begin();
+    // canControllerService.begin();
 }
 
 unsigned long lastTick = 0;
@@ -73,7 +73,7 @@ void loop()
     spinSequencerService.loop();
     unsigned long now = millis();
 
-    canControllerService.loop();
+    // canControllerService.loop();
 
     // if (now - lastTick > 1000) {
     //     ESP_LOGI("CAN", "Sending packet ... ");

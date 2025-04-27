@@ -11,8 +11,10 @@ JsonRouter<CanIsoTPController<String>> CanControllerJsonRouter::router = JsonRou
     {"txId", [](JsonVariant value, CanIsoTPController<String>& controller) {
         if (value.is<uint32_t>()) {
             controller.txId = value.as<uint32_t>();
+            ESP_LOGI("CAN", "Set txId: %s", value.as<String>().c_str());
             return true;
         }
+        ESP_LOGI("CAN", "Received txId: %s", value.as<String>().c_str());
         return false;
     }},
     {"rxId", [](JsonVariant value, CanIsoTPController<String>& controller) {

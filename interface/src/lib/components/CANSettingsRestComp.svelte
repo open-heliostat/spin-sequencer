@@ -11,6 +11,7 @@
     import Checkbox from './Checkbox.svelte';
     import CANTopology from '~icons/tabler/topology-bus'
 	import { get } from 'svelte/store';
+	import Spinner from './Spinner.svelte';
 
     export let restPath: string;
 
@@ -46,11 +47,14 @@
 <SettingsCard>
 	<CANTopology slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
     <span slot="title">Can Settings</span>
+    {#await getCanSettings()}
+    <Spinner></Spinner>
+    {:then nothing}
     <GridForm>
         <Checkbox
             label="Enable"
             bind:value={canSettings.enable}
-            on:change={() => {
+            onChange={() => {
                 postJsonRest(restPath + "/enable", canSettings.enable);
             }}
         />
@@ -60,9 +64,7 @@
             max={255}
             step={1}
             bind:value={canSettings.txId}
-            on:change={() => {
-                postJsonRest(restPath + "/txId", canSettings.txId);
-            }}
+            onChange={postCanSettings}
         />
         <Slider
             label="Rx ID"
@@ -70,9 +72,8 @@
             max={255}
             step={1}
             bind:value={canSettings.rxId}
-            on:change={() => {
-                postJsonRest(restPath + "/rxId", canSettings.rxId);
-            }}
+            onChange={postCanSettings}
         />
     </GridForm>
+    {/await}
 </SettingsCard>
