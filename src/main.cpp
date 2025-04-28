@@ -41,7 +41,7 @@ SpinSequencerService spinSequencerService = SpinSequencerService{&server,
                                                                  &esp32sveltekit, 
                                                                  spinSequencer};
 
-CanIsoTPController<String> canController = CanIsoTPController<String>();
+CanIsoTPController<CanIsoTPMessage> canController = CanIsoTPController<CanIsoTPMessage>();
 CanControllerService canControllerService = CanControllerService{&server, 
                                                                     &esp32sveltekit, 
                                                                     canController};
@@ -61,7 +61,7 @@ void setup()
     spinSequencerService.begin();
     
     // start CAN controller
-    // canControllerService.begin();
+    canControllerService.begin();
 
     // Pull pin 42 high to disable SPI on the LORA module
     pinMode(41, OUTPUT);
@@ -78,7 +78,7 @@ void loop()
     spinSequencerService.loop();
     unsigned long now = millis();
 
-    // canControllerService.loop();
+    canControllerService.loop();
 
     // if (now - lastTick > 1000) {
     //     ESP_LOGI("CAN", "Sending packet ... ");

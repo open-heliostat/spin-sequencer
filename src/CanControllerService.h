@@ -7,20 +7,25 @@
 #include <FSPersistence.h>
 #include "can.h"
 
+struct CanIsoTPMessage
+{
+    char message[512];
+};
+
 class CanControllerJsonRouter
 {
 public:
-    static bool route(JsonVariant content, CanIsoTPController<String>& controller)
+    static bool route(JsonVariant content, CanIsoTPController<CanIsoTPMessage>& controller)
     {
         return router.route(content, controller);
     }
 
-    static void read(CanIsoTPController<String>& state, JsonObject& root)
+    static void read(CanIsoTPController<CanIsoTPMessage>& state, JsonObject& root)
     {
         router.serialize(state, root);
     }
 
-    static void readForSave(CanIsoTPController<String>& state, JsonObject& root)
+    static void readForSave(CanIsoTPController<CanIsoTPMessage>& state, JsonObject& root)
     {
         getSaveMap(root);
         router.serialize(state, root);
@@ -30,7 +35,7 @@ public:
         JsonSaveManager::filterFieldsRecursively(ref.as<JsonObject>(), root);
     }
 
-    static StateUpdateResult update(JsonObject& root, CanIsoTPController<String>& state)
+    static StateUpdateResult update(JsonObject& root, CanIsoTPController<CanIsoTPMessage>& state)
     {
         if (router.parse(root, state) && JsonSaveManager::needsToSave(root, getSaveMap())) {
             return StateUpdateResult::CHANGED;
@@ -52,15 +57,15 @@ public:
         root["rxId"] = true;
     }
 
-    static JsonRouter<CanIsoTPController<String>> router;
+    static JsonRouter<CanIsoTPController<CanIsoTPMessage>> router;
 };
 
-class CanControllerService : public StatefulService<CanIsoTPController<String>&>
+class CanControllerService : public StatefulService<CanIsoTPController<CanIsoTPMessage>&>
 {
 public:
     CanControllerService(PsychicHttpServer* server,
                         ESP32SvelteKit* sveltekit,
-                        CanIsoTPController<String>& controller) :
+                        CanIsoTPController<CanIsoTPMessage>& controller) :
         _httpRouterEndpoint(_router.read, 
                            _router.update, 
                            this, 
@@ -79,8 +84,8 @@ public:
     void loop();
 
 private:
-    HttpRouterEndpoint<CanIsoTPController<String>&> _httpRouterEndpoint;
-    FSPersistence<CanIsoTPController<String>&> _fsPersistence;
+    HttpRouterEndpoint<CanIsoTPController<CanIsoTPMessage>&> _httpRouterEndpoint;
+    FSPersistence<CanIsoTPController<CanIsoTPMessage>&> _fsPersistence;
     CanControllerJsonRouter _router;
 };
 
