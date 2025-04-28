@@ -62,6 +62,11 @@ void setup()
     
     // start CAN controller
     // canControllerService.begin();
+
+    // Pull pin 42 high to disable SPI on the LORA module
+    pinMode(41, OUTPUT);
+    digitalWrite(41, HIGH);
+
 }
 
 unsigned long lastTick = 0;
