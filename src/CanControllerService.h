@@ -9,7 +9,7 @@
 
 struct CanIsoTPMessage
 {
-    char message[512];
+    char message[16];
 };
 
 class CanControllerJsonRouter
