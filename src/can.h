@@ -54,7 +54,7 @@ public:
         rxPdu.len = sizeof(rxData);
         rxPdu.cantpState = CANTP_IDLE;  // Start in idle state
         rxPdu.blockSize = 0;
-        rxPdu.separationTimeMin = 0;
+        rxPdu.separationTimeMin = 5;
     
         // Setup Tx PDU for responses
         txPdu.txId = txId;
@@ -68,12 +68,21 @@ public:
         started = true;
     }
     void loop() {
+        // rxPdu.data = (uint8_t*)&rxData;
+        // rxPdu.len = sizeof(rxData);
         int result = isoTpReceiver.receive(&rxPdu);
         if (result == 0 && rxPdu.cantpState == CANTP_END) {
-            ESP_LOGI("CAN", "Receiver: Received message : %s", rxData);
+            ESP_LOGI("CAN", "Receiver: Received message : %s", (char*)rxData.message);
             // Store the received message in history
             messageHistory[messageIndex] = rxData;
             messageIndex = (messageIndex + 1) % 10; // Wrap around the index
+            rxPdu.cantpState = CANTP_IDLE; // Reset state for next message
+            rxPdu.data = (uint8_t*)&rxData;
+        }
+        else if (rxPdu.cantpState == CANTP_ERROR) {
+            ESP_LOGI("CAN", "Receiver: Error in receiving message");
+            rxPdu.cantpState = CANTP_IDLE; // Reset state for next message
+            rxPdu.data = (uint8_t*)&rxData;
         }
     }
 
@@ -86,7 +95,7 @@ public:
         // Prepare message for transmission
         txData = message;
         txPdu.data = (uint8_t*)&txData;
-        txPdu.len = sizeof(txData);
+        txPdu.len = String(txData.message).length() + 1;
         txPdu.cantpState = CANTP_IDLE;
 
         // Attempt to send the message

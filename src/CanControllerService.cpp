@@ -6,6 +6,8 @@ JsonRouter<CanIsoTPController<CanIsoTPMessage>> CanControllerJsonRouter::router 
         if (!value.is<String>()) value.to<JsonObject>()["error"] = "NOT A STRING";
         CanIsoTPMessage message;
         strcpy(message.message, value.as<String>().c_str());
+        // make sure the message is null terminated
+        message.message[sizeof(message.message) - 1] = '\0';
         // print char array
         ESP_LOGI("CAN", "Send message: %s", message.message);
         if (controller.sendMessage(message)) value.to<JsonObject>()["error"] = "OK";
