@@ -29,16 +29,14 @@ JsonRouter<CanIsoTPController<CanIsoTPMessage>> CanControllerJsonRouter::router 
     }},
     {"txId", [](JsonVariant value, CanIsoTPController<CanIsoTPMessage>& controller) {
         if (value.is<uint32_t>()) {
-            controller.txId = value.as<uint32_t>();
-            ESP_LOGI("CAN", "Set txId: %s", value.as<String>().c_str());
+            controller.setTxId(value.as<uint32_t>());
             return true;
         }
-        ESP_LOGI("CAN", "Received txId: %s", value.as<String>().c_str());
         return false;
     }},
     {"rxId", [](JsonVariant value, CanIsoTPController<CanIsoTPMessage>& controller) {
         if (value.is<uint32_t>()) {
-            controller.rxId = value.as<uint32_t>();
+            controller.setRxId(value.as<uint32_t>());
             return true;
         }
         return false;

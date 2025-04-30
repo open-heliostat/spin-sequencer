@@ -52,6 +52,7 @@ public:
 
         started = true;
     }
+
     void loop() {
         if (enabled && started) {
             int result = isoTpReceiver.receive(&rxPdu);
@@ -103,6 +104,18 @@ public:
             ESP_LOGI("CAN", "Sender: Failed to send message (error: %d)", result);
             return false;
         }
+    }
+
+    void setTxId(uint32_t id) {
+        txId = id;
+        txPdu.txId = id;
+        rxPdu.txId = id;
+    }
+
+    void setRxId(uint32_t id) {
+        rxId = id;
+        txPdu.rxId = id;
+        rxPdu.rxId = id;
     }
 
     std::vector<String> getMessageHistory() {

@@ -51,16 +51,8 @@
             onChange={postCanSettings}
         />
         <Slider
-            label="Tx ID"
-            min={0}
-            max={255}
-            step={1}
-            bind:value={canSettings.txId}
-            onChange={postCanSettings}
-        />
-        <Slider
             label="Rx ID"
-            min={0}
+            min={1}
             max={255}
             step={1}
             bind:value={canSettings.rxId}

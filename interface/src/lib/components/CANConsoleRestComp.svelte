@@ -36,7 +36,11 @@
         });
     }
     async function postCanMessage() {
-        return postJsonRest(restPath + "/sendMessage", {message: canMessage, txId: canSettings.txId});
+        return postJsonRest(restPath + "/sendMessage", {message: canMessage, txId: canSettings.txId}).then((data) => {
+            canMessage = '';
+        }).catch((error) => {
+            notifications.error(error.message, 500);
+        });
     }
 
     let intervalID: any;
@@ -83,15 +87,12 @@
         max={255}
         step={1}
         bind:value={canSettings.txId}
+        onChange={postCanSettings}
     />
     <Text
-        label="Send Message"
+        label={canSettings.txId == 0 ? "Broadcast Message" : "Send Message"}
         bind:value={canMessage}
+        maxLength={canSettings.txId == 0 ? 6 : 1024}
         onChange={postCanMessage}
-        on:keyup={e => {
-            if (e.key === 'Enter') {
-                postCanMessage();
-            }
-        }}
     />
 </SettingsCard>
