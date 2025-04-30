@@ -4,22 +4,6 @@
 #include <Arduino.h>
 #include <CanIsoTp.hpp>
 
-typedef struct {
-    uint32_t counter;
-    uint32_t counter1;
-    uint32_t counter2;
-    uint32_t counter3;
-    uint32_t counter4;
-    uint32_t counter5;
-    uint32_t counter6;
-    uint32_t counter7;
-    uint32_t counter8;
-    uint32_t counter9;
-    uint32_t counter10;
-    uint32_t counter11;
-
-} MessageData;
-
 template <typename T>
 class CanIsoTPController
 {
@@ -30,12 +14,13 @@ class CanIsoTPController
     T rxData, txData;
     pdu_t rxPdu, txPdu;
 
-    T messageHistory[10]; // Array to store the last 10 messages
-    int messageIndex = 0; // Index for the next message to be stored
+    std::vector<String> messageHistory;
+    const int messageHistorySize = 10;
 
 public:
     uint32_t txId = 0x123;
     uint32_t rxId = 0x456;
+    bool enabled = false;
     
     CanIsoTPController(uint32_t txId = 0x123, uint32_t rxId = 0x456) : txId(txId), rxId(rxId) {
         // Constructor
@@ -68,22 +53,32 @@ public:
         started = true;
     }
     void loop() {
-        // rxPdu.data = (uint8_t*)&rxData;
-        // rxPdu.len = sizeof(rxData);
-        int result = isoTpReceiver.receive(&rxPdu);
-        if (result == 0 && rxPdu.cantpState == CANTP_END) {
-            ESP_LOGI("CAN", "Receiver: Received message : %s", (char*)rxData.message);
-            // Store the received message in history
-            messageHistory[messageIndex] = rxData;
-            messageIndex = (messageIndex + 1) % 10; // Wrap around the index
-            rxPdu.cantpState = CANTP_IDLE; // Reset state for next message
-            rxPdu.data = (uint8_t*)&rxData;
+        if (enabled && started) {
+            int result = isoTpReceiver.receive(&rxPdu);
+            if (result == 0 && rxPdu.cantpState == CANTP_END) {
+                ESP_LOGI("CAN", "Receiver: Received message : %s", (char*)rxData.message);
+                // Store the received message in history
+                if (messageHistory.size() < messageHistorySize) {
+                    messageHistory.push_back(String(rxData.message));
+                } 
+                else {
+                    messageHistory.erase(messageHistory.begin());
+                    messageHistory.push_back(String(rxData.message));
+                }
+                rxPdu.cantpState = CANTP_IDLE; // Reset state for next message
+                rxPdu.data = (uint8_t*)&rxData;
+            }
+            else if (rxPdu.cantpState == CANTP_ERROR) {
+                ESP_LOGI("CAN", "Receiver: Error in receiving message");
+                rxPdu.cantpState = CANTP_IDLE; // Reset state for next message
+                rxPdu.data = (uint8_t*)&rxData;
+            }
         }
-        else if (rxPdu.cantpState == CANTP_ERROR) {
-            ESP_LOGI("CAN", "Receiver: Error in receiving message");
-            rxPdu.cantpState = CANTP_IDLE; // Reset state for next message
-            rxPdu.data = (uint8_t*)&rxData;
-        }
+    }
+
+    bool sendMessage(const T& message, uint32_t txId) {
+        txId = txId;
+        return sendMessage(message);
     }
 
     bool sendMessage(const T& message) {
@@ -94,6 +89,7 @@ public:
 
         // Prepare message for transmission
         txData = message;
+        txPdu.txId = txId;
         txPdu.data = (uint8_t*)&txData;
         txPdu.len = String(txData.message).length() + 1;
         txPdu.cantpState = CANTP_IDLE;
@@ -109,7 +105,7 @@ public:
         }
     }
 
-    T* getMessageHistory() {
+    std::vector<String> getMessageHistory() {
         return messageHistory;
     }
 

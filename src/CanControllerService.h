@@ -55,6 +55,7 @@ public:
     {
         root["txId"] = true;
         root["rxId"] = true;
+        root["enabled"] = true;
     }
 
     static JsonRouter<CanIsoTPController<CanIsoTPMessage>> router;

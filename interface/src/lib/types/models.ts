@@ -265,3 +265,11 @@ export type StepperDriver = {
     pwm_autograd: boolean;
   };
 };
+
+export type CanSettings = {
+	enabled: boolean;
+	txId: number;
+	rxId: number;
+	messageHistory: string[];
+	sendMessage?: string;
+};

@@ -12,19 +12,12 @@
     import CANTopology from '~icons/tabler/topology-bus'
 	import { get } from 'svelte/store';
 	import Spinner from './Spinner.svelte';
+    import type { CanSettings } from '$lib/types/models';
 
     export let restPath: string;
-
-    type CanSettings = {
-        enable: boolean;
-        txId: number;
-        rxId: number;
-        messageHistory: string[];
-        sendMessage?: string;
-    };
     
     let canSettings: CanSettings = {
-        enable: false,
+        enabled: false,
         txId: 0,
         rxId: 0,
         messageHistory: []
@@ -33,6 +26,7 @@
     async function getCanSettings() {
         return getJsonRest(restPath, canSettings).then((data) => {
             canSettings = data;
+            console.log("CAN Settings: ", canSettings);
         });
     }
     async function postCanSettings() {
@@ -53,10 +47,8 @@
     <GridForm>
         <Checkbox
             label="Enable"
-            bind:value={canSettings.enable}
-            onChange={() => {
-                postJsonRest(restPath + "/enable", canSettings.enable);
-            }}
+            bind:value={canSettings.enabled}
+            onChange={postCanSettings}
         />
         <Slider
             label="Tx ID"
