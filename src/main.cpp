@@ -17,6 +17,7 @@
 #include <SpinSequencerService.h>
 #include <controller.h>
 #include <CanControllerService.h>
+#include <lora.h>
 
 #define SERIAL_BAUD_RATE 115200
 
@@ -45,6 +46,9 @@ CanIsoTPController<CanIsoTPMessage> canController = CanIsoTPController<CanIsoTPM
 CanControllerService canControllerService = CanControllerService{&server, 
                                                                     &esp32sveltekit, 
                                                                     canController};
+
+LoRaController loraController = LoRaController();
+
 void setup()
 {
     // start serial and filesystem
@@ -66,6 +70,9 @@ void setup()
     // Pull pin 42 high to disable SPI on the LORA module
     pinMode(41, OUTPUT);
     digitalWrite(41, HIGH);
+
+    // start LoRa controller
+    // loraController.begin();
 
 }
 
