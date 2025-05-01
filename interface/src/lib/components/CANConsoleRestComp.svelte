@@ -62,6 +62,11 @@
         display: flex;
         flex-direction: column-reverse;
     }
+    .autoscrollable-wrapper div {
+        width: 100%;
+        overflow-wrap: break-word;
+        word-break: break-all;
+    }
 </style>
 
 <SettingsCard>

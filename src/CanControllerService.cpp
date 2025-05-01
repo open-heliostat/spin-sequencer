@@ -47,6 +47,13 @@ JsonRouter<CanIsoTPController<CanIsoTPMessage>> CanControllerJsonRouter::router 
             return true;
         }
         return false;
+    }},
+    {"request", [](JsonVariant value, CanIsoTPController<CanIsoTPMessage>& controller) {
+        if (value.is<JsonObject>()) {
+            JsonObject obj = value.as<JsonObject>();
+            obj.set(controller.makeJsonRequest(obj));
+        }
+        return false;
     }}
 },
 {
