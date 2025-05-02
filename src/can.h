@@ -32,6 +32,8 @@ public:
             ESP_LOGI("CAN", "Failed to start TWAI");
             while (1);
         }
+
+        ESP_LOGI("CAN", "TWAI speed : %d", isoTpReceiver.ESP32CanTwai.getSpeedNumeric());
     
         // Setup Rx PDU for incoming data
         rxPdu.rxId = rxId; 
@@ -40,7 +42,7 @@ public:
         rxPdu.len = sizeof(rxData);
         rxPdu.cantpState = CANTP_IDLE;  // Start in idle state
         rxPdu.blockSize = 0;
-        rxPdu.separationTimeMin = 5;
+        rxPdu.separationTimeMin = 2;
     
         // Setup Tx PDU for responses
         txPdu.txId = txId;
@@ -49,12 +51,12 @@ public:
         txPdu.len = sizeof(txData);
         txPdu.cantpState = CANTP_IDLE;
         txPdu.blockSize = 0;
-        txPdu.separationTimeMin = 5;
+        txPdu.separationTimeMin = 2;
 
         started = true;
     }
 
-    JsonObject makeJsonRequest(JsonObject &content) {
+    String makeJsonRequest(JsonObject &content) {
         if (content["id"].is<uint32_t>() && content["path"].is<String>() && content["method"].is<String>()) {
             String path = content["path"].as<String>();
             String method = content["method"].as<String>();
@@ -72,21 +74,18 @@ public:
                     result = isoTpReceiver.receive(&rxPdu);
                 }
                 if (result == 0 && rxPdu.cantpState == CANTP_END) {
-                    ESP_LOGI("CAN", "Receiver: Received message : %s", (char*)rxData.message);
+                    String response = String((char*)rxData.message);
+                    ESP_LOGI("CAN", "Receiver: Received message : %s", response.c_str());
                     // Store the received message in history
                     if (messageHistory.size() < messageHistorySize) {
-                        messageHistory.push_back(String(rxData.message));
+                        messageHistory.push_back(response);
                     } 
                     else {
                         messageHistory.erase(messageHistory.begin());
-                        messageHistory.push_back(String(rxData.message));
+                        messageHistory.push_back(response);
                     }
                     rxPdu.cantpState = CANTP_IDLE; // Reset state for next message
                     rxPdu.data = (uint8_t*)&rxData;
-                    // parse the response
-                    JsonDocument doc;
-                    deserializeJson(doc, (char*)rxData.message);
-                    JsonObject response = doc.as<JsonObject>();
                     return response;
                 }
                 else {
@@ -96,7 +95,31 @@ public:
                 }
             }
         }
-        return JsonObject();
+        return "";
+    }
+
+    String jsonGET(String path, uint32_t id, JsonVariant payload = JsonVariant()) {
+        JsonDocument doc;
+        JsonObject obj = doc.to<JsonObject>();
+        obj["id"] = rxPdu.rxId;
+        obj["path"] = path;
+        obj["method"] = "GET";
+        if (payload.is<JsonObject>()) {
+            obj["payload"] = payload.as<JsonObject>();
+        }
+        return makeJsonRequest(obj);
+    }
+
+    String jsonPOST(String path, uint32_t id, JsonVariant payload = JsonVariant()) {
+        JsonDocument doc;
+        JsonObject obj = doc.to<JsonObject>();
+        obj["id"] = rxPdu.rxId;
+        obj["path"] = path;
+        obj["method"] = "POST";
+        if (payload.is<JsonObject>()) {
+            obj["payload"] = payload.as<JsonObject>();
+        }
+        return makeJsonRequest(obj);
     }
 
     void parseMessage(String message) {

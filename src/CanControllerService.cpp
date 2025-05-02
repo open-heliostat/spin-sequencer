@@ -1,5 +1,23 @@
 #include "CanControllerService.h"
 
+std::pair<String, JsonObject> traverseJsonPath(JsonObject obj) {
+    String path;
+    if (obj.begin()->value().is<JsonObject>()) {
+        JsonObject child = obj.begin()->value().as<JsonObject>();
+        path += obj.begin()->key().c_str();
+        path += "/";
+        // make path from nested keys
+        while (child.begin()->value().is<JsonObject>() && child.size() == 1) {
+            path += child.begin()->key().c_str();
+            path += "/";
+            child = child.begin()->value().as<JsonObject>();
+        }
+        ESP_LOGI("CAN", "Path: %s", path.c_str());
+        return std::make_pair(path, child);
+    }
+    return std::make_pair(path, obj);
+}
+
 JsonRouter<CanIsoTPController<CanIsoTPMessage>> CanControllerJsonRouter::router = JsonRouter<CanIsoTPController<CanIsoTPMessage>>(
 {
     {"sendMessage", [](JsonVariant value, CanIsoTPController<CanIsoTPMessage>& controller) {
@@ -48,10 +66,10 @@ JsonRouter<CanIsoTPController<CanIsoTPMessage>> CanControllerJsonRouter::router 
         }
         return false;
     }},
-    {"request", [](JsonVariant value, CanIsoTPController<CanIsoTPMessage>& controller) {
+    {"tun", [](JsonVariant value, CanIsoTPController<CanIsoTPMessage>& controller) {
         if (value.is<JsonObject>()) {
             JsonObject obj = value.as<JsonObject>();
-            obj.set(controller.makeJsonRequest(obj));
+            deserializeJson(value, controller.makeJsonRequest(obj));
         }
         return false;
     }}
@@ -77,6 +95,24 @@ JsonRouter<CanIsoTPController<CanIsoTPMessage>> CanControllerJsonRouter::router 
     }},
     {"enabled", [](CanIsoTPController<CanIsoTPMessage>& controller, JsonVariant content) {
         content.set(controller.enabled);
+    }},
+    {"tun", [](CanIsoTPController<CanIsoTPMessage>& controller, JsonVariant content) {
+        if (content.is<JsonObject>()) {
+            JsonObject obj = content.as<JsonObject>();
+            // get first child of the object
+            String id = obj.begin()->key().c_str();
+            ESP_LOGI("CAN", "ID: %s", id.c_str());
+            if (id.toInt() > 0) {
+                // convert key to integer
+                int index = id.toInt();
+                auto req = traverseJsonPath(obj[id]);
+                // ESP_LOGI("CAN", "Path: %s", req.first.c_str());
+                String response = controller.jsonGET(req.first, index, req.second);
+                deserializeJson(JsonVariant(req.second), response);
+                // ESP_LOGI("CAN", "Response: %s", content.as<String>().c_str());
+                // content.set(response);
+            }
+        }
     }}
 });
 
