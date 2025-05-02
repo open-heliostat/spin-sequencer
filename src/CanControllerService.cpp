@@ -66,10 +66,30 @@ JsonRouter<CanIsoTPController<CanIsoTPMessage>> CanControllerJsonRouter::router 
         }
         return false;
     }},
+    {"speed", [](JsonVariant value, CanIsoTPController<CanIsoTPMessage>& controller) {
+        if (value.is<long>()) {
+            controller.setSpeed(value.as<long>());
+            return true;
+        }
+        return false;
+    }},
     {"tun", [](JsonVariant value, CanIsoTPController<CanIsoTPMessage>& controller) {
         if (value.is<JsonObject>()) {
             JsonObject obj = value.as<JsonObject>();
-            deserializeJson(value, controller.makeJsonRequest(obj));
+            // get first child of the object
+            String id = obj.begin()->key().c_str();
+            ESP_LOGI("CAN", "ID: %s", id.c_str());
+            if (id.toInt() > 0) {
+                // convert key to integer
+                int index = id.toInt();
+                auto req = traverseJsonPath(obj[id]);
+                // ESP_LOGI("CAN", "Path: %s", req.first.c_str());
+                String response = controller.jsonPOST(req.first, index, req.second);
+                if (deserializeJson(JsonVariant(req.second), response) != DeserializationError::Ok) {
+                    ESP_LOGI("CAN", "Failed to deserialize JSON: %s", response.c_str());
+                    value["error"] = "Failed to deserialize JSON";
+                }
+            }
         }
         return false;
     }}
@@ -96,6 +116,9 @@ JsonRouter<CanIsoTPController<CanIsoTPMessage>> CanControllerJsonRouter::router 
     {"enabled", [](CanIsoTPController<CanIsoTPMessage>& controller, JsonVariant content) {
         content.set(controller.enabled);
     }},
+    {"speed", [](CanIsoTPController<CanIsoTPMessage>& controller, JsonVariant content) {
+        content.set(controller.getSpeed());
+    }},
     {"tun", [](CanIsoTPController<CanIsoTPMessage>& controller, JsonVariant content) {
         if (content.is<JsonObject>()) {
             JsonObject obj = content.as<JsonObject>();
@@ -108,7 +131,10 @@ JsonRouter<CanIsoTPController<CanIsoTPMessage>> CanControllerJsonRouter::router 
                 auto req = traverseJsonPath(obj[id]);
                 // ESP_LOGI("CAN", "Path: %s", req.first.c_str());
                 String response = controller.jsonGET(req.first, index, req.second);
-                deserializeJson(JsonVariant(req.second), response);
+                if (deserializeJson(JsonVariant(req.second), response) != DeserializationError::Ok) {
+                    ESP_LOGI("CAN", "Failed to deserialize JSON: %s", response.c_str());
+                    content["error"] = "Failed to deserialize JSON";
+                }
                 // ESP_LOGI("CAN", "Response: %s", content.as<String>().c_str());
                 // content.set(response);
             }

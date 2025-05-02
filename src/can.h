@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <CanIsoTp.hpp>
 #include <HTTPLocalClient.h>
+#include <jseq.h>
 
 template <typename T>
 class CanIsoTPController
@@ -17,6 +18,8 @@ class CanIsoTPController
 
     std::vector<String> messageHistory;
     const int messageHistorySize = 10;
+
+    
 
 public:
     uint32_t txId = 0x123;
@@ -54,6 +57,15 @@ public:
         txPdu.separationTimeMin = 2;
 
         started = true;
+    }
+
+    void setSpeed(long baudRate) {
+        isoTpReceiver.end();
+        isoTpReceiver.begin(baudRate, pinTX, pinRX);
+    }
+
+    long getSpeed() {
+        return isoTpReceiver.ESP32CanTwai.getSpeedNumeric();
     }
 
     String makeJsonRequest(JsonObject &content) {
@@ -149,6 +161,7 @@ public:
                         ESP_LOGI("CAN", "Invalid method: %s", method.c_str());
                     }
                 }
+
             } else {
                 ESP_LOGI("CAN", "Failed to parse message: %s", error.c_str());
             }

@@ -114,6 +114,10 @@ public:
             int commandNum = command["trig"];
             readCommand(commandNum);
         }
+        if (command["t"].is<int>()) {
+            int commandNum = command["t"];
+            readCommand(commandNum);
+        }
         // if (command["b"].is<String>()) {
         //     ESPNow::broadcast(command["b"]);
         // }

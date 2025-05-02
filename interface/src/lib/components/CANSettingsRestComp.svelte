@@ -20,6 +20,7 @@
         enabled: false,
         txId: 0,
         rxId: 0,
+        speed: 500,
         messageHistory: []
     };
 
@@ -56,6 +57,14 @@
             max={255}
             step={1}
             bind:value={canSettings.rxId}
+            onChange={postCanSettings}
+        />
+        <Slider
+            label="Speed"
+            min={1}
+            max={1000}
+            step={1}
+            bind:value={canSettings.speed}
             onChange={postCanSettings}
         />
     </GridForm>

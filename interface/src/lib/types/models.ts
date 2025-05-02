@@ -271,5 +271,6 @@ export type CanSettings = {
 	txId: number;
 	rxId: number;
 	messageHistory: string[];
+	speed: number;
 	sendMessage?: string;
 };

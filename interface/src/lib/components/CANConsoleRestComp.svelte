@@ -20,6 +20,7 @@
         enabled: false,
         txId: 0,
         rxId: 0,
+        speed: 500,
         messageHistory: []
     };
 
@@ -42,11 +43,16 @@
             notifications.error(error.message, 500);
         });
     }
+    async function getCanMessageHistory() {
+        return getJsonRest(restPath + "/messageHistory", canSettings.messageHistory).then((data) => {
+            canSettings.messageHistory = data;
+        });
+    }
 
     let intervalID: any;
     onMount(() => {
         intervalID = setInterval(() => {
-            getCanSettings();
+            getCanMessageHistory();
         }, 1122);
     });
     onDestroy(() => {
