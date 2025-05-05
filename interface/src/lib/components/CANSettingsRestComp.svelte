@@ -18,6 +18,7 @@
     
     let canSettings: CanSettings = {
         enabled: false,
+        messagePack: false,
         txId: 0,
         rxId: 0,
         speed: 500,
@@ -49,6 +50,11 @@
         <Checkbox
             label="Enable"
             bind:value={canSettings.enabled}
+            onChange={postCanSettings}
+        />
+        <Checkbox
+            label="MessagePack"
+            bind:value={canSettings.messagePack}
             onChange={postCanSettings}
         />
         <Slider

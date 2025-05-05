@@ -56,6 +56,7 @@ public:
         root["txId"] = true;
         root["rxId"] = true;
         root["enabled"] = true;
+        root["messagePack"] = true;
     }
 
     static JsonRouter<CanIsoTPController<CanIsoTPMessage>> router;

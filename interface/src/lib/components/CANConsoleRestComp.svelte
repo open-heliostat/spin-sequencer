@@ -18,6 +18,7 @@
 
     let canSettings: CanSettings = {
         enabled: false,
+        messagePack: false,
         txId: 0,
         rxId: 0,
         speed: 500,

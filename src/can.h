@@ -9,6 +9,8 @@
 template <typename T>
 class CanIsoTPController
 {
+private:
+    bool started = false;
     uint8_t pinTX = D6;
     uint8_t pinRX = D7;
 
@@ -19,12 +21,11 @@ class CanIsoTPController
     std::vector<String> messageHistory;
     const int messageHistorySize = 10;
 
-    
-
 public:
     uint32_t txId = 0x123;
     uint32_t rxId = 0x456;
     bool enabled = false;
+    bool messagePack = true;
     
     CanIsoTPController(uint32_t txId = 0x123, uint32_t rxId = 0x456) : txId(txId), rxId(rxId) {
         // Constructor
@@ -79,14 +80,26 @@ public:
             JsonDocument doc;
             doc.set(content);
 
-            if (sendMessage(doc.as<String>(), id)) {
+            String jsonString;
+            if (messagePack) {
+                serializeMsgPack(doc, jsonString);
+            } else {
+                serializeJson(doc, jsonString);
+            }
+
+            if (sendMessage(jsonString, id)) {
                 int result = isoTpReceiver.receive(&rxPdu);
                 uint32_t timeout = millis();
                 while (result != 0 && rxPdu.cantpState != CANTP_END && millis() - timeout < 1000) {
                     result = isoTpReceiver.receive(&rxPdu);
                 }
                 if (result == 0 && rxPdu.cantpState == CANTP_END) {
-                    String response = String((char*)rxData.message);
+                    String response;
+                    if (deserializeMsgPack(doc, (char*)rxData.message)) {
+                        response = doc.as<String>();
+                    } else {
+                        response = String((char*)rxData.message);
+                    }
                     ESP_LOGI("CAN", "Receiver: Received message : %s", response.c_str());
                     // Store the received message in history
                     if (messageHistory.size() < messageHistorySize) {
@@ -140,8 +153,10 @@ public:
             // Deserialize the JSON message
             JsonDocument doc;
             DeserializationError error = deserializeJson(doc, message);
+            if (error) error = deserializeMsgPack(doc, message);
             if (!error) {
                 JsonObject content = doc.as<JsonObject>();
+                message = doc.as<String>();
                 // Process the JSON object as needed
                 ESP_LOGI("CAN", "Parsed message: %s", message.c_str());
                 if (content["id"].is<uint32_t>() && content["path"].is<String>() && content["method"].is<String>()) {
@@ -151,17 +166,24 @@ public:
                     if (method == "GET") {
                         // Handle GET request
                         String response = HTTPGetLocal(path);
+                        if (messagePack) {
+                            deserializeJson(response, doc);
+                            serializeMsgPack(doc, response);
+                        }
                         sendMessage(response, id);
                     } else if (method == "POST" && content["payload"].is<String>()) {
                         // Handle POST request
                         String payload = content["payload"].as<String>();
                         String response = HTTPPostLocal(path, payload);
+                        if (messagePack) {
+                            deserializeJson(response, doc);
+                            serializeMsgPack(doc, response);
+                        }
                         sendMessage(response, id);
                     } else {
                         ESP_LOGI("CAN", "Invalid method: %s", method.c_str());
                     }
                 }
-
             } else {
                 ESP_LOGI("CAN", "Failed to parse message: %s", error.c_str());
             }
@@ -172,15 +194,22 @@ public:
         if (enabled && started) {
             int result = isoTpReceiver.receive(&rxPdu);
             if (result == 0 && rxPdu.cantpState == CANTP_END) {
-                ESP_LOGI("CAN", "Receiver: Received message : %s", (char*)rxData.message);
-                parseMessage(String(rxData.message));
+                String message;
+                JsonDocument doc;
+                if (deserializeMsgPack(doc, (char*)rxData.message)) {
+                    message = doc.as<String>();
+                } else {
+                    message = String((char*)rxData.message);
+                }
+                ESP_LOGI("CAN", "Receiver: Received message : %s", message.c_str());
+                parseMessage(message);
                 // Store the received message in history
                 if (messageHistory.size() < messageHistorySize) {
-                    messageHistory.push_back(String(rxData.message));
+                    messageHistory.push_back(message);
                 } 
                 else {
                     messageHistory.erase(messageHistory.begin());
-                    messageHistory.push_back(String(rxData.message));
+                    messageHistory.push_back(message);
                 }
                 rxPdu.cantpState = CANTP_IDLE; // Reset state for next message
                 rxPdu.data = (uint8_t*)&rxData;
@@ -246,9 +275,6 @@ public:
     std::vector<String> getMessageHistory() {
         return messageHistory;
     }
-
-private:
-    bool started = false;
 };
 
 #endif

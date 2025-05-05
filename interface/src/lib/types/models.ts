@@ -272,5 +272,6 @@ export type CanSettings = {
 	rxId: number;
 	messageHistory: string[];
 	speed: number;
+	messagePack: boolean;
 	sendMessage?: string;
 };

@@ -17,7 +17,7 @@
 #include <SpinSequencerService.h>
 #include <controller.h>
 #include <CanControllerService.h>
-#include <lora.h>
+// #include <lora.h>
 
 #define SERIAL_BAUD_RATE 115200
 
@@ -47,7 +47,7 @@ CanControllerService canControllerService = CanControllerService{&server,
                                                                     &esp32sveltekit, 
                                                                     canController};
 
-LoRaController loraController = LoRaController();
+// LoRaController loraController = LoRaController();
 
 void setup()
 {

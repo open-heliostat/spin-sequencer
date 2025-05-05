@@ -92,7 +92,14 @@ JsonRouter<CanIsoTPController<CanIsoTPMessage>> CanControllerJsonRouter::router 
             }
         }
         return false;
-    }}
+    }},
+    {"messagePack", [](JsonVariant value, CanIsoTPController<CanIsoTPMessage>& controller) {
+        if (value.is<bool>()) {
+            controller.messagePack = value.as<bool>();
+            return true;
+        }
+        return false;
+    }},
 },
 {
     {"messageHistory", [](CanIsoTPController<CanIsoTPMessage>& controller, JsonVariant content) {
@@ -139,7 +146,10 @@ JsonRouter<CanIsoTPController<CanIsoTPMessage>> CanControllerJsonRouter::router 
                 // content.set(response);
             }
         }
-    }}
+    }},
+    {"messagePack", [](CanIsoTPController<CanIsoTPMessage>& controller, JsonVariant content) {
+        content.set(controller.messagePack);
+    }},
 });
 
 void CanControllerService::begin()
