@@ -95,7 +95,8 @@ public:
                 }
                 if (result == 0 && rxPdu.cantpState == CANTP_END) {
                     String response;
-                    if (deserializeMsgPack(doc, (char*)rxData.message)) {
+                    if (messagePack) {
+                        deserializeMsgPack(doc, (char*)rxData.message);
                         response = doc.as<String>();
                     } else {
                         response = String((char*)rxData.message);
@@ -153,7 +154,6 @@ public:
             // Deserialize the JSON message
             JsonDocument doc;
             DeserializationError error = deserializeJson(doc, message);
-            if (error) error = deserializeMsgPack(doc, message);
             if (!error) {
                 JsonObject content = doc.as<JsonObject>();
                 message = doc.as<String>();
@@ -167,7 +167,7 @@ public:
                         // Handle GET request
                         String response = HTTPGetLocal(path);
                         if (messagePack) {
-                            deserializeJson(response, doc);
+                            deserializeJson(doc, response);
                             serializeMsgPack(doc, response);
                         }
                         sendMessage(response, id);
@@ -176,7 +176,7 @@ public:
                         String payload = content["payload"].as<String>();
                         String response = HTTPPostLocal(path, payload);
                         if (messagePack) {
-                            deserializeJson(response, doc);
+                            deserializeJson(doc, response);
                             serializeMsgPack(doc, response);
                         }
                         sendMessage(response, id);
@@ -196,7 +196,7 @@ public:
             if (result == 0 && rxPdu.cantpState == CANTP_END) {
                 String message;
                 JsonDocument doc;
-                if (deserializeMsgPack(doc, (char*)rxData.message)) {
+                if (messagePack && !deserializeMsgPack(doc, (char*)rxData.message)) {
                     message = doc.as<String>();
                 } else {
                     message = String((char*)rxData.message);

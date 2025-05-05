@@ -68,7 +68,7 @@ JsonRouter<CanIsoTPController<CanIsoTPMessage>> CanControllerJsonRouter::router 
     }},
     {"speed", [](JsonVariant value, CanIsoTPController<CanIsoTPMessage>& controller) {
         if (value.is<long>()) {
-            controller.setSpeed(value.as<long>());
+            // controller.setSpeed(value.as<long>());
             return true;
         }
         return false;

@@ -6,7 +6,7 @@ String HTTPGetLocal(const String& path) {
     int httpCode = http.GET();
     if (httpCode > 0) {
         String payload = http.getString();
-        ESP_LOGI("HTTP", "Received response: %s", payload.c_str());
+        // ESP_LOGI("HTTP", "Received response: %s", payload.c_str());
         return payload;
     } else {
         ESP_LOGI("HTTP", "Failed to fetch data: %d", httpCode);
@@ -21,7 +21,7 @@ String HTTPPostLocal(const String& path, const String& payload) {
     int httpCode = http.POST(payload);
     if (httpCode > 0) {
         String payload = http.getString();
-        ESP_LOGI("HTTP", "Received response: %s", payload.c_str());
+        // ESP_LOGI("HTTP", "Received response: %s", payload.c_str());
         return payload;
     } else {
         ESP_LOGI("HTTP", "Failed to fetch data: %d", httpCode);
