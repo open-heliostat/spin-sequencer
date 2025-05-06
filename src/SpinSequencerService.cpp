@@ -7,7 +7,7 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
     }},
     {"sequencer", [&](JsonVariant content, SpinSequencerController &controller) {
         return JsonSeqJsonRouter::router.parse(content, controller.jsonSeq);
-    }}
+    }},
 },
 {
     {"controller", [&](SpinSequencerController &controller, JsonVariant content) {
@@ -15,6 +15,22 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
     }},
     {"sequencer", [&](SpinSequencerController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) JsonSeqJsonRouter::router.serialize(controller.jsonSeq, content);
+    }},
+    {"diag", [&](SpinSequencerController &controller, JsonVariant content) {
+        if (content.is<JsonObject>()) {
+            JsonObject obj = content.as<JsonObject>();
+            JsonObject stepperDiag = obj["stepper"].to<JsonObject>();
+            stepperDiag["isEnabled"] = controller.controller.stepper.isEnabled();
+            stepperDiag["status"] = controller.controller.stepper.getStatus();
+            stepperDiag["version"] = controller.controller.stepper.driver.version();
+            JsonObject sequencerDiag = obj["sequencer"].to<JsonObject>();
+            sequencerDiag["isRunning"] = controller.jsonSeq.isRunning;
+            sequencerDiag["numCommands"] = controller.jsonSeq.commands.size();
+            JsonObject mcuDiag = obj["mcu"].to<JsonObject>();
+            mcuDiag["version"] = APP_VERSION;
+            mcuDiag["freeHeap"] = ESP.getFreeHeap();
+            mcuDiag["freeSketchSpace"] = ESP.getFreeSketchSpace();
+        }
     }}
 });
 
