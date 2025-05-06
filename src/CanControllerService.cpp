@@ -100,6 +100,10 @@ JsonRouter<CanIsoTPController<CanIsoTPMessage>> CanControllerJsonRouter::router 
         }
         return false;
     }},
+    {"mapClients", [](JsonVariant value, CanIsoTPController<CanIsoTPMessage>& controller) {
+        controller.mapClients();
+        return false;
+    }}
 },
 {
     {"messageHistory", [](CanIsoTPController<CanIsoTPMessage>& controller, JsonVariant content) {

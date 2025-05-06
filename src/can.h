@@ -184,10 +184,27 @@ public:
                         ESP_LOGI("CAN", "Invalid method: %s", method.c_str());
                     }
                 }
+                else if (content["m"].is<uint32_t>()) {
+                    // Handle map request
+                    uint32_t id = content["m"].as<uint32_t>();
+                    String response;
+                    JsonObject obj = doc.to<JsonObject>();
+                    obj["id"] = rxPdu.rxId;
+                    if (messagePack) serializeMsgPack(doc, response);
+                    else response = JsonVariant(obj).as<String>();
+                    sendMessage(response, id);
+                }
             } else {
                 ESP_LOGI("CAN", "Failed to parse message: %s", error.c_str());
             }
         }
+    }
+
+    void mapClients() {
+        String request = "{m:";
+        request += String(rxPdu.rxId);
+        request += "}";
+        sendMessage(request, txPdu.txId);
     }
 
     void loop() {
