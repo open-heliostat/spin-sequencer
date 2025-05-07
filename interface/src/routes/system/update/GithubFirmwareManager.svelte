@@ -60,7 +60,8 @@
 			// check if the asset is of type *.bin
 			if (
 				assets[i].name.includes('.bin') &&
-				assets[i].name.includes($page.data.features.firmware_built_target)
+				assets[i].name.includes($page.data.features.firmware_built_target) &&
+				!assets[i].name.includes('merged.bin')
 			) {
 				url = assets[i].browser_download_url;
 			}
