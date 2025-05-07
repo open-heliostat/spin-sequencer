@@ -62,7 +62,7 @@ def bin_copy(source, target, env):
     # create string with location and file names based on variant
     bin_file = "{}firmware{}{}.bin".format(OUTPUT_DIR, os.path.sep, variant)
     md5_file = "{}firmware{}{}.md5".format(OUTPUT_DIR, os.path.sep, variant)
-    merged_file = "{}firmware{}{}_merged.bin".format(OUTPUT_DIR, os.path.sep, variant)
+    merged_file = "{}firmware{}{}.merged.bin".format(OUTPUT_DIR, os.path.sep, variant)
 
     # check if new target files exist and remove if necessary
     for f in [bin_file]:
