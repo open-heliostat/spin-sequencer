@@ -30,6 +30,12 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
             mcuDiag["version"] = APP_VERSION;
             mcuDiag["freeHeap"] = ESP.getFreeHeap();
             mcuDiag["freeSketchSpace"] = ESP.getFreeSketchSpace();
+            JsonObject wifiDiag = obj["wifi"].to<JsonObject>();
+            wifiDiag["ssid"] = WiFi.SSID();
+            wifiDiag["rssi"] = WiFi.RSSI();
+            wifiDiag["ip"] = WiFi.localIP().toString();
+            wifiDiag["apEnabled"] = WiFi.softAPgetStationNum();
+            JsonObject encoderDiag = obj["encoder"].to<JsonObject>();
         }
     }}
 });
