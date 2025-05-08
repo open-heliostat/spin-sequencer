@@ -171,7 +171,7 @@ public:
                             serializeMsgPack(doc, response);
                         }
                         sendMessage(response, id);
-                    } else if (method == "POST" && content["payload"].is<String>()) {
+                    } else if (method == "POST") {
                         // Handle POST request
                         String payload = content["payload"].as<String>();
                         String response = HTTPPostLocal(path, payload);
