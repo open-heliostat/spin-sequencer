@@ -275,3 +275,23 @@ export type CanSettings = {
 	messagePack: boolean;
 	sendMessage?: string;
 };
+
+export type SpinDiagnostics = {
+	mcu: {
+		version: string;
+		freeHeap: number;
+		freeSketchSpace: number;
+	},
+	stepper: {
+		isEnabled: boolean;
+		version: number;
+		status: number;
+	},
+	wifi: {
+		apEnabled: number;
+		rssi: number;
+		ssid: string;
+		ip: string;
+	},
+	encoder: {}
+}
