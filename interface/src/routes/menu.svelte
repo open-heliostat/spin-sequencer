@@ -23,6 +23,7 @@
 	import Rotation from '~icons/tabler/rotate-dot'
 	import Metrics from '~icons/tabler/report-analytics';
 	import Sequencer from '~icons/tabler/mist';
+	import Home from '~icons/tabler/home';
 	import { page } from '$app/stores';
 	import { user } from '$lib/stores/user';
 	import { createEventDispatcher } from 'svelte';
@@ -49,6 +50,12 @@
 	};
 
 	let menuItems = [
+		{
+			title: 'Home',
+			icon: Home,
+			href: '/home',
+			feature: true,
+		},
 		{
 			title: 'Sequencer',
 			icon: Sequencer,
