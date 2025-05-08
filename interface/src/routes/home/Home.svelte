@@ -35,7 +35,13 @@
 			ssid: '',
 			ip: '',
 		},
-		encoder: {}
+		encoder: {},
+		can: {
+			enabled: false,
+			rxId: 0,
+			speed: 0,
+			messagePack: false,
+		},
 	};
 
 	async function getDiag() {
@@ -100,6 +106,17 @@
 							<p class="text-sm">{key}: <span class="font-mono">{value}</span></p>
 						{/each}
 					{/if}
+				</div>
+			</div>
+
+			<!-- CAN Section -->
+			<div class="bg-gray-50 rounded-lg p-4">
+				<h3 class="text-lg font-semibold mb-2">CAN</h3>
+				<div class="space-y-2">
+					<p class="text-sm">Enabled: <span class="font-mono">{diag.can.enabled ? 'Yes' : 'No'}</span></p>
+					<p class="text-sm">RX ID: <span class="font-mono">{diag.can.rxId}</span></p>
+					<p class="text-sm">Speed: <span class="font-mono">{diag.can.speed} kBps</span></p>
+					<p class="text-sm">Messagepack: <span class="font-mono">{diag.can.messagePack ? 'Yes' : 'No'}</span></p>
 				</div>
 			</div>
 		</div>

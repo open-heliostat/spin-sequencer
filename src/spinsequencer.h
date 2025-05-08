@@ -3,15 +3,17 @@
 #include <closedloopcontroller.h>
 #include <controller.h>
 #include <jseq.h>
+#include <CanControllerService.h>
 class SpinSequencerController
 {
 public:
     MotorController &motorController;
     ClosedLoopController &controller;
     JsonSeq jsonSeq;
+    CanIsoTPController<CanIsoTPMessage> &canController;
 
-    SpinSequencerController(MotorController &motorController, ClosedLoopController &controller):
-        motorController(motorController), controller(controller), jsonSeq(motorController) {}
+    SpinSequencerController(MotorController &motorController, ClosedLoopController &controller, CanIsoTPController<CanIsoTPMessage> &canController) :
+        motorController(motorController), controller(controller), jsonSeq(motorController), canController(canController) {}
     
     void init() 
     {

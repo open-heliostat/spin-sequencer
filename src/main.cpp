@@ -36,16 +36,16 @@ Encoder encoder1 = Encoder(D4, D5);
 ClosedLoopController closedLoopController1 = {stepper1, encoder1};
 MotorController motorController = {stepper1, encoder1};
 
-SpinSequencerController spinSequencer = SpinSequencerController{motorController, closedLoopController1};
-
-SpinSequencerService spinSequencerService = SpinSequencerService{&server, 
-                                                                 &esp32sveltekit, 
-                                                                 spinSequencer};
-
 CanIsoTPController<CanIsoTPMessage> canController = CanIsoTPController<CanIsoTPMessage>();
 CanControllerService canControllerService = CanControllerService{&server, 
                                                                     &esp32sveltekit, 
                                                                     canController};
+
+SpinSequencerController spinSequencer = SpinSequencerController{motorController, closedLoopController1, canController};
+
+SpinSequencerService spinSequencerService = SpinSequencerService{&server, 
+                                                                 &esp32sveltekit, 
+                                                                 spinSequencer};
 
 // LoRaController loraController = LoRaController();
 

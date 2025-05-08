@@ -36,6 +36,11 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
             wifiDiag["ip"] = WiFi.localIP().toString();
             wifiDiag["apEnabled"] = WiFi.softAPgetStationNum();
             JsonObject encoderDiag = obj["encoder"].to<JsonObject>();
+            JsonObject canDiag = obj["can"].to<JsonObject>();
+            canDiag["enabled"] = controller.canController.enabled;
+            canDiag["messagePack"] = controller.canController.messagePack;
+            canDiag["rxId"] = controller.canController.rxId;
+            canDiag["speed"] = controller.canController.getSpeed();
         }
     }}
 });

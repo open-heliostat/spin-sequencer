@@ -293,5 +293,11 @@ export type SpinDiagnostics = {
 		ssid: string;
 		ip: string;
 	},
-	encoder: {}
+	encoder: {},
+	can: {
+		enabled: boolean;
+		rxId: number;
+		speed: number;
+		messagePack: boolean;
+	},
 }
