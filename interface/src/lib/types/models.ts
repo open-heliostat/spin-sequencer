@@ -293,7 +293,12 @@ export type SpinDiagnostics = {
 		ssid: string;
 		ip: string;
 	},
-	encoder: {},
+	encoder: {
+		angle: number;
+		error: boolean;
+		invert: boolean;
+		newData: boolean;
+	},
 	can: {
 		enabled: boolean;
 		rxId: number;

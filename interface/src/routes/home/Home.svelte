@@ -35,7 +35,12 @@
 			ssid: '',
 			ip: '',
 		},
-		encoder: {},
+		encoder: {
+			angle: 0,
+			error: false,
+			invert: false,
+			newData: false,
+		},
 		can: {
 			enabled: false,
 			rxId: 0,
@@ -104,13 +109,10 @@
 			<div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
 				<h3 class="text-lg font-semibold mb-2 dark:text-gray-200">Encoder</h3>
 				<div class="space-y-2">
-					{#if Object.keys(diag.encoder).length === 0}
-						<p class="text-sm text-gray-500 dark:text-gray-400 italic">No encoder data available</p>
-					{:else}
-						{#each Object.entries(diag.encoder) as [key, value]}
-							<p class="text-sm dark:text-gray-300">{key}: <span class="font-mono">{value}</span></p>
-						{/each}
-					{/if}
+					<p class="text-sm dark:text-gray-300">Angle: <span class="font-mono">{diag.encoder.angle.toFixed(2)}°</span></p>
+					<p class="text-sm dark:text-gray-300">Error: <span class={diag.encoder.error ? "text-red-600 dark:text-red-500" : "text-green-600 dark:text-green-500"}>{diag.encoder.error ? 'Yes' : 'No'}</span></p>
+					<p class="text-sm dark:text-gray-300">Invert: <span class={diag.encoder.invert ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"}>{diag.encoder.invert ? 'Yes' : 'No'}</span></p>
+					<p class="text-sm dark:text-gray-300">New Data: <span class={diag.encoder.newData ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"}>{diag.encoder.newData ? 'Yes' : 'No'}</span></p>
 				</div>
 			</div>
 
