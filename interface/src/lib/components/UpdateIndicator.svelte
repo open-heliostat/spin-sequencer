@@ -43,7 +43,8 @@
 					// check if the asset is of type *.bin
 					if (
 						results.assets[i].name.includes('.bin') &&
-						results.assets[i].name.includes($page.data.features.firmware_built_target)
+						results.assets[i].name.includes($page.data.features.firmware_built_target) &&
+						!results.assets[i].name.includes('merged.bin')
 					) {
 						update = true;
 						firmwareVersion = results.tag_name;
