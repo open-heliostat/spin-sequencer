@@ -10,7 +10,7 @@ const config: UserConfig = {
 			compiler: 'svelte'
 		}),
 		// Shorten file names for LittleFS 32 char limit
-		viteLittleFS()
+		// viteLittleFS()
 	],
 	server: {
 		proxy: {
