@@ -59,6 +59,7 @@ void setup()
     server.config.max_uri_handlers = 12;
     server.config.max_resp_headers = 12;
     server.config.max_open_sockets = 11;
+    server.config.lru_purge_enable = true;
 
     // start ESP32-SvelteKit
     esp32sveltekit.begin();
