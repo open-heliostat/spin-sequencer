@@ -34,6 +34,7 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
             wifiDiag["ssid"] = WiFi.SSID();
             wifiDiag["rssi"] = WiFi.RSSI();
             wifiDiag["ip"] = WiFi.localIP().toString();
+            wifiDiag["hostname"] = WiFi.getHostname();
             wifiDiag["apEnabled"] = WiFi.softAPgetStationNum();
             JsonObject encoderDiag = obj["encoder"].to<JsonObject>();
             encoderDiag["angle"] = controller.controller.encoder.getAngle();
@@ -49,7 +50,7 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
             httpDiag["numClients"] = controller.server->count();
             httpDiag["maxClients"] = controller.server->config.max_open_sockets;
             httpDiag["maxUriHandlers"] = controller.server->config.max_uri_handlers;
-            httpDiag["maxRespHeaders"] = controller.server->config.max_resp_headers;
+            httpDiag["lruPurgeEnable"] = controller.server->config.lru_purge_enable;
         }
     }}
 });

@@ -291,6 +291,7 @@ export type SpinDiagnostics = {
 		apEnabled: number;
 		rssi: number;
 		ssid: string;
+		hostname: string;
 		ip: string;
 	},
 	encoder: {
@@ -309,5 +310,13 @@ export type SpinDiagnostics = {
 		numClients: number;
 		maxClients: number;
 		maxUriHandlers: number;
+		lruPurgeEnable:	boolean;
 	}
+}
+
+export type SpinRemote = {
+	rxId: number;
+	ip: string;
+	version: string;
+	hostName: string;
 }
