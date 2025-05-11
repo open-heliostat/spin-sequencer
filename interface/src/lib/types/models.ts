@@ -325,5 +325,5 @@ export type SpinRemote = {
 	rxId: number;
 	ip: string;
 	version: string;
-	hostName: string;
+	hostname: string;
 }

@@ -69,6 +69,12 @@
 			feature: true,
 		},
 		{
+			title: 'Remote',
+			icon: Remote,
+			href: '/remote',
+			feature: true,
+		},
+		{
 			title: 'Steppers',
 			icon: Control,
 			href: '/steppers',

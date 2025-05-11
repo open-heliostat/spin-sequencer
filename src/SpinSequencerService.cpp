@@ -8,6 +8,9 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
     {"sequencer", [&](JsonVariant content, SpinSequencerController &controller) {
         return JsonSeqJsonRouter::router.parse(content, controller.jsonSeq);
     }},
+    {"remotes", [&](JsonVariant content, SpinSequencerController &controller) {
+        return RemoteJsonRouter::router.parse(content, controller.remotesController);
+    }}
 },
 {
     {"controller", [&](SpinSequencerController &controller, JsonVariant content) {
@@ -15,6 +18,9 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
     }},
     {"sequencer", [&](SpinSequencerController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) JsonSeqJsonRouter::router.serialize(controller.jsonSeq, content);
+    }},
+    {"remotes", [&](SpinSequencerController &controller, JsonVariant content) {
+        if (content.is<JsonObject>()) RemoteJsonRouter::router.serialize(controller.remotesController, content);
     }},
     {"diag", [&](SpinSequencerController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) {
@@ -67,7 +73,7 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
             sequencerDiag["selectedCommand"] = controller.jsonSeq.selectedCommand;
             sequencerDiag["nextCommand"] = controller.jsonSeq.nextCommand;
         }
-    }}
+    }},
 });
 
 
