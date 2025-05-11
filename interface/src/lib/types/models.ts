@@ -281,6 +281,7 @@ export type SpinDiagnostics = {
 		version: string;
 		freeHeap: number;
 		freeSketchSpace: number;
+		cpuFreq: number;
 	},
 	stepper: {
 		isEnabled: boolean;
@@ -311,7 +312,13 @@ export type SpinDiagnostics = {
 		maxClients: number;
 		maxUriHandlers: number;
 		lruPurgeEnable:	boolean;
-	}
+	},
+	sequencer: {
+		isRunning: boolean;
+		numCommands: number;
+		selectedCommand: number;
+		nextCommand: number;
+	},
 }
 
 export type SpinRemote = {
