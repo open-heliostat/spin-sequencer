@@ -39,8 +39,24 @@
 					<p class="text-sm dark:text-gray-300">Version: <span class="font-mono">{diag.mcu.version}</span></p>
 					<p class="text-sm dark:text-gray-300">Free Heap: <span class="font-mono">{diag.mcu.freeHeap/1000} kB</span></p>
 					<p class="text-sm dark:text-gray-300">Free Sketch Space: <span class="font-mono">{diag.mcu.freeSketchSpace/1000} kB</span></p>
+                    <p class="text-sm dark:text-gray-300">CPU Frequency: <span class="font-mono">{diag.mcu.cpuFreq} Hz</span></p>
 				</div>
 			</div>
+
+            <!-- Sequencer Section -->
+            <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                <h3 class="text-lg font-semibold mb-2 dark:text-gray-200">Sequencer</h3>
+                <div class="space-y-2">
+                    <p class="text-sm dark:text-gray-300">Running: 
+                        <span class={diag.sequencer.isRunning ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"}>
+                            {diag.sequencer.isRunning ? "Yes" : "No"}
+                        </span>
+                    </p>
+                    <p class="text-sm dark:text-gray-300">Number of Commands: <span class="font-mono">{diag.sequencer.numCommands}</span></p>
+                    <p class="text-sm dark:text-gray-300">Selected Command: <span class="font-mono">{diag.sequencer.selectedCommand}</span></p>
+                    <p class="text-sm dark:text-gray-300">Next Command: <span class="font-mono">{diag.sequencer.nextCommand}</span></p>
+                </div>
+            </div>
 
 			<!-- Stepper Section -->
 			<div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
@@ -57,6 +73,17 @@
 				</div>
 			</div>
 
+			<!-- Encoder Section -->
+			<div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+				<h3 class="text-lg font-semibold mb-2 dark:text-gray-200">Encoder</h3>
+				<div class="space-y-2">
+					<p class="text-sm dark:text-gray-300">Angle: <span class="font-mono">{diag.encoder.angle.toFixed(2)}°</span></p>
+					<p class="text-sm dark:text-gray-300">Error: <span class={diag.encoder.error ? "text-red-600 dark:text-red-500" : "text-green-600 dark:text-green-500"}>{diag.encoder.error ? 'Yes' : 'No'}</span></p>
+					<p class="text-sm dark:text-gray-300">Invert: <span class={diag.encoder.invert ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"}>{diag.encoder.invert ? 'Yes' : 'No'}</span></p>
+					<p class="text-sm dark:text-gray-300">New Data: <span class={diag.encoder.newData ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"}>{diag.encoder.newData ? 'Yes' : 'No'}</span></p>
+				</div>
+			</div>
+
 			<!-- WiFi Section -->
 			<div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
 				<h3 class="text-lg font-semibold mb-2 dark:text-gray-200">WiFi</h3>
@@ -66,17 +93,6 @@
 					<p class="text-sm dark:text-gray-300">IP: <span class="font-mono">{diag.wifi.ip || 'Not Available'}</span></p>
 					<p class="text-sm dark:text-gray-300">AP Enabled: <span class="font-mono">{diag.wifi.apEnabled ? 'Yes' : 'No'}</span></p>
 					<p class="text-sm dark:text-gray-300">RSSI: <span class="font-mono">{diag.wifi.rssi} dBm</span></p>
-				</div>
-			</div>
-
-			<!-- Encoder Section -->
-			<div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-				<h3 class="text-lg font-semibold mb-2 dark:text-gray-200">Encoder</h3>
-				<div class="space-y-2">
-					<p class="text-sm dark:text-gray-300">Angle: <span class="font-mono">{diag.encoder.angle.toFixed(2)}°</span></p>
-					<p class="text-sm dark:text-gray-300">Error: <span class={diag.encoder.error ? "text-red-600 dark:text-red-500" : "text-green-600 dark:text-green-500"}>{diag.encoder.error ? 'Yes' : 'No'}</span></p>
-					<p class="text-sm dark:text-gray-300">Invert: <span class={diag.encoder.invert ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"}>{diag.encoder.invert ? 'Yes' : 'No'}</span></p>
-					<p class="text-sm dark:text-gray-300">New Data: <span class={diag.encoder.newData ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"}>{diag.encoder.newData ? 'Yes' : 'No'}</span></p>
 				</div>
 			</div>
 
