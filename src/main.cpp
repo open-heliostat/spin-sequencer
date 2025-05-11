@@ -41,7 +41,7 @@ CanControllerService canControllerService = CanControllerService{&server,
                                                                     &esp32sveltekit, 
                                                                     canController};
 
-SpinSequencerController spinSequencer = SpinSequencerController{motorController, closedLoopController1, canController};
+SpinSequencerController spinSequencer = SpinSequencerController{motorController, closedLoopController1, canController, &server};
 
 SpinSequencerService spinSequencerService = SpinSequencerService{&server, 
                                                                  &esp32sveltekit, 
@@ -56,6 +56,9 @@ void setup()
 
     // increase httpd stack for HttpJsonRouter
     server.config.stack_size = 8192;
+    server.config.max_uri_handlers = 12;
+    server.config.max_resp_headers = 12;
+    server.config.max_open_sockets = 11;
 
     // start ESP32-SvelteKit
     esp32sveltekit.begin();

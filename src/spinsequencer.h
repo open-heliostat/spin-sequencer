@@ -11,9 +11,10 @@ public:
     ClosedLoopController &controller;
     JsonSeq jsonSeq;
     CanIsoTPController<CanIsoTPMessage> &canController;
+    PsychicHttpServer *server;
 
-    SpinSequencerController(MotorController &motorController, ClosedLoopController &controller, CanIsoTPController<CanIsoTPMessage> &canController) :
-        motorController(motorController), controller(controller), jsonSeq(motorController), canController(canController) {}
+    SpinSequencerController(MotorController &motorController, ClosedLoopController &controller, CanIsoTPController<CanIsoTPMessage> &canController, PsychicHttpServer *server) :
+        motorController(motorController), controller(controller), jsonSeq(motorController), canController(canController), server(server) {}
     
     void init() 
     {

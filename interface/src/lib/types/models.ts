@@ -300,4 +300,9 @@ export type SpinDiagnostics = {
 		speed: number;
 		messagePack: boolean;
 	},
+	http: {
+		numClients: number;
+		maxClients: number;
+		maxUriHandlers: number;
+	}
 }

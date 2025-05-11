@@ -41,6 +41,11 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
             canDiag["messagePack"] = controller.canController.messagePack;
             canDiag["rxId"] = controller.canController.rxId;
             canDiag["speed"] = controller.canController.getSpeed();
+            JsonObject httpDiag = obj["http"].to<JsonObject>();
+            httpDiag["numClients"] = controller.server->count();
+            httpDiag["maxClients"] = controller.server->config.max_open_sockets;
+            httpDiag["maxUriHandlers"] = controller.server->config.max_uri_handlers;
+            httpDiag["maxRespHeaders"] = controller.server->config.max_resp_headers;
         }
     }}
 });
