@@ -23,7 +23,7 @@
 
 PsychicHttpServer server;
 
-ESP32SvelteKit esp32sveltekit(&server, 120);
+ESP32SvelteKit esp32sveltekit(&server, 200);
 
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 
@@ -56,7 +56,6 @@ void setup()
 
     // increase httpd stack for HttpJsonRouter
     server.config.stack_size = 8192;
-    server.config.max_uri_handlers = 12;
     server.config.max_resp_headers = 12;
     server.config.max_open_sockets = 11;
     server.config.lru_purge_enable = true;
