@@ -10,6 +10,7 @@
     import Remote from '~icons/tabler/network';
     import Spinner from './Spinner.svelte';
 	import Slider from './Slider.svelte';
+	import RemoteComp from './RemoteComp.svelte';
 
     export let restPath: string;
     
@@ -27,6 +28,16 @@
         });
     }
 
+    async function postRemotes() {
+        return postJsonRest(restPath, { remotes }).then((data) => {
+            notifications.success(`Updated remotes`, 3000);
+            console.log("Remotes: ", data);
+            return data;
+        }).catch((error) => {
+            notifications.error(`Failed to update remotes: ${error}`, 3000);
+        });
+    }
+
     async function addRemote() {
         if (newRemote.ip || newRemote.rxId) {
             return postJsonRest(restPath, { 
@@ -41,11 +52,13 @@
         }
     }
 
-    async function removeRemote(remote: SpinRemote) {
+    async function removeRemote(index: number) {
         return postJsonRest(restPath, {
-            removeRemote: remote
+            removeRemote: {
+                index: index
+            }
         }).then(() => {
-            notifications.success(`Removed remote ${remote.hostname}`, 3000);
+            notifications.success(`Removed remote ${remotes[index].hostname}`, 3000);
             return getRemotes();
         }).catch((error) => {
             notifications.error(`Failed to remove remote: ${error}`, 3000);
@@ -77,11 +90,18 @@
                 label="RX ID"
                 bind:value={newRemote.rxId}
             />
-            <Button
-                onClick={addRemote}
-                label="Add Remote"
-            />
         </GridForm>
+        <div class="flex flex-row flex-wrap justify-between gap-x-2">
+            <div class="flex-grow"></div>
+            <div>
+                <div>
+                    <Button
+                        onClick={addRemote}
+                        label="Add Remote"
+                    />
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Remotes list -->
@@ -91,7 +111,7 @@
             <p class="text-gray-500 dark:text-gray-400">No remotes configured</p>
         {:else}
             <div class="grid gap-4">
-                {#each remotes as remote}
+                {#each remotes as remote, index}
                     <div class="bg-base-200 p-4 rounded-lg flex items-center justify-between">
                         <div>
                             <p class="font-semibold">{remote.hostname}</p>
@@ -100,7 +120,7 @@
                             </p>
                         </div>
                         <Button
-                            onClick={() => removeRemote(remote)}
+                            onClick={() => removeRemote(index)}
                             label="Remove"
                         />
                     </div>
@@ -109,6 +129,13 @@
         {/if}
     </div>
 </SettingsCard>
+
+{#each remotes as remote}
+    <RemoteComp
+        bind:remote={remote}
+        onChange={postRemotes}
+    />
+{/each}
 
 <style>
     .grid {

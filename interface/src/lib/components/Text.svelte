@@ -10,7 +10,7 @@
 </label>
 <input 
     type="text"
-    class="input"
+    class="input mt-1 mb-1"
     maxlength={maxLength}
     id={label}
     bind:value={value}
