@@ -35,6 +35,24 @@ JsonRouter<RemotesController> RemoteJsonRouter::router = JsonRouter<RemotesContr
     {"clearRemotes", [](JsonVariant content, RemotesController& controller) {
         controller.clearRemotes();
         return true;
+    }},
+    {"remotes", [](JsonVariant content, RemotesController& controller) {
+        if (content.is<JsonArray>()) {
+            JsonArray remotes = content.as<JsonArray>();
+            controller.clearRemotes();
+            for (JsonVariant remote : remotes) {
+                if (remote.is<JsonObject>()) {
+                    JsonObject obj = remote.as<JsonObject>();
+                    controller.addRemote(
+                        obj["hostname"].as<String>(),
+                        obj["ip"].as<String>(),
+                        obj["rxId"].as<uint32_t>()
+                    );
+                }
+            }
+            return true;
+        }
+        return false;
     }}
 },
 {

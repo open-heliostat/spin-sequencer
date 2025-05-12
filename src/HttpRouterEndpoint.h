@@ -100,7 +100,7 @@ public:
                             return response.send();
                         },
                         _authenticationPredicate));
-        ESP_LOGV("HttpRouterEndpoint", "Registered GET endpoint: %s", wildcardPath.c_str());
+        ESP_LOGI("HttpRouterEndpoint", "Registered GET endpoint: %s", wildcardPath.c_str());
 
         // POST
         _server->on(wildcardPath.c_str(),
@@ -143,7 +143,7 @@ public:
                         },
                         _authenticationPredicate));
 
-        ESP_LOGV("HttpRouterEndpoint", "Registered POST endpoint: %s", wildcardPath.c_str());
+        ESP_LOGI("HttpRouterEndpoint", "Registered POST endpoint: %s", wildcardPath.c_str());
     }
 };
 

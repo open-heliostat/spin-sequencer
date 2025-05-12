@@ -48,6 +48,7 @@ public:
     {
         root["controller"] = ClosedLoopControllerJsonRouter::getSaveMap();
         root["sequencer"] = JsonSeqJsonRouter::getSaveMap();
+        root["remotes"] = RemoteJsonRouter::getSaveMap();
     }
     static JsonRouter<SpinSequencerController> router;
 };
