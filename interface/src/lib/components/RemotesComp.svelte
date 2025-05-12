@@ -127,7 +127,11 @@
                 label="Add Remote"
             />
             <Button
-                onClick={() => postJsonRest(restPath, { scan: true })}
+                onClick={() => postJsonRest('/rest/can', { mapClients: true }).then(() => {
+                    setTimeout(() => {
+                        getRemotes();
+                    }, 2000);
+                })}
                 label="CAN Bus Scan"
             />
             <div class="flex-grow"></div>

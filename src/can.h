@@ -4,7 +4,6 @@
 #include <Arduino.h>
 #include <CanIsoTp.hpp>
 #include <HTTPLocalClient.h>
-#include <jseq.h>
 
 template <typename T>
 class CanIsoTPController
@@ -21,13 +20,18 @@ private:
     std::vector<String> messageHistory;
     const int messageHistorySize = 10;
 
+    unsigned long clientMappingTimestamp = 0;
+
 public:
     uint32_t txId = 0x123;
     uint32_t rxId = 0x456;
     bool enabled = false;
     bool messagePack = true;
+
+    std::function<void(String)> messageCallback = nullptr;
+    std::function<void(uint32_t)> clientMappingCallback = nullptr;
     
-    CanIsoTPController(uint32_t txId = 0x123, uint32_t rxId = 0x456) : txId(txId), rxId(rxId) {
+    CanIsoTPController(uint32_t txId = 0, uint32_t rxId = 127) : txId(txId), rxId(rxId) {
         // Constructor
     }
 
@@ -156,7 +160,7 @@ public:
             DeserializationError error = deserializeJson(doc, message);
             if (!error) {
                 JsonObject content = doc.as<JsonObject>();
-                message = doc.as<String>();
+                // message = doc.as<String>();
                 // Process the JSON object as needed
                 ESP_LOGI("CAN", "Parsed message: %s", message.c_str());
                 if (content["id"].is<uint32_t>() && content["path"].is<String>() && content["method"].is<String>()) {
@@ -194,6 +198,10 @@ public:
                     else response = JsonVariant(obj).as<String>();
                     sendMessage(response, id);
                 }
+                else if (content["id"].is<uint32_t>() && clientMappingCallback && millis() - clientMappingTimestamp < 1000 && clientMappingTimestamp > 0) {
+                    clientMappingCallback(content["id"].as<uint32_t>());
+                }
+                else if (messageCallback) messageCallback(message);
             } else {
                 ESP_LOGI("CAN", "Failed to parse message: %s", error.c_str());
             }
@@ -204,7 +212,8 @@ public:
         String request = "{m:";
         request += String(rxPdu.rxId);
         request += "}";
-        sendMessage(request, txPdu.txId);
+        sendMessage(request, 0);
+        clientMappingTimestamp = millis();
     }
 
     void loop() {

@@ -42,6 +42,12 @@ public:
         remotes.push_back(remote);
     }
     void addRemote(uint32_t rxId) {
+        // check if rxId is already in the list
+        for (auto it = remotes.begin(); it != remotes.end(); ++it) {
+            if (it->rxId == rxId) {
+                return; // rxId already exists, do not add
+            }
+        }
         Remote remote;
         remote.rxId = rxId;
         remotes.push_back(remote);

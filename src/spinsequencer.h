@@ -16,7 +16,15 @@ public:
     RemotesController remotesController = {};
 
     SpinSequencerController(MotorController &motorController, ClosedLoopController &controller, CanIsoTPController<CanIsoTPMessage> &canController, PsychicHttpServer *server) :
-        motorController(motorController), controller(controller), jsonSeq(motorController), canController(canController), server(server) {}
+            motorController(motorController), controller(controller), jsonSeq(motorController), canController(canController), server(server) 
+    {
+        canController.messageCallback = [this](String message) {
+            jsonSeq.readCommand(message);
+        };
+        canController.clientMappingCallback = [this](uint32_t rxId) {
+            remotesController.addRemote(rxId);
+        };
+    }
     
     void init() 
     {
