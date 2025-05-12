@@ -15,7 +15,7 @@
     let diag: SpinDiagnostics = {} as SpinDiagnostics;
     export let onChange: () => void;
 
-    async function getDiag() {
+    export async function getDiag() {
         if (remote.ip || remote.rxId) {
             let path = remote.ip ? "http://" + remote.ip + "/rest/spin-seq/diag" : "/rest/can/tun/" + remote.rxId + "/spin-seq/diag";
             return getJsonRest(path, diag, {signal: AbortSignal.timeout(1000)}).then((data) => {
@@ -73,6 +73,9 @@
             if (diag.sequencer.isRunning) getSequencerData();
         }, 1278);
         getSequencerData();
+        if (!remote.hostname) {
+            getDiag();
+        }
     });
     onDestroy(() => {
         clearInterval(intervalID);

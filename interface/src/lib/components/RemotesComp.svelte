@@ -16,6 +16,7 @@
     export let restPath: string;
     
     let remotes: SpinRemote[] = [];
+    let remoteComps: RemoteComp[] = [];
     let newRemote = {
         hostname: '',
         ip: '',
@@ -83,13 +84,32 @@
         {:else}
             <div class="grid gap-4">
                 {#each remotes as remote, index}
-                    <div class="bg-base-200 p-0 rounded-lg flex items-center justify-between">
-                        <div>
-                            <p class="font-semibold">{remote.hostname}</p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400">
-                                IP: {remote.ip || 'Not Connected'} | RX ID: {remote.rxId}
-                            </p>
-                        </div>
+                    <div class="bg-base-200 p-0 rounded-lg flex items-center justify-between gap-2">
+                                <!-- Open Link in new tab if IP is set -->
+                        {#if remote.ip}
+                            <a href={`http://${remote.ip}`} target="_blank" rel="noopener noreferrer">
+                            <div>
+                                <p class="font-semibold">{remote.hostname}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    IP: {remote.ip || 'Not Connected'} | RX ID: {remote.rxId}
+                                </p>
+                            </div>
+                            </a>
+                        {:else}
+                            <div>
+                                <p class="font-semibold">{remote.hostname}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">
+                                    IP: {remote.ip || 'Not Connected'} | RX ID: {remote.rxId}
+                                </p>
+                            </div>
+                        {/if}
+                        <div class="flex-grow"></div>
+                        <Button
+                            label="Update"
+                            onClick={() => {
+                                remoteComps[index].getDiag();
+                            }}
+                        />
                         <Button
                             onClick={() => removeRemote(index)}
                             label="Remove"
@@ -102,12 +122,12 @@
 
     <!-- Add new remote form -->
     <Collapsible>
-        <span slot="title">Add New Remote</span>
+        <span slot="title">Import Remotes</span>
         <GridForm>
-            <Text
+            <!-- <Text
                 label="Hostname"
                 bind:value={newRemote.hostname}
-            />
+            /> -->
             <Text
                 label="IP Address"
                 bind:value={newRemote.ip}
@@ -123,16 +143,16 @@
 
         <div class="flex flex-row flex-wrap justify-between gap-x-2">
             <Button
-                onClick={addRemote}
-                label="Add Remote"
-            />
-            <Button
                 onClick={() => postJsonRest('/rest/can', { mapClients: true }).then(() => {
                     setTimeout(() => {
                         getRemotes();
                     }, 2000);
                 })}
-                label="CAN Bus Scan"
+                label="Scan"
+            />
+            <Button
+                onClick={addRemote}
+                label="Add New"
             />
             <div class="flex-grow"></div>
             <Button
@@ -140,15 +160,16 @@
                     remotes = [];
                     postJsonRest(restPath, { clearRemotes: true });
                 }}
-                label="Clear Remotes"
+                label="Clear All"
             />
         </div>
     </Collapsible>
 </SettingsCard>
 
-{#each remotes as remote}
+{#each remotes as remote, index}
     <RemoteComp
         bind:remote={remote}
+        bind:this={remoteComps[index]}
         onChange={postRemotes}
     />
 {/each}
