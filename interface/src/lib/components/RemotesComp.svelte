@@ -11,6 +11,7 @@
     import Spinner from './Spinner.svelte';
 	import Slider from './Slider.svelte';
 	import RemoteComp from './RemoteComp.svelte';
+	import Collapsible from './Collapsible.svelte';
 
     export let restPath: string;
     
@@ -72,47 +73,17 @@
 
 <SettingsCard>
     <Remote slot="icon" class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
-    <span slot="title">Remotes</span>
-
-    <!-- Add new remote form -->
-    <div class="mb-4">
-        <h3 class="text-lg font-semibold mb-2">Add New Remote</h3>
-        <GridForm>
-            <Text
-                label="Hostname"
-                bind:value={newRemote.hostname}
-            />
-            <Text
-                label="IP Address"
-                bind:value={newRemote.ip}
-            />
-            <Slider
-                label="RX ID"
-                bind:value={newRemote.rxId}
-            />
-        </GridForm>
-        <div class="flex flex-row flex-wrap justify-between gap-x-2">
-            <div class="flex-grow"></div>
-            <div>
-                <div>
-                    <Button
-                        onClick={addRemote}
-                        label="Add Remote"
-                    />
-                </div>
-            </div>
-        </div>
-    </div>
+    <span slot="title">Remotes Manager</span>
 
     <!-- Remotes list -->
-    <div>
-        <h3 class="text-lg font-semibold mb-2">Connected Remotes</h3>
+    <Collapsible open={remotes.length > 0}>
+        <span slot="title">Registered Remotes ({remotes.length})</span>
         {#if remotes.length === 0}
             <p class="text-gray-500 dark:text-gray-400">No remotes configured</p>
         {:else}
             <div class="grid gap-4">
                 {#each remotes as remote, index}
-                    <div class="bg-base-200 p-4 rounded-lg flex items-center justify-between">
+                    <div class="bg-base-200 p-0 rounded-lg flex items-center justify-between">
                         <div>
                             <p class="font-semibold">{remote.hostname}</p>
                             <p class="text-sm text-gray-600 dark:text-gray-400">
@@ -127,7 +98,48 @@
                 {/each}
             </div>
         {/if}
-    </div>
+    </Collapsible>
+
+    <!-- Add new remote form -->
+    <Collapsible>
+        <span slot="title">Add New Remote</span>
+        <GridForm>
+            <Text
+                label="Hostname"
+                bind:value={newRemote.hostname}
+            />
+            <Text
+                label="IP Address"
+                bind:value={newRemote.ip}
+            />
+            <Slider
+                label="RX ID"
+                min={1}
+                max={127}
+                step={1}
+                bind:value={newRemote.rxId}
+            />
+        </GridForm>
+
+        <div class="flex flex-row flex-wrap justify-between gap-x-2">
+            <Button
+                onClick={addRemote}
+                label="Add Remote"
+            />
+            <Button
+                onClick={() => postJsonRest(restPath, { scan: true })}
+                label="CAN Bus Scan"
+            />
+            <div class="flex-grow"></div>
+            <Button
+                onClick={() => {
+                    remotes = [];
+                    postJsonRest(restPath, { clearRemotes: true });
+                }}
+                label="Clear Remotes"
+            />
+        </div>
+    </Collapsible>
 </SettingsCard>
 
 {#each remotes as remote}

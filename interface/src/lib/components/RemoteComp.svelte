@@ -14,15 +14,13 @@
     async function getDiag() {
         if (remote.ip || remote.rxId) {
             let path = remote.ip ? "http://" + remote.ip + "/rest/spin-seq/diag" : "/rest/can/tun/" + remote.rxId + "/spin-seq/diag";
-            console.log("Getting diag from: ", path);
             return getJsonRest(path, diag, {signal: AbortSignal.timeout(1000)}).then((data) => {
                 diag = data;
-                console.log("Got diag: ", diag);
                 updateRemote();
                 return diag;
             }).catch((error) => {
                 if (remote.ip && remote.rxId) {
-                    return getJsonRest("/rest/can/tun/" + remote.rxId + "/spin-seq/diag", diag, {signal: AbortSignal.timeout(1000)}).then((data) => {
+                    return getJsonRest("/rest/can/tun/" + remote.rxId + "/spin-seq/diag", diag, {signal: AbortSignal.timeout(2000)}).then((data) => {
                         diag = data;
                         updateRemote();
                         return diag;
