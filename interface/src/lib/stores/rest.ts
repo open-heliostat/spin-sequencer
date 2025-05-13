@@ -1,5 +1,5 @@
-export async function getJsonRest<T>(path: string, data : T, options: any = {}) {
-    try {
+export async function getJsonRest<T>(path: string, data : T, options: any = {}): Promise<T> {
+    // try {
         const response = await fetch(path, {
             method: 'GET',
             headers: {
@@ -9,14 +9,14 @@ export async function getJsonRest<T>(path: string, data : T, options: any = {}) 
         });
         let json = await response.json();
         data = json;
-    } catch (error) {
-        console.error('Error:', error);
-    }
+    // } catch (error) {
+    //     console.error('Error:', error);
+    // }
     return data;
 }
 
 export async function postJsonRest<T>(path: string, data: T, options: any = {}) {
-    try {
+    // try {
         const response = await fetch(path, {
             method: 'POST',
             headers: {
@@ -31,8 +31,8 @@ export async function postJsonRest<T>(path: string, data: T, options: any = {}) 
         } else {
             console.error('Wrong Path.', 3000);
         }
-    } catch (error) {
-        console.error('Error: ' + error, 3000);
-    }
+    // } catch (error) {
+    //     console.error('Error: ' + error, 3000);
+    // }
     return data;
 }

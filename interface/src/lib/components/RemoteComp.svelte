@@ -1,5 +1,6 @@
 <script lang="ts">
     import { getJsonRest } from '$lib/stores/rest';
+    import { getJsonRestWithCanFallback } from '$lib/stores/remote';
     import Spinner from './Spinner.svelte';
     import type { SpinDiagnostics, SpinRemote } from '$lib/types/models';
 	import SettingsCard from './SettingsCard.svelte';
@@ -16,24 +17,13 @@
     export let onChange: () => void;
 
     export async function getDiag() {
-        if (remote.ip || remote.rxId) {
-            let path = remote.ip ? "http://" + remote.ip + "/rest/spin-seq/diag" : "/rest/can/tun/" + remote.rxId + "/spin-seq/diag";
-            return getJsonRest(path, diag, {signal: AbortSignal.timeout(1000)}).then((data) => {
-                diag = data;
-                updateRemote();
-                return diag;
-            }).catch((error) => {
-                if (remote.ip && remote.rxId) {
-                    return getJsonRest("/rest/can/tun/" + remote.rxId + "/spin-seq/diag", diag, {signal: AbortSignal.timeout(2000)}).then((data) => {
-                        diag = data;
-                        updateRemote();
-                        return diag;
-                    }).catch((error) => {
-                        console.error("Failed to get diagnostics: ", error);
-                    });
-                }
-            });
-        }
+        return getJsonRestWithCanFallback("/spin-seq/diag", diag, remote.ip, remote.rxId).then((data) => {
+            diag = data;
+            updateRemote();
+            return diag;
+        }).catch((error) => {
+            console.error("Failed to get diagnostics: ", error);
+        });
     }
 
     async function getSequencerData() {
@@ -70,7 +60,7 @@
     let intervalID: any;
     onMount(() => {
         intervalID = setInterval(() => {
-            if (diag.sequencer.isRunning) getSequencerData();
+            if (diag?.sequencer?.isRunning) getSequencerData();
         }, 1278);
         getSequencerData();
         if (!remote.hostname) {
