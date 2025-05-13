@@ -6,7 +6,7 @@ JsonRouter<JsonTimer> JsonTimerRouter::router = JsonRouter<JsonTimer>(
     {"add", [](JsonVariant content, JsonTimer &timer) {
         if (content.is<JsonObject>()) {
             JsonObjectConst obj = content.as<JsonObjectConst>();
-            if (obj.containsKey("hour") && obj.containsKey("minute") && obj.containsKey("command")) {
+            if (obj["hour"].is<uint8_t>() && obj["minute"].is<uint8_t>() && obj["command"].is<const char*>()) {
                 timer.addJsonDailyTimer(
                     obj["hour"].as<uint8_t>(),
                     obj["minute"].as<uint8_t>(),
@@ -20,10 +20,10 @@ JsonRouter<JsonTimer> JsonTimerRouter::router = JsonRouter<JsonTimer>(
     {"remove", [](JsonVariant content, JsonTimer &timer) {
         if (content.is<JsonObject>()) {
             JsonObjectConst obj = content.as<JsonObjectConst>();
-            if (obj.containsKey("index")) {
+            if (obj["index"].is<size_t>()) {
                 return timer.removeTimer(obj["index"].as<size_t>());
             }
-            if (obj.containsKey("hour") && obj.containsKey("minute")) {
+            if (obj["hour"].is<uint8_t>() && obj["minute"].is<uint8_t>()) {
                 return timer.removeDailyTimer(
                     obj["hour"].as<uint8_t>(),
                     obj["minute"].as<uint8_t>()
