@@ -24,6 +24,7 @@
 	import Metrics from '~icons/tabler/report-analytics';
 	import Sequencer from '~icons/tabler/mist';
 	import Home from '~icons/tabler/home';
+	import Clock from '~icons/tabler/clock';
 	import { page } from '$app/stores';
 	import { user } from '$lib/stores/user';
 	import { createEventDispatcher } from 'svelte';
@@ -60,6 +61,12 @@
 			title: 'Sequencer',
 			icon: Sequencer,
 			href: '/sequencer',
+			feature: true,
+		},
+		{
+			title: 'Timers',
+			icon: Clock,
+			href: '/timers', 
 			feature: true,
 		},
 		{

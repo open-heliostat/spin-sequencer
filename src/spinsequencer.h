@@ -5,6 +5,7 @@
 #include <jseq.h>
 #include <CanControllerService.h>
 #include <RemoteService.h>
+#include <JsonTimerService.h>
 class SpinSequencerController
 {
 public:
@@ -14,6 +15,7 @@ public:
     CanIsoTPController<CanIsoTPMessage> &canController;
     PsychicHttpServer *server;
     RemotesController remotesController = {};
+    JsonTimer jsonTimer = {jsonSeq};
 
     SpinSequencerController(MotorController &motorController, ClosedLoopController &controller, CanIsoTPController<CanIsoTPMessage> &canController, PsychicHttpServer *server) :
             motorController(motorController), controller(controller), jsonSeq(motorController), canController(canController), server(server) 
@@ -28,6 +30,7 @@ public:
     
     void init() 
     {
+        jsonTimer.begin();
     }
 
     void run()

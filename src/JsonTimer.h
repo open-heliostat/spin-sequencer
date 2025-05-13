@@ -3,6 +3,14 @@
 
 #include "jseq.h"
 #include <ArduinoJson.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+// Forward declare JsonTimer class for use in timerTask
+class JsonTimer;
+
+// FreeRTOS task function declaration 
+void timerTask(void* parameter);
 
 struct JsonDailyTimer {
     uint8_t hour;      // 0-23
@@ -13,7 +21,25 @@ struct JsonDailyTimer {
 
 class JsonTimer {
 public:
-    JsonTimer(JsonSeq& sequencer) : _sequencer(sequencer) {}
+    JsonTimer(JsonSeq& sequencer) : _sequencer(sequencer), _timerTaskHandle(nullptr) {}
+    
+    void begin() {
+        xTaskCreate(
+            timerTask,              // Function that should be called
+            "Timer Task",           // Name of the task (for debugging)
+            4096,                   // Stack size (bytes)
+            this,                   // Pass reference to this class instance
+            1,                      // Task priority
+            &_timerTaskHandle       // Task handle
+        );
+    }
+
+    void end() {
+        if (_timerTaskHandle != nullptr) {
+            vTaskDelete(_timerTaskHandle);
+            _timerTaskHandle = nullptr;
+        }
+    }
 
     void addJsonDailyTimer(uint8_t hour, uint8_t minute, const String& jsonCommand) {
         if (hour > 23 || minute > 59) return;
@@ -82,44 +108,13 @@ public:
         return false;
     }
 
+    void checkTimers();
+
 private:
     JsonSeq& _sequencer;
     std::vector<JsonDailyTimer> _timers;
-
-    void checkTimers() {
-        time_t now;
-        struct tm timeinfo;
-        time(&now);
-        localtime_r(&now, &timeinfo);
-
-        // Only process if we have valid time
-        if (timeinfo.tm_year > (2023 - 1900)) {
-            for (auto& timer : _timers) {
-                // Check if it's time to execute and hasn't been executed today
-                if (timeinfo.tm_hour == timer.hour && 
-                    timeinfo.tm_min == timer.minute && 
-                    !timer.executed) {
-                    _sequencer.readCommand(timer.jsonCommand);
-                    timer.executed = true;
-                }
-                // Reset executed flag at midnight
-                else if (timeinfo.tm_hour == 0 && timeinfo.tm_min == 0) {
-                    timer.executed = false;
-                }
-            }
-        }
-    }
-
+    TaskHandle_t _timerTaskHandle;
     friend void timerTask(void* parameter);
 };
-
-// FreeRTOS task function
-void timerTask(void* parameter) {
-    JsonTimer* timer = static_cast<JsonTimer*>(parameter);
-    while (true) {
-        timer->checkTimers();
-        vTaskDelay(pdMS_TO_TICKS(60000)); // Check every minute
-    }
-}
 
 #endif
