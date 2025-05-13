@@ -72,6 +72,9 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
             // sequencerDiag["commandID"] = controller.jsonSeq.commandID;
             sequencerDiag["selectedCommand"] = controller.jsonSeq.selectedCommand;
             sequencerDiag["nextCommand"] = controller.jsonSeq.nextCommand;
+            JsonObject remotesDiag = obj["remotes"].to<JsonObject>();
+            remotesDiag["isMaster"] = controller.remotesController.isMaster;
+            remotesDiag["numRemotes"] = controller.remotesController.remotes.size();
         }
     }},
 });

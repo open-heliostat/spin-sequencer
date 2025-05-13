@@ -319,6 +319,10 @@ export type SpinDiagnostics = {
 		selectedCommand: number;
 		nextCommand: number;
 	},
+	remotes: {
+		numRemotes: number;
+		isMaster: boolean;
+	},
 }
 
 export type SpinRemote = {
@@ -326,4 +330,8 @@ export type SpinRemote = {
 	ip: string;
 	version: string;
 	hostname: string;
+}
+
+export type RemotesSettings = {
+	isMaster: boolean;
 }

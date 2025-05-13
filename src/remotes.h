@@ -13,6 +13,7 @@ struct Remote
 class RemotesController
 {
 public:
+    bool isMaster = false;
     std::vector<Remote> remotes;
     RemotesController() {}
     RemotesController(std::vector<Remote> remotes) : remotes(remotes) {}

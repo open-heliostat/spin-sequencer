@@ -53,6 +53,16 @@ JsonRouter<RemotesController> RemoteJsonRouter::router = JsonRouter<RemotesContr
             return true;
         }
         return false;
+    }},
+    {"settings", [](JsonVariant content, RemotesController& controller) {
+        if (content.is<JsonObject>()) {
+            JsonObject settings = content.as<JsonObject>();
+            if (settings["isMaster"].is<bool>()) {
+                controller.isMaster = settings["isMaster"].as<bool>();
+                return true;
+            }
+        }
+        return false;
     }}
 },
 {
@@ -64,6 +74,10 @@ JsonRouter<RemotesController> RemoteJsonRouter::router = JsonRouter<RemotesContr
             obj["ip"] = remote.ip;
             obj["rxId"] = remote.rxId;
         }
+    }},
+    {"settings", [](RemotesController& controller, JsonVariant content) {
+        JsonObject settings = content.to<JsonObject>();
+        settings["isMaster"] = controller.isMaster;
     }}
 });
 

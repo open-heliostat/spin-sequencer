@@ -6,22 +6,37 @@
     import { notifications } from "./toasts/notifications";
     import Button from './Button.svelte';
     import Text from './Text.svelte';
-    import type { SpinRemote } from '$lib/types/models';
+    import type { RemotesSettings, SpinRemote } from '$lib/types/models';
     import Remote from '~icons/tabler/network';
     import Spinner from './Spinner.svelte';
 	import Slider from './Slider.svelte';
 	import RemoteComp from './RemoteComp.svelte';
 	import Collapsible from './Collapsible.svelte';
+	import Checkbox from './Checkbox.svelte';
 
     export let restPath: string;
     
     let remotes: SpinRemote[] = [];
     let remoteComps: RemoteComp[] = [];
+    let remoteSettings: RemotesSettings = {
+        isMaster: false,
+    }
     let newRemote = {
         hostname: '',
         ip: '',
         rxId: 99
     };
+
+    async function getRemotesSettings() {
+        return getJsonRest(restPath, remoteSettings).then((data) => {
+            remoteSettings = data;
+        });
+    }
+    async function postRemotesSettings() {
+        return postJsonRest(restPath, remoteSettings).then((data) => {
+            remoteSettings = data;
+        });
+    }
 
     async function getRemotes() {
         return getJsonRest(restPath, { remotes }).then((data) => {
@@ -69,6 +84,7 @@
 
     onMount(() => {
         getRemotes();
+        getRemotesSettings();
     });
 </script>
 
@@ -105,7 +121,7 @@
                         {/if}
                         <div class="flex-grow"></div>
                         <Button
-                            label="Update"
+                            label="Refresh"
                             onClick={() => {
                                 remoteComps[index].getDiag();
                             }}
@@ -128,6 +144,11 @@
                 label="Hostname"
                 bind:value={newRemote.hostname}
             /> -->
+            <Checkbox
+                label="Is Master"
+                bind:value={remoteSettings.isMaster}
+                onChange={postRemotesSettings}
+            />
             <Text
                 label="IP Address"
                 bind:value={newRemote.ip}

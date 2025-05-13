@@ -92,5 +92,14 @@
 			<p class="text-sm dark:text-gray-300">LRU Purge Enable: <span class="font-mono">{diag.http.lruPurgeEnable ? 'Yes' : 'No'}</span></p>
 		</div>
 	</div>
+
+	<!-- Remotes Section -->
+	<div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+		<h3 class="text-lg font-semibold mb-2 dark:text-gray-200">Remotes</h3>
+		<div class="space-y-2">
+			<p class="text-sm dark:text-gray-300">Master: <span class="font-mono">{diag.remotes.isMaster ? 'Yes' : 'No'}</span></p>
+			<p class="text-sm dark:text-gray-300">Number of Remotes: <span class="font-mono">{diag.remotes.numRemotes}</span></p>
+		</div>
+	</div>
 </div>
 {/if}
