@@ -23,9 +23,9 @@ private:
     unsigned long clientMappingTimestamp = 0;
 
 public:
-    uint32_t txId = 0x123;
-    uint32_t rxId = 0x456;
-    bool enabled = false;
+    uint32_t txId;
+    uint32_t rxId;
+    bool enabled = true;
     bool messagePack = true;
 
     std::function<void(String)> messageCallback = nullptr;
