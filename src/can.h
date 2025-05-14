@@ -31,7 +31,7 @@ public:
     std::function<void(String)> messageCallback = nullptr;
     std::function<void(uint32_t)> clientMappingCallback = nullptr;
     
-    CanIsoTPController(uint32_t txId = 0, uint32_t rxId = 127) : txId(txId), rxId(rxId) {
+    CanIsoTPController(uint32_t txId = 0, uint32_t rxId = 0) : txId(txId), rxId(rxId) {
         // Constructor
     }
 
@@ -39,6 +39,12 @@ public:
         if (!isoTpReceiver.begin(500, pinTX, pinRX)) {
             ESP_LOGI("CAN", "Failed to start TWAI");
             while (1);
+        }
+
+        if (rxId == 0) {
+            uint8_t mac[6];
+            esp_read_mac(mac, ESP_MAC_WIFI_STA);
+            rxId = mac[5];
         }
 
         ESP_LOGI("CAN", "TWAI speed : %d", isoTpReceiver.ESP32CanTwai.getSpeedNumeric());
