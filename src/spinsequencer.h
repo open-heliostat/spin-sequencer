@@ -26,6 +26,12 @@ public:
         canController.clientMappingCallback = [this](uint32_t rxId) {
             remotesController.addRemote(rxId);
         };
+        jsonSeq.broadcastMessage = [&](String message) {
+            canController.sendMessage(message, uint32_t(0));
+        };
+        jsonSeq.sendMessage = [&](String message, uint32_t address) {
+            canController.sendMessage(message, address);
+        };
     }
     
     void init() 

@@ -28,32 +28,13 @@ public:
     uint32_t lostCommands = 0;
     bool isRunning = false;
     bool commandRunning = false;
+
+    std::function<void(String)> broadcastMessage = nullptr;
+    std::function<void(String, uint32_t)> sendMessage = nullptr;
+
     JsonSeq(MotorController &controller):
         controller(controller) {}
-    // void loadJson() {
-    //     preferences.begin("json");
-    //     int commandsNum = preferences.getInt("commandsNum", 1);
-    //     for (int i = 0; i < commandsNum; i++) {
-    //         String command = preferences.getString((String("seq")+String(i)).c_str(), String("null"));
-    //         // if (command == String("null") || i > 100) break;
-    //         if (commands.size() <= i) commands.push_back(JsonDocument());
-    //         deserializeJson(commands[i], command);
-    //     }
-    //     preferences.end();
-    //     loadSettings();
-    // }
-    // void saveJson() {
-    //     preferences.begin("json");
-    //     int commandsNum = min(int(commands.size()), 32);
-    //     preferences.putInt("commandsNum", commandsNum);
-    //     for (int i = 0; i < commandsNum; i++) {
-    //         String data;
-    //         serializeJson(commands[i], data);
-    //         preferences.putString((String("seq")+String(i)).c_str(), data);
-    //     }
-    //     preferences.end();
-    //     saveSettings();
-    // }
+
     void selectCommand(int select) {
         while (select >= commands.size()) commands.push_back(JsonDocument());
         selectedCommand = select;
@@ -118,18 +99,20 @@ public:
             int commandNum = command["t"];
             readCommand(commandNum);
         }
-        // if (command["b"].is<String>()) {
-        //     ESPNow::broadcast(command["b"]);
-        // }
-        // if (command["s"].is<String>() && command["a"].is<String>()) {
-        //     String name = command["a"];
-        //     String res;
-        //     JsonDocument cmd;
-        //     deserializeJson(cmd, command["s"]);
-        //     cmd["id"] = commandID++;
-        //     serializeJson(cmd, res);
-        //     ESPNow::sendMessage(res, name);
-        // }
+        if (command["b"].is<String>() && broadcastMessage) {
+            broadcastMessage(command["b"].as<String>());
+        }
+        if (command["s"].is<String>() && command["a"].is<uint32_t>() && sendMessage) {
+            uint32_t address = command["a"];
+            String message = command["s"];
+            // String res;
+            // JsonDocument cmd;
+            // deserializeJson(cmd, command["s"]);
+            // cmd["id"] = commandID++;
+            // serializeJson(cmd, res);
+            sendMessage(message, address);
+            // ESP_LOGI("Sequencer", "Send Message: %s, ID: %d", message.c_str(), address);
+        }
         // if (command["sall"].is<String>()) {
         //     String res;
         //     JsonDocument cmd;
@@ -197,18 +180,5 @@ public:
             commandRunning = false;
         }
     }
-    // void saveSettings() {
-    //     preferences.begin("jseq");
-    //     preferences.putInt("selCmd", selectedCommand);
-    //     preferences.putBool("running", isRunning);
-    //     preferences.end();
-    // }
-    // void loadSettings() {
-    //     preferences.begin("jseq");
-    //     selectCommand(preferences.getInt("selCmd", 0));
-    //     isRunning = preferences.getBool("running", isRunning);
-    //     if (isRunning) readCommand();
-    //     preferences.end();
-    // }
 };
 #endif

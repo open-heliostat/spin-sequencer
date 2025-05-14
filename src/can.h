@@ -254,8 +254,8 @@ public:
         }
     }
 
-    bool sendMessage(const String& message, uint32_t txId) {
-        txId = txId;
+    bool sendMessage(const String& message, uint32_t ID) {
+        txId = ID;
         T msg;
         strcpy(msg.message, message.c_str());
         // make sure the message is null terminated
@@ -263,8 +263,8 @@ public:
         return sendMessage(msg);
     }
 
-    bool sendMessage(const T& message, uint32_t txId) {
-        txId = txId;
+    bool sendMessage(const T& message, uint32_t ID) {
+        txId = ID;
         return sendMessage(message);
     }
 
