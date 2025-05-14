@@ -130,7 +130,7 @@
                 <thead>
                     <tr>
                         <th>Time</th>
-                        <th>Command</th>
+                        <th class="w-full">Command</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
