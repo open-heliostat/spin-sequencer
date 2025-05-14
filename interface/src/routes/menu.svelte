@@ -73,7 +73,7 @@
 			title: 'Controllers',
 			icon: Rotation,
 			href: '/controllers',
-			feature: true,
+			feature: false,
 		},
 		{
 			title: 'Remote',

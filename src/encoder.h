@@ -8,6 +8,7 @@ class Encoder
 {
 public:
     double angle;
+    double offset = 0;
     bool invert = false;
     bool error = false;
     Encoder(int _SDA = SDA, int _SCL = SCL, TwoWire &I2C_ = Wire) : I2C(I2C_) {
@@ -29,6 +30,7 @@ public:
             if (value > 0) {
                 angle = value*360./16384.;
                 if (invert) angle = 360. - angle;
+                angle = mod(angle + offset, 360.);
                 newData = true;
                 error = false;
                 return true;
@@ -59,5 +61,6 @@ private:
     uint32_t maxPollInterval = 20;
     uint32_t lastPoll = 0;
     bool newData = false;
+    double mod(double a, double N) {return a - N*floor(a/N);}
 };
 #endif

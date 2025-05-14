@@ -19,6 +19,7 @@
         stopPosition: number;
         dist: number;
         speed: number;
+        offset: number;
     }
 
     let controllerState: ClassicControllerState;
@@ -65,7 +66,8 @@
         return postJsonRest(restPath + '/control', {
             stopPosition: controllerState.stopPosition,
             dist: controllerState.dist,
-            speed: controllerState.speed
+            speed: controllerState.speed,
+            offset: controllerState.offset
         });
     }
 </script>
@@ -112,6 +114,14 @@
                     min={-100} 
                     max={100}
                     step={1}
+                    onChange={updateSettings}
+                />
+                <Slider 
+                    label="Offset" 
+                    bind:value={controllerState.offset}
+                    min={0} 
+                    max={360}
+                    step={0.01}
                     onChange={updateSettings}
                 />
             </GridForm>

@@ -14,6 +14,7 @@ JsonRouter<MotorController> ClassicControllerJsonRouter::router = JsonRouter<Mot
         target["stopPosition"] = controller.stopPosition;
         target["dist"] = controller.dist;
         target["speed"] = controller.speed;
+        target["offset"] = controller.sensor.offset;
     }}
 });
 
@@ -56,5 +57,12 @@ JsonEventRouter<MotorController> ClassicControllerJsonRouter::controlRouter = Js
             return true;
         }
         return false;
-    }}
+    }},
+    {"offset", [](JsonVariant content, MotorController &controller) {
+        if (content.is<double>()) {
+            controller.sensor.offset = content.as<double>();
+            return true;
+        }
+        return false;
+    }},
 });
