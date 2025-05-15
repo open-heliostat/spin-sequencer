@@ -1,16 +1,23 @@
 <script lang="ts">
     import { getJsonRest } from '$lib/stores/rest';
-    import { getJsonRestWithCanFallback } from '$lib/stores/remote';
+    import { getJsonRestWithCanFallback, postJsonRestWithCanFallback } from '$lib/stores/remote';
     import Spinner from './Spinner.svelte';
     import type { SpinDiagnostics, SpinRemote } from '$lib/types/models';
 	import SettingsCard from './SettingsCard.svelte';
 	import StatusPanel from './StatusPanel.svelte';
 	import Collapsible from './Collapsible.svelte';
     import Remote from '~icons/tabler/network';
+    import Firmware from '~icons/tabler/refresh-alert';
 	import { onMount, onDestroy } from 'svelte';
 	import Slider from './Slider.svelte';
     import Button from './Button.svelte';
-	import { sequence } from '@sveltejs/kit/hooks';
+    import { openModal, closeAllModals } from 'svelte-modals';
+    import ConfirmDialog from './ConfirmDialog.svelte';
+    import { notifications } from '$lib/components/toasts/notifications';
+    import Cancel from '~icons/tabler/x';
+    import CloudDown from '~icons/tabler/cloud-download';
+    import GithubUpdateDialog from './GithubUpdateDialog.svelte';
+    import { compareVersions } from 'compare-versions';
 
     export let remote: SpinRemote;
     let diag: SpinDiagnostics = {} as SpinDiagnostics;
@@ -37,24 +44,64 @@
             });
         }
     }
-    
+
     async function updateRemote() {
         let changed = false;
-        if (diag.wifi.hostname != remote.hostname) {
-            remote.hostname = diag.wifi.hostname;
+        if (diag.wifi?.hostname != remote.hostname) {
+            remote.hostname = diag.wifi?.hostname;
             changed = true;
         }
-        if (diag.wifi.ip != remote.ip) {
-            remote.ip = diag.wifi.ip;
+        if (diag.wifi?.ip != remote.ip) {
+            remote.ip = diag.wifi?.ip;
             changed = true;
         }
-        if (diag.can.rxId != remote.rxId) {
-            remote.rxId = diag.can.rxId;
+        if (diag.can?.rxId != remote.rxId) {
+            remote.rxId = diag.can?.rxId;
+            changed = true;
+        }
+        if (diag.mcu?.version != remote.firmwareVersion) {
+            remote.firmwareVersion = diag.mcu.version;
             changed = true;
         }
         if (changed) {
             onChange();
         }
+    }
+
+    async function updateFirmware() {
+        if (!remote.ip && !remote.rxId) return;
+        
+        try {
+            await postJsonRestWithCanFallback("/downloadUpdate", {
+                download_url: remote.firmwareDownloadLink
+            }, remote.ip, remote.rxId);
+
+            openModal(GithubUpdateDialog, {
+                onConfirm: () => closeAllModals()
+            });
+        } catch (error) {
+            console.error('Error:', error);
+            notifications.error('Failed to update firmware: ' + error, 3000);
+        }
+    }
+
+    function confirmUpdate() {
+        if (!remote.firmwareDownloadLink) {
+            notifications.error('No firmware update available', 3000);
+            return;
+        }
+
+        openModal(ConfirmDialog, {
+            title: 'Confirm flashing new firmware to the remote device',
+            message: 'Are you sure you want to update the firmware on ' + remote.hostname + '?',
+            labels: {
+                cancel: { label: 'Abort', icon: Cancel },
+                confirm: { label: 'Update', icon: CloudDown }
+            },
+            onConfirm: () => {
+                updateFirmware();
+            }
+        });
     }
 
     let intervalID: any;
@@ -83,6 +130,17 @@
         </a>
         {:else}
         {remote.hostname}
+        {/if}
+        {#if remote.needsUpdate}
+        <button
+            class="btn btn-square btn-ghost h-7 w-7 ml-2"
+            on:click={confirmUpdate}
+        >
+            <span class="indicator-item indicator-top indicator-center badge badge-info badge-xs top-1 scale-75">
+                {remote.firmwareVersion}
+            </span>
+            <Firmware class="h-5 w-5" />
+        </button>
         {/if}
     </span>
     {#if diag?.sequencer}

@@ -325,11 +325,13 @@ export type SpinDiagnostics = {
 	},
 }
 
-export type SpinRemote = {
-	rxId: number;
-	ip: string;
-	version: string;
-	hostname: string;
+export interface SpinRemote {
+    hostname: string;
+    ip: string;
+    rxId: number;
+    needsUpdate?: boolean;
+    firmwareVersion?: string;
+    firmwareDownloadLink?: string;
 }
 
 export type RemotesSettings = {

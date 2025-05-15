@@ -13,6 +13,8 @@
 	import RemoteComp from './RemoteComp.svelte';
 	import Collapsible from './Collapsible.svelte';
 	import Checkbox from './Checkbox.svelte';
+    import { page } from '$app/stores';
+    import { compareVersions } from 'compare-versions';
 
     export let restPath: string;
     
@@ -50,7 +52,7 @@
             notifications.success(`Updated remotes`, 3000);
             console.log("Remotes: ", data);
             return data;
-        }).catch((error) => {
+        }).then(checkForUpdates).catch((error) => {
             notifications.error(`Failed to update remotes: ${error}`, 3000);
         });
     }
@@ -80,6 +82,45 @@
         }).catch((error) => {
             notifications.error(`Failed to remove remote: ${error}`, 3000);
         });
+    }
+
+    async function checkForUpdates() {
+        const githubUrl = `https://api.github.com/repos/${$page.data.github}/releases/latest`;
+        try {
+            const response = await fetch(githubUrl, {
+                method: 'GET',
+                headers: {
+                    accept: 'application/vnd.github+json',
+                    'X-GitHub-Api-Version': '2022-11-28'
+                }
+            });
+            if (response.status !== 200) {
+                throw new Error(`Failed to fetch latest release from ${githubUrl}`);
+            }
+            const results = await response.json();
+
+            // Check each remote for updates
+            for (let remote of remotes) {
+                if (remote.ip && compareVersions(results.tag_name, remote.firmwareVersion || '0.0.0') === 1) {
+                    // iterate over assets and find the correct one
+                    for (let asset of results.assets) {
+                        // check if the asset is of type *.bin
+                        if (
+                            asset.name.includes('.bin') &&
+                            asset.name.includes($page.data.features.firmware_built_target) &&
+                            !asset.name.includes('merged.bin')
+                        ) {
+                            remote.needsUpdate = true;
+                            remote.firmwareDownloadLink = asset.browser_download_url;
+                            notifications.info(`Firmware update available for ${remote.hostname}.`, 5000);
+                            break;
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
     }
 
     onMount(() => {
