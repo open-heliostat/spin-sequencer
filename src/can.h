@@ -137,7 +137,7 @@ public:
     String jsonGET(String path, uint32_t id, JsonVariant payload = JsonVariant()) {
         JsonDocument doc;
         JsonObject obj = doc.to<JsonObject>();
-        obj["id"] = rxPdu.rxId;
+        obj["id"] = id;
         obj["path"] = path;
         obj["method"] = "GET";
         if (payload.is<JsonObject>()) {
@@ -149,7 +149,7 @@ public:
     String jsonPOST(String path, uint32_t id, JsonVariant payload = JsonVariant()) {
         JsonDocument doc;
         JsonObject obj = doc.to<JsonObject>();
-        obj["id"] = rxPdu.rxId;
+        obj["id"] = id;
         obj["path"] = path;
         obj["method"] = "POST";
         if (payload.is<JsonObject>()) {
