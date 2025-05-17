@@ -123,7 +123,7 @@
         <div>
             <GridForm>
                 <Checkbox
-                    label="Running"
+                    label="Run"
                     bind:value={sequencerState.status.isRunning}
                     onChange={() => postJsonRest(restPath + '/control', { run: sequencerState.status.isRunning })}>
                 </Checkbox>
@@ -158,19 +158,19 @@
                 <table class="w-full border-collapse">
                     <thead>
                         <tr class="bg-gray-100 dark:bg-gray-800">
-                            <th class="p-2 text-left">Index</th>
+                            <th class="p-2 text-left">ID</th>
                             <th class="p-2 text-left w-full">Command</th>
                             <th class="p-2 text-left">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         {#each sequencerState.config.commands as command, index}
-                            <tr class="border-t border-gray-200 dark:border-gray-700 {index === sequencerState.status.selectedCommand ? 'bg-blue-50 dark:bg-blue-900/20' : ''}">
+                            <tr class="border-t border-gray-300 dark:border-gray-700 {index === sequencerState.status.selectedCommand ? 'bg-blue-50 dark:bg-blue-700/20' : ''}">
                                 <td class="p-2">{index}</td>
                                 <td class="p-2">
                                     <input 
                                         type="text" 
-                                        class="w-full bg-white border border-gray-300 dark:border-gray-600 rounded px-2 py-1"
+                                        class="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded px-2 py-1"
                                         value={JSON.stringify(command)}
                                         on:change={(e) => {
                                             const target = e.currentTarget;
