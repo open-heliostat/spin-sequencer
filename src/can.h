@@ -36,7 +36,7 @@ public:
     }
 
     void begin() {
-        if (!isoTpReceiver.begin(1000, pinTX, pinRX)) {
+        if (!isoTpReceiver.begin(500, pinTX, pinRX)) {
             ESP_LOGI("CAN", "Failed to start TWAI");
             while (1);
         }
