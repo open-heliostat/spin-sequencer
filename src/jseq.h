@@ -56,11 +56,11 @@ public:
             JsonObject parameters = command["p"];
             if (parameters["pos"].is<float>()) controller.setPosition(parameters["pos"]);
             if (parameters["dist"].is<float>()) controller.dist = parameters["dist"];
-            if (parameters["speed"].is<float>()) {
-                controller.speed = parameters["speed"];
+            if (parameters["speed"].is<int32_t>()) {
+                controller.speed = parameters["speed"].as<int32_t>();
                 controller.controller.setMaxSpeed(abs(int32_t(parameters["speed"])));
             }
-            if (parameters["acc"].is<float>()) controller.controller.setAcceleration(parameters["acc"]);
+            if (parameters["acc"].is<uint32_t>()) controller.controller.setAcceleration(parameters["acc"].as<uint32_t>());
             if (parameters["seq"].is<int>()) isRunning = parameters["seq"].as<int>() > 0;
         }
         if (command["c"].is<String>()) {

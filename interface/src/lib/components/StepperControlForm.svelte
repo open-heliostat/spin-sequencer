@@ -2,13 +2,14 @@
 	import Stop from '~icons/tabler/hand-stop';
 	import Slider from '$lib/components/Slider.svelte';
 	import Checkbox from '$lib/components/Checkbox.svelte';
-	import type { StepperControlState, StepperDiag } from '$lib/types/models';
+	import type { StepperConfig, StepperControlState, StepperDiag } from '$lib/types/models';
 	import { postJsonRest, getJsonRest} from "$lib/stores/rest"
 	import { onDestroy, onMount } from "svelte";
 	import StopButton from './StopButton.svelte';
 	import DisableButton from './DisableButton.svelte';
 
 	export let restPath : string;
+	export let stepperConfig : StepperConfig;
 	let stepperControl : StepperControlState;
 
 	let intervalID : any = null;
@@ -51,9 +52,9 @@
 	></Checkbox> -->
 	<Slider
 		label="Speed"
-		min={-1.}
-		max={1.}
-		step={0.01}
+		min={-stepperConfig.maxSpeed}
+		max={stepperConfig.maxSpeed}
+		step={1}
 		bind:value={stepperControl.speed}
 		onChange={()=>{postJsonRest(restPath, {speed: stepperControl.speed})}}
 	></Slider>
@@ -68,8 +69,8 @@
 	<Slider
 		label="Acceleration"
 		min={0}
-		max={1}
-		step={0.01}
+		max={stepperConfig.maxAccel}
+		step={1}
 		bind:value={stepperControl.accel}
 		onChange={()=>{postStepperControl(stepperControl)}}
 	></Slider>

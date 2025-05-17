@@ -54,10 +54,11 @@
 		enableCb={()=>{postJsonRest(restPath + '/config', {enabled: true})}}
 	></StepperStatusComp>
 {/await}
+{#await getStepperConfig() then nothing} 
 <StepperControlForm 
 	restPath={restPath + "/control"}
+	stepperConfig={stepperConfig}
 	>
-	{#await getStepperConfig() then nothing} 
 	<StepperSettingsForm 
 		stepperSettings={stepperConfig}
 		onChange={()=>{postStepperConfig(stepperConfig).then((data) => stepperConfig = data)}}
@@ -69,5 +70,5 @@
 	></StepperDriverForm>
 	{/if}
 	</StepperSettingsForm>
-	{/await}
 </StepperControlForm>
+{/await}

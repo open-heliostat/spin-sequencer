@@ -79,29 +79,29 @@ struct TMC5160Controller {
         return stepper->getSpeedInMilliHz()/(1000*microsteps);
     }
 
-    void setSpeed(double sp) {
-        sp = min(max(-1., sp), 1.);
-        // Serial.print("Set : ");
-        // Serial.println(sp);
-        if (sp == 0) stepper->stopMove();
-        else {
-            setMaxSpeed(abs(sp*maxSpeed));
-            if (sp < 0) stepper->runBackward();
-            else stepper->runForward();
-        }
-    }
+    // void setSpeed(double sp) {
+    //     sp = min(max(-1., sp), 1.);
+    //     // Serial.print("Set : ");
+    //     // Serial.println(sp);
+    //     if (sp == 0) stepper->stopMove();
+    //     else {
+    //         setMaxSpeed(abs(sp*maxSpeed));
+    //         if (sp < 0) stepper->runBackward();
+    //         else stepper->runForward();
+    //     }
+    // }
 
     void setSpeed(int32_t sp) {
         if (sp == 0) stepper->stopMove();
         else {
-            setMaxSpeed(abs(sp));
+            setMaxSpeed(abs(max(sp, int32_t(maxSpeed))));
             if (sp < 0) stepper->runBackward();
             else stepper->runForward();
         }
     }
 
-    double getSpeed() {
-        return double(stepper->getCurrentSpeedInMilliHz())/double(1000*microsteps*maxSpeed);
+    int32_t getSpeed() {
+        return stepper->getCurrentSpeedInMilliHz()/(1000*microsteps);
     }
 
     void stop() {
@@ -186,12 +186,12 @@ struct TMC5160Controller {
         return msteps;
     }
 
-    void setAcceleration(double acc) {
-        stepper->setAcceleration(acc*maxAccel*microsteps);
+    void setAcceleration(uint32_t acc) {
+        stepper->setAcceleration(acc*microsteps);
     }
 
-    double getAcceleration() {
-        return double(stepper->getAcceleration())/double(microsteps*maxAccel);
+    uint32_t getAcceleration() {
+        return uint32_t(stepper->getAcceleration())/uint32_t(microsteps);
     }
 
     uint32_t getStepsToStop() {

@@ -39,14 +39,14 @@
 						<Slider
 							label="Max Speed"
 							min={0}
-							max={100}
+							max={200}
 							bind:value={stepperSettings.maxSpeed}
 							{onChange}
 						></Slider>
 						<Slider
 							label="Max Acceleration"
 							min={0}
-							max={50}
+							max={100}
 							bind:value={stepperSettings.maxAccel}
 							{onChange}
 						></Slider>
@@ -57,14 +57,14 @@
 							bind:value={stepperSettings.driverCurrent}
 							{onChange}
 						></Slider>
-						<Slider
+						<!-- <Slider
 							label="Steps Per Rotation"
 							min={0}
 							max={12000}
 							step={1}
 							bind:value={stepperSettings.stepsPerRot}
 							{onChange}
-						></Slider>
+						></Slider> -->
 					</div>
 				</div>
 			</form>
