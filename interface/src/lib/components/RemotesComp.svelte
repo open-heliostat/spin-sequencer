@@ -148,7 +148,7 @@
                             <div>
                                 <p class="font-semibold">{remote.hostname}</p>
                                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                                    IP: {remote.ip || 'Not Connected'} | RX ID: {remote.rxId}
+                                    IP: {remote.ip || 'Not Connected'} | RX ID: {remote.rxId} | FW: {remote.version}
                                 </p>
                             </div>
                             </a>
@@ -205,7 +205,7 @@
 
         <div class="flex flex-row flex-wrap justify-between gap-x-2">
             <Button
-                onClick={() => postJsonRest('/rest/can', { mapClients: true }).then(() => {
+                onClick={() => postJsonRest(restPath, { scanMDNS: true }).then(() => {
                     setTimeout(() => {
                         getRemotes();
                     }, 2000);

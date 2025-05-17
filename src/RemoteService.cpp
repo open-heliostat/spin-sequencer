@@ -63,7 +63,11 @@ JsonRouter<RemotesController> RemoteJsonRouter::router = JsonRouter<RemotesContr
             }
         }
         return false;
-    }}
+    }},
+    {"scanMDNS", [](JsonVariant content, RemotesController& controller) {
+        controller.scanMDNS();
+        return true;
+    }},
 },
 {
     {"remotes", [](RemotesController& controller, JsonVariant content) {
@@ -73,6 +77,7 @@ JsonRouter<RemotesController> RemoteJsonRouter::router = JsonRouter<RemotesContr
             obj["hostname"] = remote.hostname;
             obj["ip"] = remote.ip;
             obj["rxId"] = remote.rxId;
+            obj["version"] = remote.version;
         }
     }},
     {"settings", [](RemotesController& controller, JsonVariant content) {

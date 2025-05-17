@@ -2,11 +2,13 @@
 #define REMOTES_H
 #include <Arduino.h>
 #include <vector>
+#include <ESPmDNS.h>
 
 struct Remote
 {
     String hostname = "";
     String ip = "";
+    String version = "";
     uint32_t rxId = 99;
 };
 
@@ -29,6 +31,13 @@ public:
         remote.hostname = hostname;
         remote.ip = ip;
         remote.rxId = rxId;
+        remotes.push_back(remote);
+    }
+    void addRemote(String hostname, String ip, String version) {
+        Remote remote;
+        remote.hostname = hostname;
+        remote.ip = ip;
+        remote.version = version;
         remotes.push_back(remote);
     }
     void addRemote(String hostname, uint32_t rxId) {
@@ -138,6 +147,12 @@ public:
             }
         }
         return false;
+    }
+    void scanMDNS() {
+        int nrOfServices = MDNS.queryService("http", "tcp");
+        for (int i = 0; i < nrOfServices; i++) {
+            if (MDNS.hasTxt(i, "Firmware Version") && !isRemote(MDNS.hostname(i))) addRemote(MDNS.hostname(i), MDNS.IP(i).toString(), MDNS.txt(i, "Firmware Version"));
+        }
     }
 };
 

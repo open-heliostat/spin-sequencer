@@ -329,6 +329,7 @@ export interface SpinRemote {
     hostname: string;
     ip: string;
     rxId: number;
+	version: string;
     needsUpdate?: boolean;
     firmwareVersion?: string;
     firmwareDownloadLink?: string;
