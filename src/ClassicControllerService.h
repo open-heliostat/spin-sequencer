@@ -45,6 +45,7 @@ public:
         root["stopPosition"] = true;
         root["dist"] = true;
         root["speed"] = true;
+        root["offset"] = true;
     }
 
     static const JsonDocument getSaveMap() 
