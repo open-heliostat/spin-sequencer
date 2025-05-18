@@ -41,7 +41,7 @@ public:
 
     static const void getSaveMap(JsonObject &root) 
     {
-        root["offset"] = true;
+        root["control"]["offset"] = true;
     }
 
     static const JsonDocument getSaveMap() 

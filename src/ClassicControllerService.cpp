@@ -7,7 +7,7 @@ JsonRouter<MotorController> ClassicControllerJsonRouter::router = JsonRouter<Mot
     }}
 },
 {
-    {"state", [](MotorController &controller, const JsonVariant target) {
+    {"control", [](MotorController &controller, const JsonVariant target) {
         target["position"] = controller.getPosition();
         target["isMoving"] = controller.isMoving;
         target["pingPong"] = controller.pingPong;

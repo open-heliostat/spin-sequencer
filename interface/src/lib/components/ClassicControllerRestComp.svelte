@@ -35,12 +35,12 @@
     });
 
     async function getState() {
-        return getJsonRest(restPath + "/state", controllerState)
+        return getJsonRest(restPath + "/control", controllerState)
             .then((data) => controllerState = data);
     }
 
     async function getPosition() {
-        return getJsonRest(restPath + "/state/position", 0.)
+        return getJsonRest(restPath + "/control/position", 0.)
             .then((data) => controllerState.position = data);
     }
 
