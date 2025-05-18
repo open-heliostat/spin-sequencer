@@ -54,7 +54,7 @@ public:
         }
         if (command["p"].is<JsonObject>()) {
             JsonObject parameters = command["p"];
-            if (parameters["pos"].is<float>()) controller.setPosition(parameters["pos"]);
+            if (parameters["pos"].is<float>()) controller.stopPosition = parameters["pos"].as<float>();
             if (parameters["dist"].is<float>()) controller.dist = parameters["dist"];
             if (parameters["speed"].is<int32_t>()) {
                 controller.speed = parameters["speed"].as<int32_t>();
