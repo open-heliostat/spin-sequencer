@@ -61,6 +61,7 @@ public:
                 controller.controller.setMaxSpeed(abs(int32_t(parameters["speed"])));
             }
             if (parameters["acc"].is<uint32_t>()) controller.controller.setAcceleration(parameters["acc"].as<uint32_t>());
+            if (parameters["en"].is<int>()) parameters["en"].as<int>() > 0 ? controller.controller.enable() : controller.controller.disable();
             if (parameters["seq"].is<int>()) isRunning = parameters["seq"].as<int>() > 0;
         }
         if (command["c"].is<String>()) {
