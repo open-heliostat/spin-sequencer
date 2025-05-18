@@ -174,17 +174,32 @@ struct TMC5160Controller {
     }
 
     void setMicroSteps(uint16_t ms) {
+        if (ms > 128) ms = 256;
+        else if (ms > 64) ms = 128;
+        else if (ms > 32) ms = 64;
+        else if (ms > 16) ms = 32;
+        else if (ms > 8) ms = 16;
+        else if (ms > 4) ms = 8;
+        else if (ms > 2) ms = 4;
+        else if (ms > 0) ms = 2;
+        else ms = 0;
         microsteps = ms;
+        ESP_LOGI("Driver", "Microsteps : %d", microsteps);
         driver.microsteps(ms);
     }
 
-    const char* getMicroSteps() {
-        uint16_t m = driver.microsteps();
-        microsteps = m ? m : 1;
-        if (msteps != NULL) free((char*)msteps);
-        msteps = strdup(String(microsteps).c_str());
-        return msteps;
+    uint16_t getMicroSteps() {
+        microsteps = driver.microsteps();
+        return microsteps;
     }
+
+    // const char* getMicroSteps() {
+    //     uint16_t m = driver.microsteps();
+    //     microsteps = m ? m : 1;
+    //     if (msteps != NULL) free((char*)msteps);
+    //     msteps = strdup(String(microsteps).c_str());
+    //     return msteps;
+    // }
 
     void setAcceleration(uint32_t acc) {
         stepper->setAcceleration(acc*microsteps);

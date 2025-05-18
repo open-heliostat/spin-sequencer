@@ -65,6 +65,14 @@
 							bind:value={stepperSettings.stepsPerRot}
 							{onChange}
 						></Slider> -->
+						<Slider
+							label="Microsteps"
+							min={0}
+							max={256}
+							step={1}
+							bind:value={stepperSettings.microsteps}
+							{onChange}
+						></Slider>
 					</div>
 				</div>
 			</form>

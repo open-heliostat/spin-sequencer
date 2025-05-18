@@ -31,6 +31,7 @@ JsonRouter<TMC5160Controller> TMC5160ControllerJsonRouter::router = JsonRouter<T
         target["invertDirection"] = controller.driver.shaft();
         target["driverCurrent"] = controller.driver.rms_current();
         target["stepsPerRot"] = controller.stepsPerRotation;
+        target["microsteps"] = controller.getMicroSteps();
     }},
     {"driver", [](TMC5160Controller &controller, const JsonVariant target) {
         driverRouter.router.serialize(controller.driver, target);
@@ -114,6 +115,13 @@ JsonEventRouter<TMC5160Controller> TMC5160ControllerJsonRouter::configRouter = J
     {"stepsPerRot", [](JsonVariant content, TMC5160Controller &controller) {
         if (content.is<int>()) {
             controller.stepsPerRotation = content.as<int>();
+            return true;
+        }
+        else return false;
+    }},
+    {"microsteps", [](JsonVariant content, TMC5160Controller &controller) {
+        if (content.is<uint16_t>()) {
+            controller.setMicroSteps(content.as<uint16_t>());
             return true;
         }
         else return false;

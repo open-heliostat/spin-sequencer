@@ -40,6 +40,7 @@ public:
         root["config"]["maxAccel"] = true;
         root["config"]["stepsPerRot"] = true;
         root["config"]["driverCurrent"] = true;
+        root["config"]["microsteps"] = true;
     }
     static const JsonDocument getSaveMap() 
     {
