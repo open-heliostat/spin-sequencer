@@ -200,6 +200,7 @@ export type StepperConfig = {
 	invertDirection: boolean;
 	driverCurrent: number;
 	stepsPerRot: number;
+	microsteps: number;
 }
 
 export type StepperDiag = {
@@ -234,6 +235,11 @@ export type ControllerState = {
 	};
 }
 
+export interface CurrentConfig {
+    ihold: number;
+    irun: number;
+}
+
 export type StepperDriver = {
   status: {
     enabled: boolean;
@@ -248,7 +254,7 @@ export type StepperDriver = {
     hstrt: number;
     hend: number;
     tbl: number;
-    mres: number;
+    microsteps: number;
   };
   stallConfig: {
     sg_stop: boolean;
@@ -264,6 +270,7 @@ export type StepperDriver = {
     pwm_autoscale: boolean;
     pwm_autograd: boolean;
   };
+  currentConfig: CurrentConfig;
 };
 
 export type CanSettings = {
@@ -331,8 +338,6 @@ export interface SpinRemote {
     rxId: number;
 	version: string;
     needsUpdate?: boolean;
-    firmwareVersion?: string;
-    firmwareDownloadLink?: string;
 }
 
 export type RemotesSettings = {

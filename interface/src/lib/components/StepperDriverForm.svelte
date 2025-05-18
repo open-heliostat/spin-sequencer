@@ -58,14 +58,14 @@
                         bind:value={driverSettings.chopConfig.tbl}
                         {onChange}
                     />
-                    <Slider
+                    <!-- <Slider
                         label="Microsteps"
                         min={0}
-                        max={8}
+                        max={256}
                         step={1}
-                        bind:value={driverSettings.chopConfig.mres}
+                        bind:value={driverSettings.chopConfig.microsteps}
                         {onChange}
-                    />
+                    /> -->
                 </div>
             </Collapsible>
 
@@ -149,6 +149,29 @@
                     <Checkbox
                         label="PWM Autograd"
                         bind:value={driverSettings.pwmConfig.pwm_autograd}
+                        {onChange}
+                    />
+                </div>
+            </Collapsible>
+
+            <!-- Current Configuration -->
+            <Collapsible>
+                <span slot="title">Current Configuration</span>
+                <div class="w-full grid grid-flow-row grid-form items-center">
+                    <Slider
+                        label="Hold Current"
+                        min={0}
+                        max={31}
+                        step={1}
+                        bind:value={driverSettings.currentConfig.ihold}
+                        {onChange}
+                    />
+                    <Slider
+                        label="Run Current"
+                        min={0}
+                        max={31}
+                        step={1}
+                        bind:value={driverSettings.currentConfig.irun}
                         {onChange}
                     />
                 </div>

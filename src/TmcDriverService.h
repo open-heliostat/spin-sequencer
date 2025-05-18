@@ -47,6 +47,7 @@ private:
     static JsonEventRouter<TMC5160Stepper> driverConfigRouter;
     static JsonEventRouter<TMC5160Stepper> stallConfigRouter;
     static JsonEventRouter<TMC5160Stepper> pwmConfigRouter;
+    static JsonEventRouter<TMC5160Stepper> currentConfigRouter;
 };
 
 class TmcDriverService : public StatefulService<TMC5160Stepper&>

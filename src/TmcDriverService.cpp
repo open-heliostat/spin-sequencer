@@ -10,6 +10,9 @@ JsonRouter<TMC5160Stepper> TMC5160StepperJsonRouter::router = JsonRouter<TMC5160
     }},
     {"pwmConfig", [](JsonVariant content, TMC5160Stepper &driver) {
         return pwmConfigRouter.parse(content, driver);
+    }},
+    {"currentConfig", [](JsonVariant content, TMC5160Stepper &driver) {
+        return currentConfigRouter.parse(content, driver);
     }}
 },
 {
@@ -27,7 +30,8 @@ JsonRouter<TMC5160Stepper> TMC5160StepperJsonRouter::router = JsonRouter<TMC5160
         target["hend"] = driver.hend();
         target["tbl"] = driver.tbl();
         // target["vsense"] = driver.vsense();
-        target["mres"] = driver.mres();
+        // target["mres"] = driver.mres();
+        // target["microsteps"] = driver.microsteps();
     }},
     {"pwmConfig", [](TMC5160Stepper &driver, const JsonVariant target) {
         target["pwm_ofs"] = driver.pwm_ofs();
@@ -42,6 +46,10 @@ JsonRouter<TMC5160Stepper> TMC5160StepperJsonRouter::router = JsonRouter<TMC5160
         target["semax"] = driver.semax();
         target["sedn"] = driver.sedn();
         target["sgt"] = driver.sgt();
+    }},
+    {"currentConfig", [](TMC5160Stepper &driver, const JsonVariant target) {
+        target["ihold"] = driver.ihold();
+        target["irun"] = driver.irun();
     }},
 });
 
@@ -81,13 +89,20 @@ JsonEventRouter<TMC5160Stepper> TMC5160StepperJsonRouter::chopConfigRouter = Jso
     //     }
     //     return false;
     // }},
-    {"mres", [](JsonVariant content, TMC5160Stepper &driver) {
-        if (content.is<int>()) {
-            driver.mres(content.as<int>());
-            return true;
-        }
-        return false;
-    }}
+    // {"mres", [](JsonVariant content, TMC5160Stepper &driver) {
+    //     if (content.is<int>()) {
+    //         driver.mres(content.as<int>());
+    //         return true;
+    //     }
+    //     return false;
+    // // }},
+    // {"microsteps", [](JsonVariant content, TMC5160Stepper &driver) {
+    //     if (content.is<uint16_t>()) {
+    //         driver.microsteps(content.as<uint16_t>());
+    //         return true;
+    //     }
+    //     return false;
+    // }}
 });
 
 JsonEventRouter<TMC5160Stepper> TMC5160StepperJsonRouter::stallConfigRouter = JsonEventRouter<TMC5160Stepper>({
@@ -160,6 +175,23 @@ JsonEventRouter<TMC5160Stepper> TMC5160StepperJsonRouter::pwmConfigRouter = Json
     {"pwm_autograd", [](JsonVariant content, TMC5160Stepper &driver) {
         if (content.is<bool>()) {
             driver.pwm_autograd(content.as<bool>());
+            return true;
+        }
+        return false;
+    }}
+});
+
+JsonEventRouter<TMC5160Stepper> TMC5160StepperJsonRouter::currentConfigRouter = JsonEventRouter<TMC5160Stepper>({
+    {"ihold", [](JsonVariant content, TMC5160Stepper &driver) {
+        if (content.is<int>()) {
+            driver.ihold(content.as<int>());
+            return true;
+        }
+        return false;
+    }},
+    {"irun", [](JsonVariant content, TMC5160Stepper &driver) {
+        if (content.is<int>()) {
+            driver.irun(content.as<int>());
             return true;
         }
         return false;
