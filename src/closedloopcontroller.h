@@ -5,6 +5,8 @@
 #include <tmcdriver.h>
 #include <encoder.h>
 
+#define CALIBRATION_STEPS 128
+
 class ClosedLoopController
 {
 public:
@@ -26,8 +28,8 @@ public:
     bool hasCalibration = false;
     bool calibrationRunning = false;
     bool pingPong = false;
-    static const int calibrationSteps = 128;
-    float calibrationOffsets[calibrationSteps];
+    const int calibrationSteps = CALIBRATION_STEPS;
+    float calibrationOffsets[CALIBRATION_STEPS];
     double calibrationStepperStartOffset = 0.;
     ClosedLoopController(TMC5160Controller &stepper, Encoder &encoder) : stepper(stepper), encoder(encoder) {}
     double mod(double a, double N) {return a - N*floor(a/N);}
