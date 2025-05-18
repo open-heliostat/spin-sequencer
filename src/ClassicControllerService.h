@@ -41,10 +41,6 @@ public:
 
     static const void getSaveMap(JsonObject &root) 
     {
-        root["pingPong"] = true;
-        root["stopPosition"] = true;
-        root["dist"] = true;
-        root["speed"] = true;
         root["offset"] = true;
     }
 

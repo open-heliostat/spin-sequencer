@@ -42,6 +42,7 @@ public:
         root["config"]["commands"] = true;
         root["config"]["selectedCommand"] = true;
         root["config"]["isRunning"] = true;
+        root["controller"] = true;
     }
 
     static const JsonDocument getSaveMap() 

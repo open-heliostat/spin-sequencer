@@ -37,6 +37,7 @@ struct MotorController {
         }
     }
     void setPosition(double angle) {
+        stopPosition = angle;
         double curPos = sensor.getAngle();
         // double nextPos = getDistanceToStop() + curPos;
         double toGo = angle - curPos;
