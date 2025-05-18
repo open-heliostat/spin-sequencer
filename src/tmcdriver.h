@@ -94,7 +94,7 @@ struct TMC5160Controller {
     void setSpeed(int32_t sp) {
         if (sp == 0) stepper->stopMove();
         else {
-            setMaxSpeed(abs(max(sp, int32_t(maxSpeed))));
+            setMaxSpeed(abs(sp));
             if (sp < 0) stepper->runBackward();
             else stepper->runForward();
         }
