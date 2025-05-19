@@ -55,8 +55,6 @@
 
     async function postRemotes() {
         return postJsonRest(restPath, { remotes }).then((data) => {
-            notifications.success(`Updated remotes`, 3000);
-            console.log("Remotes: ", data);
             return data;
         }).then(checkForUpdates).catch((error) => {
             notifications.error(`Failed to update remotes: ${error}`, 3000);
@@ -123,8 +121,8 @@
             // Check each remote for updates
             for (let remote of remotes) {
                 if (remote.ip && compareVersions(githubUpdate.version, remote.version) === 1) {
+                    if (!remote.needsUpdate) notifications.info(`Firmware update available for ${remote.hostname}.`, 5000);
                     remote.needsUpdate = true;
-                    notifications.info(`Firmware update available for ${remote.hostname}.`, 5000);
                 }
             }
         } catch (error) {
@@ -139,6 +137,7 @@
 				method: 'POST',
 				body: JSON.stringify({ download_url: githubUpdate.downloadLink })
 			});
+            console.log(apiResponse.status)
             if (apiResponse.status == 200) remote.needsUpdate = false;
 		} catch (error) {
 			console.error('Error:', error);
@@ -207,10 +206,7 @@
                         {#if remote.needsUpdate}
                             <button
                                 class="btn btn-square btn-ghost h-7 w-7 ml-2"
-                                on:click={function(event) {
-                                    event.preventDefault();
-                                    updateRemote(remote);
-                                }}
+                                on:click={() => updateRemote(remote)}
                             >
                                 <div class="h-7 content-center items-center self-start">
                                     <span class="indicator-item indicator-top indicator-center badge badge-info badge-xs top-2 scale-75 lg:top-1">

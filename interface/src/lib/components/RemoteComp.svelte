@@ -87,7 +87,7 @@
             if (diag?.sequencer?.isRunning) getSequencerData();
         }, 1278);
         getSequencerData();
-        if (!remote.hostname) {
+        if (!remote.hostname || !remote.ip || !remote.version) {
             getDiag();
         }
     });
