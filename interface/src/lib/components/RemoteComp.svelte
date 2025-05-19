@@ -60,19 +60,19 @@
 
     async function updateRemote() {
         let changed = false;
-        if (diag.wifi?.hostname != remote.hostname) {
+        if (diag.wifi && diag.wifi.hostname != remote.hostname) {
             remote.hostname = diag.wifi?.hostname;
             changed = true;
         }
-        if (diag.wifi?.ip != remote.ip) {
+        if (diag.wifi && diag.wifi?.ip != remote.ip) {
             remote.ip = diag.wifi?.ip;
             changed = true;
         }
-        if (diag.can?.rxId != remote.rxId) {
+        if (diag.can && diag.can?.rxId != remote.rxId) {
             remote.rxId = diag.can?.rxId;
             changed = true;
         }
-        if (diag.mcu?.version != remote.version) {
+        if (diag.mcu && diag.mcu?.version != remote.version) {
             remote.version = diag.mcu.version;
             changed = true;
         }

@@ -237,14 +237,14 @@
     <Collapsible>
         <span slot="title">Import Remotes</span>
         <GridForm>
-            <!-- <Text
-                label="Hostname"
-                bind:value={newRemote.hostname}
-            /> -->
             <Checkbox
                 label="Is Master"
                 bind:value={remoteSettings.isMaster}
                 onChange={postRemotesSettings}
+            />
+            <Text
+                label="Hostname"
+                bind:value={newRemote.hostname}
             />
             <Text
                 label="IP Address"
