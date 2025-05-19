@@ -1,6 +1,6 @@
 <script lang="ts">
     import { getJsonRest, postJsonRest } from '$lib/stores/rest';
-    import { getJsonRestWithCanFallback, postJsonRestWithCanFallback } from '$lib/stores/remote';
+    import { getJsonRestWithCanFallback, postJsonRestWithCanFallback, getJsonRestWithHostnameFallback } from '$lib/stores/remote';
     import Spinner from './Spinner.svelte';
     import type { SpinDiagnostics, SpinRemote } from '$lib/types/models';
 	import SettingsCard from './SettingsCard.svelte';
@@ -26,7 +26,7 @@
     export let onChange: () => void;
 
     export async function getDiag() {
-        return getJsonRestWithCanFallback("/spin-seq/diag", diag, remote.ip, remote.rxId).then((data) => {
+        return getJsonRestWithHostnameFallback("/spin-seq/diag", diag, remote.ip, remote.hostname).then((data) => {
             diag = data;
             updateRemote();
             return diag;

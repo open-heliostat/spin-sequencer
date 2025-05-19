@@ -31,3 +31,35 @@ export async function postJsonRestWithCanFallback<T>(path: string, data: T, ip: 
         return data;
     });
 }
+
+export async function getJsonRestWithHostnameFallback<T>(path: string, data: T, ip: string, hostname: string): Promise<T> {
+    let fullPath = ip ? "http://" + ip + "/rest" + path : "http://" + hostname + ".local/rest" + path;
+    return getJsonRest(fullPath, data, {signal: AbortSignal.timeout(1000)}).then((result) => {
+        data = result;
+        return data;
+    }).catch((error) => {
+        if (ip && hostname) {
+            return getJsonRest("http://" + hostname + ".local/rest" + path, data, {signal: AbortSignal.timeout(2000)}).then((result) => {
+                data = result;
+                return data;
+            });
+        }
+        return data;
+    });
+}
+
+export async function postJsonRestWithHostnameFallback<T>(path: string, data: T, ip: string, hostname: string): Promise<T> {
+    let fullPath = ip ? "http://" + ip + "/rest" + path : "http://" + hostname + ".local/rest" + path;
+    return postJsonRest(fullPath, data, {signal: AbortSignal.timeout(1000)}).then((result) => {
+        data = result;
+        return data;
+    }).catch((error) => {
+        if (ip && hostname) {
+            return postJsonRest("http://" + hostname + ".local/rest" + path, data, {signal: AbortSignal.timeout(2000)}).then((result) => {
+                data = result;
+                return data;
+            });
+        }
+        return data;
+    });
+}
