@@ -85,7 +85,10 @@ JsonEventRouter<JsonSeq> JsonSeqJsonRouter::controlRouter = JsonEventRouter<Json
             }
             else content.to<JsonObject>()["error"] = String(error.c_str());
         }
-        return true;
+        else if (content.is<int>()) {
+            sequencer.readCommand(content.as<int>());
+        }
+        return false;
     }}
 });
 

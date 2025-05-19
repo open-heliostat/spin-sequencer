@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { getJsonRest } from '$lib/stores/rest';
+    import { getJsonRest, postJsonRest } from '$lib/stores/rest';
     import { getJsonRestWithCanFallback, postJsonRestWithCanFallback } from '$lib/stores/remote';
     import Spinner from './Spinner.svelte';
     import type { SpinDiagnostics, SpinRemote } from '$lib/types/models';
@@ -18,9 +18,11 @@
     import CloudDown from '~icons/tabler/cloud-download';
     import GithubUpdateDialog from './GithubUpdateDialog.svelte';
     import { compareVersions } from 'compare-versions';
+	import Checkbox from './Checkbox.svelte';
+	import { sequence } from '@sveltejs/kit/hooks';
 
     export let remote: SpinRemote;
-    let diag: SpinDiagnostics = {} as SpinDiagnostics;
+    export let diag: SpinDiagnostics = {} as SpinDiagnostics;
     export let onChange: () => void;
 
     export async function getDiag() {
@@ -43,6 +45,17 @@
                 console.error("Failed to get sequencer data: ", error);
             });
         }
+    }
+
+    export async function runCommand(command: number, enableSeq = false) {
+        let path = "http://" + (remote.ip || remote.hostname) + "/rest/spin-seq/sequencer";
+        return postJsonRest(path, {control:{execute:command}})
+            .then(() => {if (enableSeq && !diag?.sequencer?.isRunning) {setSequencerState(true); diag.sequencer.isRunning = true;}});
+    }
+
+    export async function setSequencerState(state: boolean) {
+        let path = "http://" + (remote.ip || remote.hostname) + "/rest/spin-seq/sequencer";
+        return postJsonRest(path, {control:{run:state}});
     }
 
     async function updateRemote() {
@@ -68,42 +81,6 @@
         }
     }
 
-    async function updateFirmware() {
-        if (!remote.ip && !remote.rxId) return;
-        
-        try {
-            await postJsonRestWithCanFallback("/downloadUpdate", {
-                download_url: remote.firmwareDownloadLink
-            }, remote.ip, remote.rxId);
-
-            openModal(GithubUpdateDialog, {
-                onConfirm: () => closeAllModals()
-            });
-        } catch (error) {
-            console.error('Error:', error);
-            notifications.error('Failed to update firmware: ' + error, 3000);
-        }
-    }
-
-    function confirmUpdate() {
-        if (!remote.firmwareDownloadLink) {
-            notifications.error('No firmware update available', 3000);
-            return;
-        }
-
-        openModal(ConfirmDialog, {
-            title: 'Confirm flashing new firmware to the remote device',
-            message: 'Are you sure you want to update the firmware on ' + remote.hostname + '?',
-            labels: {
-                cancel: { label: 'Abort', icon: Cancel },
-                confirm: { label: 'Update', icon: CloudDown }
-            },
-            onConfirm: () => {
-                updateFirmware();
-            }
-        });
-    }
-
     let intervalID: any;
     onMount(() => {
         intervalID = setInterval(() => {
@@ -123,8 +100,8 @@
 <SettingsCard>
     <Remote slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
     <span slot="title" class="h-7">
-        <a href="http://{remote.ip ? + remote.ip : remote.hostname + ".local"}" target="_blank" rel="noopener noreferrer">
-            {remote.hostname}
+        <a href={"http://" + (remote.ip ? remote.ip : (remote.hostname + ".local"))} target="_blank" rel="noopener noreferrer">
+            {remote.hostname || remote.ip}
         </a>
         <!-- <button
             class="btn btn-square btn-ghost h-7 w-7 ml-2"
@@ -139,6 +116,11 @@
         </button> -->
     </span>
     {#if diag?.sequencer}
+    <Checkbox
+        label="Sequencer State"
+        bind:value={diag.sequencer.isRunning}
+        onChange={() => setSequencerState(diag.sequencer.isRunning)}
+    />
     <Slider
         label="Sequencer Command"
         min={0}
@@ -146,6 +128,7 @@
         step={1}
         disabled={diag.sequencer.numCommands == 0}
         hasNumber
+        onChange={() => runCommand(diag.sequencer.selectedCommand)}
         bind:value={diag.sequencer.selectedCommand}
     />
     {/if}

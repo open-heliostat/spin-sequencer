@@ -8,6 +8,7 @@
     import Text from './Text.svelte';
     import type { RemotesSettings, SpinRemote } from '$lib/types/models';
     import Remote from '~icons/tabler/network';
+    import Firmware from '~icons/tabler/refresh-alert';
     import Spinner from './Spinner.svelte';
 	import Slider from './Slider.svelte';
 	import RemoteComp from './RemoteComp.svelte';
@@ -32,6 +33,7 @@
         version: "",
         downloadLink: ""
     }
+    let sequence = 0;
 
     async function getRemotesSettings() {
         return getJsonRest(restPath, remoteSettings).then((data) => {
@@ -120,7 +122,7 @@
 
             // Check each remote for updates
             for (let remote of remotes) {
-                if (remote.ip && compareVersions(githubUpdate.version, remote.version || '0.0.0') === 1) {
+                if (remote.ip && compareVersions(githubUpdate.version, remote.version) === 1) {
                     remote.needsUpdate = true;
                     notifications.info(`Firmware update available for ${remote.hostname}.`, 5000);
                 }
@@ -131,19 +133,23 @@
     }
 
     async function updateRemote(remote: SpinRemote) {
+        let path = 'http://' + remote.ip + '/rest/downloadUpdate';
 		try {
-			const apiResponse = await fetch('http://' + remote.ip + '/rest/downloadUpdate', {
+			const apiResponse = await fetch(path, {
 				method: 'POST',
-				headers: {
-					Authorization: 'Basic',
-					'Content-Type': 'application/json'
-				},
 				body: JSON.stringify({ download_url: githubUpdate.downloadLink })
 			});
+            if (apiResponse.status == 200) remote.needsUpdate = false;
 		} catch (error) {
 			console.error('Error:', error);
 		}
 	}
+
+    async function launchSequenceAll() {
+        for (const remote of remoteComps) {
+            remote.runCommand(sequence, true);
+        }
+    }
 
     onMount(() => {
         getRemotes();
@@ -154,6 +160,21 @@
 <SettingsCard>
     <Remote slot="icon" class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
     <span slot="title">Remotes Manager</span>
+
+
+    <Slider
+        label="Select Command"
+        min={0}
+        max={100}
+        step={1}
+        disabled={remotes.length == 0}
+        hasNumber
+        bind:value={sequence}
+    />
+    <Button
+        label="Trigger All"
+        onClick={launchSequenceAll}
+    />
 
     <!-- Remotes list -->
     <Collapsible open={remotes.length > 0}>
@@ -183,10 +204,27 @@
                             </div>
                         {/if}
                         <div class="flex-grow"></div>
+                        {#if remote.needsUpdate}
+                            <button
+                                class="btn btn-square btn-ghost h-7 w-7 ml-2"
+                                on:click={function(event) {
+                                    event.preventDefault();
+                                    updateRemote(remote);
+                                }}
+                            >
+                                <div class="h-7 content-center items-center self-start">
+                                    <span class="indicator-item indicator-top indicator-center badge badge-info badge-xs top-2 scale-75 lg:top-1">
+                                        {githubUpdate.version}
+                                    </span>
+                                    <Firmware class="h-7 w-7" />
+                                </div>
+                            </button>
+                        {/if}
                         <Button
                             label="Refresh"
                             onClick={() => {
                                 remoteComps[index].getDiag();
+                                checkForUpdates();
                             }}
                         />
                         <Button
