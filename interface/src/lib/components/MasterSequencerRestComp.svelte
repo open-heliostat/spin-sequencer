@@ -8,6 +8,7 @@
     import Button from './Button.svelte';
     import Checkbox from './Checkbox.svelte';
     import type { SpinRemote } from '$lib/types/models';
+	import Collapsible from './Collapsible.svelte';
 
     export let restPath: string;
     export let remotesPath: string = '/rest/spin-seq/remotes';
@@ -34,11 +35,12 @@
     let editingCommand: {index: number, hostname: string} | null = null;
     let commandInput = '';
 
+
     let intervalID: any;
     onMount(() => {
-        getRemotes();
+        getRemotes().then(updateAllStates);
         intervalID = setInterval(() => {
-            updateAllStates();
+            // updateAllStates();
         }, 1000);
     });
     onDestroy(() => {
@@ -64,6 +66,7 @@
                 try {
                     const remoteState = await getJsonRest(`http://${remote.ip}${restPath}`, null);
                     remoteStates[remote.hostname] = remoteState;
+                    console.log(remoteState)
                 } catch (error) {
                     console.error(`Failed to get state from ${remote.hostname}: ${error}`);
                 }
@@ -143,79 +146,91 @@
             notifications.error("Invalid JSON format", 3000);
         }
     }
-</script>
 
+    function getMaxCommandCount(): number {
+        return Math.max(
+            ...Object.values(remoteStates).map(state => state.config.commands.length)
+        );
+    }
+
+    function addCommandToAll() {
+        // Add empty command to all remotes
+        for (let remote of remotes) {
+            if (remoteStates[remote.hostname]) {
+                const state = remoteStates[remote.hostname];
+                state.config.commands.push({});
+                const path = `http://${remote.ip}${restPath}`;
+                postJsonRest(path + '/config', state.config).catch(error => {
+                    notifications.error(`Failed to add command to ${remote.hostname}: ${error}`, 3000);
+                });
+            }
+        }
+    }
+
+    function getColumnWidth(hostname: string): string {
+        const commands = remoteStates[hostname].config.commands;
+        const maxLength = Math.max(...commands.map(cmd => JSON.stringify(cmd, null, 2).length));
+        // Calculate width based on character count (approximating character width)
+        return `${Math.max(Math.min(maxLength * 0.5, 300), 150)}px`; // min 150px, max 300px
+    }
+</script>
+<Collapsible open>
+    <span slot="title">Remotes Commands Grid</span>
     {#if sequencerState && Object.keys(remoteStates).length > 0}
         <div class="overflow-x-auto w-full mb-4">
-            <table class="w-full border-collapse min-w-[800px] table-fixed">
-                <thead>
-                    <tr class="bg-gray-100 dark:bg-gray-800">
-                        <th class="p-2 text-left sticky left-0 bg-gray-100 dark:bg-gray-800 z-10 size-auto">ID</th>
-                        <th class="p-2 text-left font-semibold size-auto">Master</th>
-                        {#each remotes as remote}
-                            {#if remoteStates[remote.hostname]}
-                                <th class="p-2 text-left size-auto">
-                                    <a href="http://{remote.ip}" target="_blank" rel="noopener noreferrer" 
-                                       class="text-blue-500 hover:underline">
-                                        {remote.hostname}
-                                    </a>
-                                    <div class="text-xs {remoteStates[remote.hostname].status.isRunning ? 'text-green-500' : 'text-red-500'}">
-                                        {remoteStates[remote.hostname].status.isRunning ? 'Running' : 'Stopped'}
-                                    </div>
-                                </th>
-                            {/if}
-                        {/each}
-                        <th class="p-2 text-center size-auto sticky right-0 bg-gray-100 dark:bg-gray-800">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {#each sequencerState.config.commands as _, index}
-                        <tr class="border-t border-gray-300 dark:border-gray-700">
-                            <td class="p-2 sticky left-0 bg-white dark:bg-gray-900 font-medium">
-                                {index}
-                            </td>
-                            <td class="p-2">
+            <div class="grid w-full" style="grid-template-columns: 4rem repeat({Object.keys(remoteStates).length}, minmax(150px, 1fr)) 6rem;">
+                <div class="p-2 font-semibold bg-gray-100 dark:bg-gray-800">ID</div>
+                {#each remotes as remote}
+                    {#if remoteStates[remote.hostname]}
+                        <div class="p-2 bg-gray-100 dark:bg-gray-800" style="min-width: {getColumnWidth(remote.hostname)}">
+                            <a href="http://{remote.ip}" target="_blank" rel="noopener noreferrer" 
+                               class="text-blue-500 hover:underline">
+                                {remote.hostname}
+                            </a>
+                            <div class="text-xs {remoteStates[remote.hostname].status.isRunning ? 'text-green-500' : 'text-red-500'}">
+                                {remoteStates[remote.hostname].status.isRunning ? 'Running' : 'Stopped'}
+                            </div>
+                        </div>
+                    {/if}
+                {/each}
+                <div class="p-2 text-center font-semibold bg-gray-100 dark:bg-gray-800">Actions</div>
+
+                {#each Array(getMaxCommandCount()) as _, index}
+                    <div class="p-2 font-medium border-t border-gray-300 dark:border-gray-700">
+                        {index}
+                    </div>
+                    {#each remotes as remote}
+                        {#if remoteStates[remote.hostname]}
+                            <div class="p-2 border-t border-gray-300 dark:border-gray-700" style="min-width: {getColumnWidth(remote.hostname)}">
                                 <textarea
                                     class="w-full h-32 font-mono text-sm p-2 border rounded"
-                                    value={stringifyCommand(sequencerState.config.commands[index])}
-                                    on:change={(e) => updateCommand(index, 'master', e.target.value)}
+                                    value={remoteStates[remote.hostname].config.commands[index] ? 
+                                        stringifyCommand(remoteStates[remote.hostname].config.commands[index]) : 
+                                        '{}'}
+                                    on:change={(e) => updateCommand(index, remote.hostname, e.target.value)}
                                 />
-                            </td>
-                            {#each remotes as remote}
-                                {#if remoteStates[remote.hostname]}
-                                    <td class="p-2">
-                                        <textarea
-                                            class="w-full h-32 font-mono text-sm p-2 border rounded"
-                                            value={stringifyCommand(remoteStates[remote.hostname].config.commands[index])}
-                                            on:change={(e) => updateCommand(index, remote.hostname, e.target.value)}
-                                        />
-                                    </td>
-                                {/if}
-                            {/each}
-                            <td class="p-2 text-center sticky right-0 bg-white dark:bg-gray-900">
-                                <button
-                                    class="w-full px-3 py-2 text-sm rounded bg-blue-500 hover:bg-blue-600 text-white"
-                                    on:click={() => executeCommandOnAll(index)}
-                                >
-                                    Run
-                                </button>
-                            </td>
-                        </tr>
+                            </div>
+                        {/if}
                     {/each}
-                </tbody>
-            </table>
+                    <div class="p-2 text-center border-t border-gray-300 dark:border-gray-700">
+                        <button
+                            class="w-full px-3 py-2 text-sm rounded bg-blue-500 hover:bg-blue-600 text-white"
+                            on:click={() => executeCommandOnAll(index)}
+                        >
+                            Run
+                        </button>
+                    </div>
+                {/each}
+            </div>
         </div>
         <div class="flex justify-between mt-4">
-            <Button onClick={() => {
-                sequencerState.config.commands.push({});
-                postJsonRest(restPath + '/config', sequencerState.config);
-            }} label="Add Command" />
+            <Button onClick={addCommandToAll} label="Add Command" />
             <StopButton onClick={stopAll} />
         </div>
     {:else}
         <Spinner />
     {/if}
-
+</Collapsible>
 <style>
     :global(.active) {
         color: var(--success);

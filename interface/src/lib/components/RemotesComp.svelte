@@ -36,12 +36,12 @@
     let sequence = 0;
 
     async function getRemotesSettings() {
-        return getJsonRest(restPath, remoteSettings).then((data) => {
+        return getJsonRest(restPath + '/settings', remoteSettings).then((data) => {
             remoteSettings = data;
         });
     }
     async function postRemotesSettings() {
-        return postJsonRest(restPath, remoteSettings).then((data) => {
+        return postJsonRest(restPath + '/settings', remoteSettings).then((data) => {
             remoteSettings = data;
         });
     }
