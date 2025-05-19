@@ -17,6 +17,7 @@
 #include <SpinSequencerService.h>
 #include <controller.h>
 #include <CanControllerService.h>
+// #include <ESPNowService.h>
 // #include <lora.h>
 
 #define SERIAL_BAUD_RATE 115200
@@ -47,6 +48,8 @@ SpinSequencerService spinSequencerService = SpinSequencerService{&server,
                                                                  &esp32sveltekit, 
                                                                  spinSequencer};
 
+// ESPNowService espnowService = ESPNowService(&server, &esp32sveltekit, ESPNow::state);
+
 // LoRaController loraController = LoRaController();
 
 void setup()
@@ -76,6 +79,8 @@ void setup()
 
     // start LoRa controller
     // loraController.begin();
+
+    // espnowService.begin();
 
 }
 

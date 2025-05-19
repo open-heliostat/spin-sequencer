@@ -59,8 +59,8 @@
             remote.rxId = diag.can?.rxId;
             changed = true;
         }
-        if (diag.mcu?.version != remote.firmwareVersion) {
-            remote.firmwareVersion = diag.mcu.version;
+        if (diag.mcu?.version != remote.version) {
+            remote.version = diag.mcu.version;
             changed = true;
         }
         if (changed) {
@@ -122,26 +122,21 @@
 
 <SettingsCard>
     <Remote slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-    <span slot="title">
-        <!-- Open Link in new tab if IP is set -->
-        {#if remote.ip}
-        <a href="http://{remote.ip}" target="_blank" rel="noopener noreferrer">
+    <span slot="title" class="h-7">
+        <a href="http://{remote.ip ? + remote.ip : remote.hostname + ".local"}" target="_blank" rel="noopener noreferrer">
             {remote.hostname}
         </a>
-        {:else}
-        {remote.hostname}
-        {/if}
-        {#if remote.needsUpdate}
-        <button
+        <!-- <button
             class="btn btn-square btn-ghost h-7 w-7 ml-2"
             on:click={confirmUpdate}
         >
-            <span class="indicator-item indicator-top indicator-center badge badge-info badge-xs top-1 scale-75">
-                {remote.firmwareVersion}
-            </span>
-            <Firmware class="h-5 w-5" />
-        </button>
-        {/if}
+            <div class="h-7 content-center items-center self-start">
+                <span class="indicator-item indicator-top indicator-center badge badge-info badge-xs top-2 scale-75 lg:top-1">
+                    {remote.version}
+                </span>
+                <Firmware class="h-7 w-7" />
+            </div>
+        </button> -->
     </span>
     {#if diag?.sequencer}
     <Slider

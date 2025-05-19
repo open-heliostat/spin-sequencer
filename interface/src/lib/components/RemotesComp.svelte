@@ -28,6 +28,10 @@
         ip: '',
         rxId: 99
     };
+    let githubUpdate = {
+        version: "",
+        downloadLink: ""
+    }
 
     async function getRemotesSettings() {
         return getJsonRest(restPath, remoteSettings).then((data) => {
@@ -99,29 +103,47 @@
             }
             const results = await response.json();
 
+
+            // iterate over assets and find the correct one
+            for (let asset of results.assets) {
+                // check if the asset is of type *.bin
+                if (
+                    asset.name.includes('.bin') &&
+                    asset.name.includes($page.data.features.firmware_built_target) &&
+                    !asset.name.includes('merged.bin')
+                ) {
+                    githubUpdate.version = results.tag_name;
+                    githubUpdate.downloadLink = asset.browser_download_url;
+                    break;
+                }
+            }
+
             // Check each remote for updates
             for (let remote of remotes) {
-                if (remote.ip && compareVersions(results.tag_name, remote.firmwareVersion || '0.0.0') === 1) {
-                    // iterate over assets and find the correct one
-                    for (let asset of results.assets) {
-                        // check if the asset is of type *.bin
-                        if (
-                            asset.name.includes('.bin') &&
-                            asset.name.includes($page.data.features.firmware_built_target) &&
-                            !asset.name.includes('merged.bin')
-                        ) {
-                            remote.needsUpdate = true;
-                            remote.firmwareDownloadLink = asset.browser_download_url;
-                            notifications.info(`Firmware update available for ${remote.hostname}.`, 5000);
-                            break;
-                        }
-                    }
+                if (remote.ip && compareVersions(githubUpdate.version, remote.version || '0.0.0') === 1) {
+                    remote.needsUpdate = true;
+                    notifications.info(`Firmware update available for ${remote.hostname}.`, 5000);
                 }
             }
         } catch (error) {
             console.error('Error:', error);
         }
     }
+
+    async function updateRemote(remote: SpinRemote) {
+		try {
+			const apiResponse = await fetch('http://' + remote.ip + '/rest/downloadUpdate', {
+				method: 'POST',
+				headers: {
+					Authorization: 'Basic',
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ download_url: githubUpdate.downloadLink })
+			});
+		} catch (error) {
+			console.error('Error:', error);
+		}
+	}
 
     onMount(() => {
         getRemotes();
