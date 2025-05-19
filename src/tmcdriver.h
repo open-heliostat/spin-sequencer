@@ -181,15 +181,16 @@ struct TMC5160Controller {
         else if (ms > 8) ms = 16;
         else if (ms > 4) ms = 8;
         else if (ms > 2) ms = 4;
-        else if (ms > 0) ms = 2;
+        else if (ms > 1) ms = 2;
         else ms = 0;
-        microsteps = ms;
+        microsteps = ms ? ms : 1;
         ESP_LOGI("Driver", "Microsteps : %d", microsteps);
         driver.microsteps(ms);
     }
 
     uint16_t getMicroSteps() {
-        microsteps = driver.microsteps();
+        uint16_t ms = driver.microsteps();
+        microsteps = ms ? ms : 1;
         return microsteps;
     }
 
