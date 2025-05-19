@@ -32,6 +32,9 @@ JsonRouter<TMC5160Controller> TMC5160ControllerJsonRouter::router = JsonRouter<T
         target["driverCurrent"] = controller.driver.rms_current();
         target["stepsPerRot"] = controller.stepsPerRotation;
         target["microsteps"] = controller.getMicroSteps();
+        target["ihold"] = controller.driver.ihold();
+        target["irun"] = controller.driver.irun();
+        target["iscale"] = controller.driver.GLOBAL_SCALER();
     }},
     {"driver", [](TMC5160Controller &controller, const JsonVariant target) {
         driverRouter.router.serialize(controller.driver, target);
@@ -90,13 +93,13 @@ JsonEventRouter<TMC5160Controller> TMC5160ControllerJsonRouter::configRouter = J
         }
         else return false;
     }},
-    {"driverCurrent", [](JsonVariant content, TMC5160Controller &controller) {
-        if (content.is<double>()) {
-            controller.driver.rms_current(content.as<double>());
-            return true;
-        }
-        else return false;
-    }},
+    // {"driverCurrent", [](JsonVariant content, TMC5160Controller &controller) {
+    //     if (content.is<double>()) {
+    //         controller.driver.rms_current(content.as<double>());
+    //         return true;
+    //     }
+    //     else return false;
+    // }},
     {"enabled", [](JsonVariant content, TMC5160Controller &controller) {
         if (content.is<bool>()) {
             if (content.as<bool>() == true) controller.enable();
@@ -122,6 +125,27 @@ JsonEventRouter<TMC5160Controller> TMC5160ControllerJsonRouter::configRouter = J
     {"microsteps", [](JsonVariant content, TMC5160Controller &controller) {
         if (content.is<uint16_t>()) {
             controller.setMicroSteps(content.as<uint16_t>());
+            return true;
+        }
+        else return false;
+    }},
+    {"ihold", [](JsonVariant content, TMC5160Controller &controller) {
+        if (content.is<uint8_t>()) {
+            controller.driver.ihold(content.as<uint8_t>());
+            return true;
+        }
+        else return false;
+    }},
+    {"irun", [](JsonVariant content, TMC5160Controller &controller) {
+        if (content.is<uint8_t>()) {
+            controller.driver.irun(content.as<uint8_t>());
+            return true;
+        }
+        else return false;
+    }},
+    {"iscale", [](JsonVariant content, TMC5160Controller &controller) {
+        if (content.is<uint8_t>()) {
+            controller.driver.GLOBAL_SCALER(content.as<uint8_t>());
             return true;
         }
         else return false;

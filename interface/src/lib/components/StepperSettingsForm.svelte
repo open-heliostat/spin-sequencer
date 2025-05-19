@@ -50,13 +50,6 @@
 							bind:value={stepperSettings.maxAccel}
 							{onChange}
 						></Slider>
-						<Slider
-							label="Driver Current"
-							min={0}
-							max={3064}
-							bind:value={stepperSettings.driverCurrent}
-							{onChange}
-						></Slider>
 						<!-- <Slider
 							label="Steps Per Rotation"
 							min={0}
@@ -72,6 +65,37 @@
 							step={1}
 							bind:value={stepperSettings.microsteps}
 							{onChange}
+						></Slider>
+						<Slider
+							label="Hold Current"
+							min={0}
+							max={31}
+							step={1}
+							bind:value={stepperSettings.ihold}
+							{onChange}
+						></Slider>
+						<Slider
+							label="Run Current"
+							min={0}
+							max={31}
+							step={1}
+							bind:value={stepperSettings.irun}
+							{onChange}
+						></Slider>
+						<Slider
+							label="Current Scale"
+							min={32}
+							max={255}
+							step={1}
+							bind:value={stepperSettings.iscale}
+							{onChange}
+						></Slider>
+						<Slider
+							label="Driver Current"
+							min={0}
+							max={3064}
+							disabled={true}
+							bind:value={stepperSettings.driverCurrent}
 						></Slider>
 					</div>
 				</div>

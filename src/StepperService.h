@@ -39,8 +39,10 @@ public:
         root["config"]["maxSpeed"] = true;
         root["config"]["maxAccel"] = true;
         root["config"]["stepsPerRot"] = true;
-        root["config"]["driverCurrent"] = true;
         root["config"]["microsteps"] = true;
+        root["config"]["ihold"] = true;
+        root["config"]["irun"] = true;
+        root["config"]["iscale"] = true;
     }
     static const JsonDocument getSaveMap() 
     {

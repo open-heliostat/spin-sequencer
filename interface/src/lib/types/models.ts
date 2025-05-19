@@ -201,6 +201,9 @@ export type StepperConfig = {
 	driverCurrent: number;
 	stepsPerRot: number;
 	microsteps: number;
+	ihold: number;
+	irun: number;
+	iscale: number;
 }
 
 export type StepperDiag = {
