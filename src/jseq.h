@@ -91,6 +91,11 @@ public:
         if (command["n"].is<int>()) {
             nextCommand = command["n"];
         }
+        else if (command["n"].is<String>()) {
+            String next = command["n"].as<String>();
+            if (next.startsWith("+")) nextCommand = selectedCommand + next.substring(1).toInt();
+            if (next.startsWith("-")) nextCommand = selectedCommand - next.substring(1).toInt();
+        }
         else nextCommand = -1;
         if (command["trig"].is<int>()) {
             int commandNum = command["trig"];
