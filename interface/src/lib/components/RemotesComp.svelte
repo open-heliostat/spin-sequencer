@@ -35,6 +35,8 @@
     }
     let sequence = 0;
 
+    $: hasUpdates = remotes.some(remote => remote.needsUpdate);
+
     async function getRemotesSettings() {
         return getJsonRest(restPath + '/settings', remoteSettings).then((data) => {
             remoteSettings = data;
@@ -49,7 +51,6 @@
     async function getRemotes() {
         return getJsonRest(restPath, { remotes }).then((data) => {
             remotes = data.remotes;
-            console.log("Remotes: ", data);
         });
     }
 
@@ -103,7 +104,6 @@
             }
             const results = await response.json();
 
-
             // iterate over assets and find the correct one
             for (let asset of results.assets) {
                 // check if the asset is of type *.bin
@@ -118,15 +118,21 @@
                 }
             }
 
-            // Check each remote for updates
-            for (let remote of remotes) {
-                if (remote.ip && compareVersions(githubUpdate.version, remote.version) === 1) {
-                    if (!remote.needsUpdate) notifications.info(`Firmware update available for ${remote.hostname}.`, 5000);
-                    remote.needsUpdate = true;
-                }
-            }
+            checkRemotesForUpdates();
         } catch (error) {
             console.error('Error:', error);
+        }
+    }
+
+    function checkRemotesForUpdates() {
+        for (const remote of remotes) {
+            if (remote.ip && compareVersions(githubUpdate.version, remote.version) === 1) {
+                if (!remote.needsUpdate) {
+                    notifications.info(`Firmware update available for ${remote.hostname}.`, 5000);
+                    remote.needsUpdate = true;
+                    remotes = remotes;
+                }
+            }
         }
     }
 
@@ -137,12 +143,17 @@
 				method: 'POST',
 				body: JSON.stringify({ download_url: githubUpdate.downloadLink })
 			});
-            console.log(apiResponse.status)
             if (apiResponse.status == 200) remote.needsUpdate = false;
 		} catch (error) {
-			console.error('Error:', error);
+			notifications.error("Error updating " + remote.hostname, 3000);
 		}
 	}
+
+    async function updateAllRemotes() {
+        for (const remote of remotes) {
+            if (remote.needsUpdate) updateRemote(remote);
+        }
+    }
 
     async function launchSequenceAll() {
         for (const remote of remoteComps) {
@@ -151,29 +162,36 @@
     }
 
     onMount(() => {
-        getRemotes();
         getRemotesSettings();
+        getRemotes().then(refreshAllRemotes);
     });
+
+    async function refreshAllRemotes() {
+        return Promise.all(
+            remoteComps.map(remote => remote.getDiag())
+        ).then(() => {
+            checkForUpdates();
+        });
+    }
 </script>
 
 <SettingsCard>
     <Remote slot="icon" class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
     <span slot="title">Remotes Manager</span>
 
-
-    <Slider
-        label="Select Command"
-        min={0}
-        max={100}
-        step={1}
-        disabled={remotes.length == 0}
-        hasNumber
-        bind:value={sequence}
-    />
-    <Button
-        label="Trigger All"
-        onClick={launchSequenceAll}
-    />
+        <Slider
+            label="Select Command"
+            min={0}
+            max={100}
+            step={1}
+            disabled={remotes.length == 0}
+            hasNumber
+            bind:value={sequence}
+        />
+        <Button
+            label="Trigger All"
+            onClick={launchSequenceAll}
+        />
 
     <!-- Remotes list -->
     <Collapsible open={remotes.length > 0}>
@@ -219,8 +237,7 @@
                         <Button
                             label="Refresh"
                             onClick={() => {
-                                remoteComps[index].getDiag();
-                                checkForUpdates();
+                                remoteComps[index].getDiag().then(checkForUpdates);
                             }}
                         />
                         <Button
@@ -230,6 +247,13 @@
                     </div>
                 {/each}
             </div>
+             
+            {#if hasUpdates}
+                <Button
+                    label="Update All"
+                    onClick={updateAllRemotes}
+                />
+            {/if}
         {/if}
     </Collapsible>
 
