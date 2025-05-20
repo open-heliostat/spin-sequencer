@@ -32,9 +32,9 @@ JsonRouter<TMC5160Controller> TMC5160ControllerJsonRouter::router = JsonRouter<T
         target["driverCurrent"] = controller.driver.rms_current();
         target["stepsPerRot"] = controller.stepsPerRotation;
         target["microsteps"] = controller.getMicroSteps();
-        target["ihold"] = controller.driver.ihold();
-        target["irun"] = controller.driver.irun();
         target["iscale"] = controller.driver.GLOBAL_SCALER();
+        target["irun"] = controller.driver.irun();
+        target["ihold"] = controller.driver.ihold();
     }},
     {"driver", [](TMC5160Controller &controller, const JsonVariant target) {
         driverRouter.router.serialize(controller.driver, target);
@@ -82,7 +82,6 @@ JsonEventRouter<TMC5160Controller> TMC5160ControllerJsonRouter::configRouter = J
     {"maxSpeed", [](JsonVariant content, TMC5160Controller &controller) {
         if (content.is<double>()) {
             controller.maxSpeed = content.as<double>();
-            return true;
         }
         else return false;
     }},
@@ -129,9 +128,9 @@ JsonEventRouter<TMC5160Controller> TMC5160ControllerJsonRouter::configRouter = J
         }
         else return false;
     }},
-    {"ihold", [](JsonVariant content, TMC5160Controller &controller) {
+    {"iscale", [](JsonVariant content, TMC5160Controller &controller) {
         if (content.is<uint8_t>()) {
-            controller.driver.ihold(content.as<uint8_t>());
+            controller.driver.GLOBAL_SCALER(content.as<uint8_t>());
             return true;
         }
         else return false;
@@ -143,9 +142,9 @@ JsonEventRouter<TMC5160Controller> TMC5160ControllerJsonRouter::configRouter = J
         }
         else return false;
     }},
-    {"iscale", [](JsonVariant content, TMC5160Controller &controller) {
+    {"ihold", [](JsonVariant content, TMC5160Controller &controller) {
         if (content.is<uint8_t>()) {
-            controller.driver.GLOBAL_SCALER(content.as<uint8_t>());
+            controller.driver.ihold(content.as<uint8_t>());
             return true;
         }
         else return false;
