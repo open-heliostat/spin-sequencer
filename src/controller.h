@@ -29,6 +29,7 @@ struct MotorController {
         pingPong = p;
         if (p) {
             speed = 0;
+            ping = false;
             setPosition(stopPosition - (ping ? dist/2. : -dist/2.));
         }
         else {
