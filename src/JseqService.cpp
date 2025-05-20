@@ -35,7 +35,10 @@ JsonRouter<JsonSeq> JsonSeqJsonRouter::router = JsonRouter<JsonSeq>(
     }},
     {"controller", [](JsonVariant content, JsonSeq &sequencer) {
         return ClassicControllerJsonRouter::router.parse(content, sequencer.controller);
-    }}
+    }},
+    {"edit", [](JsonVariant content, JsonSeq &sequencer) {
+        return editRouter.parse(content, sequencer);
+    }},
 },
 {
     {"status", [](JsonSeq &sequencer, const JsonVariant target) {
@@ -87,6 +90,37 @@ JsonEventRouter<JsonSeq> JsonSeqJsonRouter::controlRouter = JsonEventRouter<Json
         }
         else if (content.is<int>()) {
             sequencer.readCommand(content.as<int>());
+        }
+        return false;
+    }}
+});
+
+// define the edit router
+JsonEventRouter<JsonSeq> JsonSeqJsonRouter::editRouter = JsonEventRouter<JsonSeq>({
+    {"add", [](JsonVariant content, JsonSeq &sequencer) {
+        if (content.is<JsonObject>()) {
+            sequencer.commands.push_back(content.as<JsonObject>());
+            return true;
+        }
+        return false;
+    }},
+    {"remove", [](JsonVariant content, JsonSeq &sequencer) {
+        if (content.is<int>()) {
+            int index = content.as<int>();
+            if (index >= 0 && index < sequencer.commands.size()) {
+                sequencer.commands.erase(sequencer.commands.begin() + index);
+                return true;
+            }
+        }
+        return false;
+    }},
+    {"set", [](JsonVariant content, JsonSeq &sequencer) {
+        if (content["index"].is<int>() && content["command"].is<String>()) {
+            int index = content["index"].as<int>();
+            if (index >= 0 && index < sequencer.commands.size()) {
+                deserializeJson(sequencer.commands[index], content["command"].as<String>());
+                return true;
+            }
         }
         return false;
     }}

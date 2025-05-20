@@ -56,6 +56,7 @@ public:
     static JsonRouter<JsonSeq> router;
     static JsonEventRouter<JsonSeq> controlRouter;
     static JsonEventRouter<JsonSeq> configRouter;
+    static JsonEventRouter<JsonSeq> editRouter;
 };
 
 class JseqService : public StatefulService<JsonSeq&>
