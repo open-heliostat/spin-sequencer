@@ -31,7 +31,7 @@
     interface RemoteState extends SequencerState {
         hostname: string;
         ip: string;
-        remote: SpinRemote
+        // remote: SpinRemote
     }
 
     let remotes: SpinRemote[] = [];
@@ -66,6 +66,7 @@
                 hostname: remote.hostname,
                 ip: remote.ip
             }
+            updateCombinedCommandsJson();
         }).catch((error)=>{
             remoteStates[index].hostname = remote.hostname;
             notifications.error(`Failed to get state from ${remote.hostname}: ${error}`, 2000);
@@ -203,10 +204,44 @@
         updateAllStates();
     }
 
+    let combinedCommandsJson = "";
+
+    function updateCombinedCommandsJson() {
+        if (remoteStates.length > 0) {
+            const commands = {};
+            remoteStates.forEach(state => {
+                if (state.config && state.hostname) {
+                    commands[state.hostname] = state.config.commands;
+                }
+            });
+            combinedCommandsJson = JSON.stringify(commands, null, 2);
+        }
+    }
+
+    async function updateAllFromJson() {
+        try {
+            const commands = JSON.parse(combinedCommandsJson);
+            console.log("Parsed commands: ", commands);
+            for (let state of remoteStates) {
+                if (state.config && state.hostname && commands[state.hostname]) {
+                    state.config.commands = commands[state.hostname];
+                    console.log("Updating commands for ", state.hostname, state.config.commands);
+                    postJsonRest(`http://${state.ip}${restPath}/config`, state.config).catch(error => {
+                        notifications.error(`Failed to update ${state.hostname}: ${error}`, 3000);
+                    });
+                }
+            }
+            notifications.success("Commands updated on all remotes", 3000);
+        } catch (error) {
+            notifications.error("Invalid JSON format", 3000);
+        }
+    }
+
 </script>
 <!-- <Collapsible open>
     <span slot="title">Remotes Commands Grid</span> -->
     {#if remoteStates.length > 0}
+        
         <div class="overflow-x-auto w-full mb-4">
             <div class="grid w-full" style="grid-template-columns: 4rem repeat({remoteStates.length}, minmax(180px, 1fr)) 6rem;">
                 <div class="p-2 font-semibold bg-gray-100 dark:bg-gray-800">ID</div>
@@ -271,6 +306,18 @@
             <Button onClick={addCommandToAll} label="Add Command" />
             <Button onClick={startAll} label="Start" />
             <StopButton onClick={stopAll} />
+        </div>
+
+        <div class="mb-4">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-lg font-semibold">All Commands</h3>
+                <Button onClick={updateAllFromJson} label="Save All Commands" />
+            </div>
+            <textarea
+                class="w-full h-96 font-mono text-sm p-2 border rounded"
+                bind:value={combinedCommandsJson}
+                placeholder="Edit commands for all remotes in JSON format"
+            />
         </div>
     {:else}
         <Spinner />
