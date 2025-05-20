@@ -24,32 +24,42 @@ public:
     }
 
     void addRemote(Remote remote) {
+        // check if hostname is already in the list
+        for (auto it = remotes.begin(); it != remotes.end(); ++it) {
+            if (it->hostname == remote.hostname) {
+                return; // hostname already exists, do not add
+            }
+        }
         remotes.push_back(remote);
+        // sort by hostname alphabetically
+        std::sort(remotes.begin(), remotes.end(), [](const Remote &a, const Remote &b) {
+            return a.hostname < b.hostname;
+        });
     }
     void addRemote(String hostname, String ip, uint32_t rxId) {
         Remote remote;
         remote.hostname = hostname;
         remote.ip = ip;
         remote.rxId = rxId;
-        remotes.push_back(remote);
+        addRemote(remote);
     }
     void addRemote(String hostname, String ip, String version) {
         Remote remote;
         remote.hostname = hostname;
         remote.ip = ip;
         remote.version = version;
-        remotes.push_back(remote);
+        addRemote(remote);
     }
     void addRemote(String hostname, uint32_t rxId) {
         Remote remote;
         remote.hostname = hostname;
         remote.rxId = rxId;
-        remotes.push_back(remote);
+        addRemote(remote);
     }
     void addRemote(String hostname) {
         Remote remote;
         remote.hostname = hostname;
-        remotes.push_back(remote);
+        addRemote(remote);
     }
     void addRemote(uint32_t rxId) {
         // check if rxId is already in the list
