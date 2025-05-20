@@ -43,11 +43,12 @@ JsonRouter<RemotesController> RemoteJsonRouter::router = JsonRouter<RemotesContr
             for (JsonVariant remote : remotes) {
                 if (remote.is<JsonObject>()) {
                     JsonObject obj = remote.as<JsonObject>();
-                    controller.addRemote(
-                        obj["hostname"].as<String>(),
-                        obj["ip"].as<String>(),
-                        obj["rxId"].as<uint32_t>()
-                    );
+                    Remote rem;
+                    if (obj["hostname"].is<String>()) rem.hostname = obj["hostname"].as<String>();
+                    if (obj["ip"].is<String>()) rem.ip = obj["ip"].as<String>();
+                    if (obj["rxId"].is<uint32_t>()) rem.rxId = obj["rxId"].as<uint32_t>();
+                    if (obj["version"].is<String>()) rem.version = obj["version"].as<String>();
+                    controller.addRemote(rem);
                 }
             }
             return true;

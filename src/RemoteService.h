@@ -49,6 +49,7 @@ public:
     static const void getSaveMap(JsonObject& root)
     {
         root["remotes"] = true;
+        root["settings"] = true;
     }
 
     static JsonRouter<RemotesController> router;
