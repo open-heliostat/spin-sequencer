@@ -12,6 +12,8 @@
 	import Button from './Button.svelte';
 	import Checkbox from './Checkbox.svelte';
 
+	import Thrash from '~icons/tabler/trash';
+
     export let restPath: string;
 
     interface SequencerState {
@@ -113,6 +115,34 @@
                 .then((data) => {sequencerState.config = data; console.log(data);});
         }
     }
+
+    function deleteCommand(index: number) {
+        postJsonRest(restPath + '/edit', { remove: index })
+            .then(() => {
+                sequencerState.config.commands.splice(index, 1);
+                stringifyJsonCommands();
+                notifications.success("Command deleted", 3000);
+            });
+    }
+
+    function setCommand(index: number, commandStr: string) {
+        try {
+            let commandObj = eval('(' + commandStr + ')');
+            postJsonRest(restPath + '/edit', { 
+                set: { 
+                    index: index,
+                    command: JSON.stringify(commandObj)
+                }
+            }).then(() => {
+                sequencerState.config.commands[index] = commandObj;
+                stringifyJsonCommands();
+                notifications.success("Command updated", 3000);
+            });
+        } catch (err) {
+            notifications.error("Invalid JSON format", 3000);
+        }
+    }
+
 </script>
 
 <SettingsCard>
@@ -175,28 +205,29 @@
                                         on:change={(e) => {
                                             const target = e.currentTarget;
                                             if (target instanceof HTMLInputElement) {
-                                                try {
-                                                    let obj = eval('(' + target.value + ')');
-                                                    sequencerState.config.commands[index] = obj;
-                                                    stringifyJsonCommands();
-
-                                                } catch (err) {
-                                                    notifications.error("Invalid JSON format", 3000);
-                                                }
+                                                setCommand(index, target.value);
                                             }
                                         }}
                                     />
                                 </td>
                                 <td class="p-2">
-                                    <button
-                                        class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
-                                        on:click={() => {
-                                            selectCommand(index);
-                                            executeCommand();
-                                        }}
-                                    >
-                                        Run
-                                    </button>
+                                    <div class="flex gap-2">
+                                        <button
+                                            class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+                                            on:click={() => deleteCommand(index)}
+                                        >
+                                            <Thrash class="h-5 w-5" />
+                                        </button>
+                                        <button
+                                            class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+                                            on:click={() => {
+                                                selectCommand(index);
+                                                executeCommand();
+                                            }}
+                                        >
+                                            Run
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         {/each}
