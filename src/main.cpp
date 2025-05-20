@@ -69,6 +69,7 @@ void setup()
     engine.init();
     stepper1.init();
     spinSequencerService.begin();
+    stepper1.disable();
     
     // start CAN controller
     canControllerService.begin();

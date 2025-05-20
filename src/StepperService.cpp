@@ -82,6 +82,7 @@ JsonEventRouter<TMC5160Controller> TMC5160ControllerJsonRouter::configRouter = J
     {"maxSpeed", [](JsonVariant content, TMC5160Controller &controller) {
         if (content.is<double>()) {
             controller.maxSpeed = content.as<double>();
+            return true;
         }
         else return false;
     }},

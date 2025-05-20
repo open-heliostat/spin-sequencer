@@ -34,7 +34,7 @@ public:
     }
     static const void getSaveMap(JsonObject &root) 
     {
-        root["config"]["enabled"] = true;
+        // root["config"]["enabled"] = true;
         root["config"]["invertDirection"] = true;
         root["config"]["maxSpeed"] = true;
         root["config"]["maxAccel"] = true;
