@@ -8,7 +8,7 @@ struct Remote
 {
     String hostname = "";
     String ip = "";
-    String version = "";
+    String macAddress = "";
     uint32_t rxId = 99;
 };
 
@@ -24,11 +24,8 @@ public:
     }
 
     void addRemote(Remote remote) {
-        // check if hostname is already in the list
-        for (auto it = remotes.begin(); it != remotes.end(); ++it) {
-            if (it->hostname == remote.hostname) {
-                return; // hostname already exists, do not add
-            }
+        if (isRemote(remote.hostname)) {
+            return; // remote already exists, do not add
         }
         remotes.push_back(remote);
         // sort by hostname alphabetically
@@ -43,11 +40,17 @@ public:
         remote.rxId = rxId;
         addRemote(remote);
     }
-    void addRemote(String hostname, String ip, String version) {
+    void addRemote(String hostname, String ip, String macAddress) {
         Remote remote;
         remote.hostname = hostname;
         remote.ip = ip;
-        remote.version = version;
+        remote.macAddress = macAddress;
+        addRemote(remote);
+    }
+    void addRemote(String hostname, String ip) {
+        Remote remote;
+        remote.hostname = hostname;
+        remote.ip = ip;
         addRemote(remote);
     }
     void addRemote(String hostname, uint32_t rxId) {
@@ -142,14 +145,6 @@ public:
         }
         return false;
     }
-    bool isRemote(Remote remote, String hostname) {
-        for (auto it = remotes.begin(); it != remotes.end(); ++it) {
-            if (it->hostname == hostname && it->rxId == remote.rxId) {
-                return true;
-            }
-        }
-        return false;
-    }
     bool isRemote(uint32_t rxId) {
         for (auto it = remotes.begin(); it != remotes.end(); ++it) {
             if (it->rxId == rxId) {
@@ -161,7 +156,7 @@ public:
     void scanMDNS() {
         int nrOfServices = MDNS.queryService("http", "tcp");
         for (int i = 0; i < nrOfServices; i++) {
-            if (MDNS.hasTxt(i, "Firmware Version") && !isRemote(MDNS.hostname(i))) addRemote(MDNS.hostname(i), MDNS.IP(i).toString(), MDNS.txt(i, "Firmware Version"));
+            if (MDNS.hasTxt(i, "Firmware Version")) addRemote(MDNS.hostname(i), MDNS.IP(i).toString());
         }
     }
 };

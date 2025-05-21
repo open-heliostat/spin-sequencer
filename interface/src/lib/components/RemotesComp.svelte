@@ -126,7 +126,7 @@
 
     function checkRemotesForUpdates() {
         for (const remote of remotes) {
-            if (remote.ip && compareVersions(githubUpdate.version, remote.version) === 1) {
+            if (remote.ip && remote.version && compareVersions(githubUpdate.version, remote.version) === 1) {
                 if (!remote.needsUpdate) {
                     notifications.info(`Firmware update available for ${remote.hostname}.`, 5000);
                     remote.needsUpdate = true;

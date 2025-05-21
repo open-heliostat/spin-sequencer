@@ -333,13 +333,18 @@ export type SpinDiagnostics = {
 		numRemotes: number;
 		isMaster: boolean;
 	},
+	espnow: {
+		enabled: boolean;
+		macAddress: string;
+	},
 }
 
 export interface SpinRemote {
     hostname: string;
     ip: string;
     rxId: number;
-	version: string;
+	macAddress: string;
+	version?: string;
     needsUpdate?: boolean;
 }
 

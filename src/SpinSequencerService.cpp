@@ -81,6 +81,9 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
             JsonObject remotesDiag = obj["remotes"].to<JsonObject>();
             remotesDiag["isMaster"] = controller.remotesController.isMaster;
             remotesDiag["numRemotes"] = controller.remotesController.remotes.size();
+            JsonObject espnowDiag = obj["espnow"].to<JsonObject>();
+            espnowDiag["enabled"] = ESPNow::state.enabled;
+            espnowDiag["macAddress"] = ESPNow::getMacAddress();
         }
     }},
 });

@@ -47,7 +47,7 @@ JsonRouter<RemotesController> RemoteJsonRouter::router = JsonRouter<RemotesContr
                     if (obj["hostname"].is<String>()) rem.hostname = obj["hostname"].as<String>();
                     if (obj["ip"].is<String>()) rem.ip = obj["ip"].as<String>();
                     if (obj["rxId"].is<uint32_t>()) rem.rxId = obj["rxId"].as<uint32_t>();
-                    if (obj["version"].is<String>()) rem.version = obj["version"].as<String>();
+                    if (obj["macAddress"].is<String>()) rem.macAddress = obj["macAddress"].as<String>();
                     controller.addRemote(rem);
                 }
             }
@@ -78,7 +78,7 @@ JsonRouter<RemotesController> RemoteJsonRouter::router = JsonRouter<RemotesContr
             obj["hostname"] = remote.hostname;
             obj["ip"] = remote.ip;
             obj["rxId"] = remote.rxId;
-            obj["version"] = remote.version;
+            obj["macAddress"] = remote.macAddress;
         }
     }},
     {"settings", [](RemotesController& controller, JsonVariant content) {

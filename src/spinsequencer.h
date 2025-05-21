@@ -6,6 +6,7 @@
 #include <CanControllerService.h>
 #include <RemoteService.h>
 #include <JsonTimerService.h>
+#include <ESPNowService.h>
 class SpinSequencerController
 {
 public:
