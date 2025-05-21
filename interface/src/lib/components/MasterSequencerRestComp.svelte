@@ -9,6 +9,8 @@
     import Checkbox from './Checkbox.svelte';
     import type { SpinRemote } from '$lib/types/models';
 	import Collapsible from './Collapsible.svelte';
+	import DisableButton from './DisableButton.svelte';
+    
 
     export let restPath: string;
     export let remotesPath: string = '/rest/spin-seq/remotes';
@@ -237,9 +239,29 @@
         }
     }
 
+    async function disableAllMotors() {
+        return postJsonRest("/rest/espnow", {broadcast: "{p:{en:0,seq:0}}"});
+    }
+
+    async function stopAllMotors() {
+        return postJsonRest("/rest/espnow", {broadcast: "{c:\"stop\",p:{seq:0}}"});
+    }
+
+    async function triggerSequenceOnAll(sequence: number) {
+        return postJsonRest("/rest/espnow", {broadcast: "{t:" + String(sequence) + "}"});
+    }
+
 </script>
 <!-- <Collapsible open>
     <span slot="title">Remotes Commands Grid</span> -->
+
+        <div class="flex flex-row justify-between items-center m-2">
+            <Button onClick={()=>triggerSequenceOnAll(0)} label="Init" />
+            <Button onClick={()=>triggerSequenceOnAll(1)} label="Start" />
+            <StopButton onClick={stopAllMotors} />
+            <DisableButton onClick={disableAllMotors}/>
+        </div>
+
     {#if remoteStates.length > 0}
         
         <div class="overflow-x-auto w-full mb-4">

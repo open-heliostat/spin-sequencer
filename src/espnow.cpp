@@ -151,6 +151,11 @@ namespace ESPNow
 
         uint8_t address[6];
         memcpy(&address, macAddr, 6);
+
+        if (stringMsg == "ping")
+        {
+            sendMessage("pong", address);
+        }
         
         // if (stringMsg == "Creatures?") sendMessage("Yes, master. My name is " + name, macAddr);
         // else if (stringMsg.substring(0, 24) == "Yes, master. My name is ") {
