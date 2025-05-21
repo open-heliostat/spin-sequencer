@@ -159,7 +159,9 @@ namespace ESPNow
         //     if (it.second && remoteCb) remoteCb(name, it.first->second);
         // }
         // else JsonSeq::readCommand(stringMsg);
-        if(messageCallback) messageCallback(stringMsg);
+        ESP_LOGI("ESP-NOW", "Received message: %s", stringMsg.c_str());
+        if (messageCallback) ESP_LOGI("ESP-NOW", "Message Callback: %s", stringMsg.c_str());
+        if (messageCallback) messageCallback(stringMsg);
 
 
         char macStr[18];
@@ -219,6 +221,11 @@ namespace ESPNow
             // Serial.print(", Status: ");
             // Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
         }
+    }
+
+    void setMessageCallback(std::function<void(String)> callback)
+    {
+        messageCallback = callback;
     }
 
 

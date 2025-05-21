@@ -42,6 +42,7 @@ namespace ESPNow {
     void update(unsigned long now);
     void getMacAddress(uint8_t *macAddr);
     String getMacAddress();
+    void setMessageCallback(std::function<void(String)> callback);
 }
 
 #endif

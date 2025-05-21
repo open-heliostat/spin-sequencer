@@ -33,6 +33,10 @@ public:
         jsonSeq.sendMessage = [&](String message, uint32_t address) {
             canController.sendMessage(message, address);
         };
+        ESPNow::setMessageCallback([&](String message) {
+            ESP_LOGI("ESPNow", "Message: %s", message.c_str());
+            jsonSeq.readCommand(message);
+        });
     }
     
     void init() 
