@@ -262,6 +262,19 @@ namespace ESPNow
     //     preferences.end();
     // }
 
+
+    void getMacAddress(uint8_t *macAddr) {
+        esp_wifi_get_mac(interface, macAddr);
+    }
+
+    String getMacAddress() {
+        uint8_t macAddr[6];
+        esp_wifi_get_mac(interface, macAddr);
+        char macStr[18];
+        formatMacAddress(macAddr, macStr, 18);
+        return String(macStr);
+    }
+
     void setup()
     {   
         esp_wifi_set_storage(WIFI_STORAGE_RAM);

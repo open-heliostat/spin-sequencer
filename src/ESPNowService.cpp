@@ -75,6 +75,9 @@ JsonRouter<ESPNowState> ESPNowJsonRouter::router = JsonRouter<ESPNowState>(
     {"enabled", [](ESPNowState& controller, JsonVariant content) {
         content.set(controller.enabled);
     }},
+    {"macAddress", [](ESPNowState& controller, JsonVariant content) {
+        content.set(ESPNow::getMacAddress());
+    }},
     {"messageHistory", [](ESPNowState& controller, JsonVariant content) {
         JsonArray messages = content.to<JsonArray>();
         // create array from message history vector

@@ -40,6 +40,8 @@ namespace ESPNow {
     void sentCallback(const uint8_t *macAddr, esp_now_send_status_t status);
     void setup();
     void update(unsigned long now);
+    void getMacAddress(uint8_t *macAddr);
+    String getMacAddress();
 }
 
 #endif
