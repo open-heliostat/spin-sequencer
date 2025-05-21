@@ -25,6 +25,7 @@
 	import Sequencer from '~icons/tabler/mist';
 	import Home from '~icons/tabler/home';
 	import Clock from '~icons/tabler/clock';
+	import ESPNow from '~icons/tabler/broadcast';
 	import { page } from '$app/stores';
 	import { user } from '$lib/stores/user';
 	import { createEventDispatcher } from 'svelte';
@@ -118,6 +119,12 @@
 					icon: CAN,
 					href: "/connections/can",
 					feature: true//$page.data.features.can,
+					},
+				{
+					title: "ESPNow",
+					icon: ESPNow,
+					href: "/connections/espnow",
+					feature: true,
 				},
 			]
 		},
