@@ -72,6 +72,10 @@
             remote.rxId = diag.can?.rxId;
             changed = true;
         }
+        if (diag.mcu && diag.mcu?.version != remote.version) {
+            remote.version = diag.mcu.version;
+            changed = true;
+        }
         if (diag.espnow && diag.espnow?.macAddress != remote.macAddress) {
             remote.macAddress = diag.espnow.macAddress;
             changed = true;

@@ -1,4 +1,5 @@
 #include "espnow.h"
+#include <ESPmDNS.h>
 
 namespace ESPNow
 {
@@ -324,6 +325,7 @@ namespace ESPNow
         {
             ESP_LOGI("ESP-NOW", "Init Failed");
         }
+        MDNS.addServiceTxt("http", "tcp", "Mac Address", getMacAddress().c_str());
     }
 
     void update(unsigned long now)

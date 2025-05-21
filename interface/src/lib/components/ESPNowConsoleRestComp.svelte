@@ -6,6 +6,8 @@
     import Text from './Text.svelte';
     import Spinner from './Spinner.svelte';
     import Terminal from '~icons/tabler/terminal';
+    import Select from './Select.svelte';
+	import type { SpinRemote } from '$lib/types/models';
 
     export let restPath: string;
 
@@ -17,6 +19,24 @@
 
     let message: string = '';
     let targetAddress: string = '';
+    let remotes: SpinRemote[] = [];
+    let remoteAddresses: { label: string; value: string }[] = [];
+
+    async function getRemotes() {
+        return getJsonRest('/rest/spin-seq/remotes', { remotes: [] }).then((data) => {
+            remotes = data.remotes;
+            console.log("ESPNow Remotes: ", remotes);
+            remoteAddresses = remotes
+                .filter(r => r.macAddress)
+                .map(r => ({
+                    label: `${r.hostname} (${r.macAddress})`,
+                    value: r.macAddress
+                }));
+            if (!targetAddress && remoteAddresses.length > 0) {
+                targetAddress = remoteAddresses[0].value;
+            }
+        });
+    }
 
     async function getEspnowState() {
         return getJsonRest(restPath, espnowState).then((data) => {
@@ -39,12 +59,12 @@
     async function getMessageHistory() {
         return getJsonRest(restPath + "/messageHistory", espnowState.messageHistory).then((data) => {
             espnowState.messageHistory = data;
-            console.log("ESPNow Message History: ", espnowState.messageHistory);
         });
     }
 
     let intervalID: any;
     onMount(() => {
+        getRemotes();
         intervalID = setInterval(() => {
             getMessageHistory();
         }, 1122);
@@ -85,10 +105,23 @@
         {/each}
     </div>
     {/await}
-    <Text
-        label="Target MAC Address"
-        bind:value={targetAddress}
-    />
+    {#if remoteAddresses.length > 0}
+        <Select
+            label="Target Device"
+            bind:value={targetAddress}
+        >
+            <option value="FF:FF:FF:FF:FF:FF">Broadcast (FF:FF:FF:FF:FF:FF)</option>
+            
+            {#each remoteAddresses as remote}
+                <option value={remote.value}>{remote.label}</option>
+            {/each}
+        </Select>
+    {:else}
+        <Text
+            label="Target MAC Address"
+            bind:value={targetAddress}
+        />
+    {/if}
     <Text
         label="Message"
         bind:value={message}
