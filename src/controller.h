@@ -41,9 +41,10 @@ struct MotorController {
         double curPos = sensor.getAngle();
         // double nextPos = getDistanceToStop() + curPos;
         double toGo = angle - curPos;
-        if (speed == 0) toGo = mod(toGo+180., 360.) - 180.;
-        else if (speed > 0) toGo = mod(toGo, 360.);
-        else toGo = -mod(-toGo, 360.);
+        toGo = mod(toGo+180., 360.) - 180.;
+        // if (speed == 0) toGo = mod(toGo+180., 360.) - 180.;
+        // else if (speed > 0) toGo = mod(toGo, 360.);
+        // else toGo = -mod(-toGo, 360.);
         move(toGo);
     }
     double getPosition() {
