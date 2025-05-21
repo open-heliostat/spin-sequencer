@@ -1,15 +1,18 @@
 #include "espnow.h"
 #include <ESPmDNS.h>
+#include <ArduinoJson.h>
 
 namespace ESPNow
 {
+    // Forward declaration of callback
+    void staticReceiveCallback(const uint8_t *macAddr, const uint8_t *data, int dataLen);
     const uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
     uint8_t lastAddress[6];
     int maxSendRetries = 10;
     int retryDelay = 10;
     wifi_interface_t interface = WIFI_IF_AP;
     ESPNowState state = {};
-    std::function<void(String)> messageCallback = nullptr;
+    std::function<void(String)> messageCallback;
     std::vector<String> messageHistory = {};
     int messageHistorySize = 10;
 
@@ -124,7 +127,7 @@ namespace ESPNow
     //     printLabel = label;
     // }
 
-    void receiveCallback(const uint8_t *macAddr, const uint8_t *data, int dataLen)
+    void staticReceiveCallback(const uint8_t *macAddr, const uint8_t *data, int dataLen)
     // Called when data is received
     {
         uint32_t now = micros();
@@ -160,20 +163,37 @@ namespace ESPNow
         // }
         // else JsonSeq::readCommand(stringMsg);
         ESP_LOGI("ESP-NOW", "Received message: %s", stringMsg.c_str());
-        if (messageCallback) ESP_LOGI("ESP-NOW", "Message Callback: %s", stringMsg.c_str());
-        if (messageCallback) messageCallback(stringMsg);
-
+        auto& instance = ESPNowInstance::getInstance();
+        if (instance.messageCallback) {
+            ESP_LOGI("ESP-NOW", "Invoking message callback");
+            instance.messageCallback(stringMsg);
+        }
 
         char macStr[18];
         formatMacAddress(macAddr, macStr, 18);
 
+        // check if string only contains alphanumeric characters
+        bool isAlphanumeric = true;
+        for (int i = 0; i < stringMsg.length(); i++) {
+            if (!isalnum(stringMsg[i]) && stringMsg[i] != ' ' && stringMsg[i] != ':' && stringMsg[i] != '{' && stringMsg[i] != '}') {
+                isAlphanumeric = false;
+                break;
+            }
+        }
+
+        // check if string is valid JSON
+        JsonDocument doc;
+        DeserializationError error = deserializeJson(doc, stringMsg);
+        
+        if (error && !isAlphanumeric) return;
+
         if (messageHistory.size() < messageHistorySize) {
-            messageHistory.push_back(macStr + String(" : ") + String(buffer));
+            messageHistory.push_back(macStr + String(" : ") + stringMsg);
         }
         else
         {
             messageHistory.erase(messageHistory.begin());
-            messageHistory.push_back(macStr + String(" : ") + String(buffer));
+            messageHistory.push_back(macStr + String(" : ") + stringMsg);
         }
 
         // const int numLines = 5;
@@ -225,7 +245,7 @@ namespace ESPNow
 
     void setMessageCallback(std::function<void(String)> callback)
     {
-        messageCallback = callback;
+        ESPNowInstance::getInstance().messageCallback = callback;
     }
 
 
@@ -315,7 +335,7 @@ namespace ESPNow
         if (esp_now_init() == ESP_OK)
         {
             ESP_LOGI("ESP-NOW", "Init Success");
-            esp_now_register_recv_cb(receiveCallback);
+            esp_now_register_recv_cb(staticReceiveCallback);
             esp_now_register_send_cb(sentCallback);
             // ping(broadcastAddress);
             // sendMessage("Creatures?", broadcastAddress);

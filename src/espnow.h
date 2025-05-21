@@ -19,13 +19,24 @@ struct ESPNowState {
 };
 
 namespace ESPNow {
+    // Static instance to hold callback state
+    class ESPNowInstance {
+    public:
+        static ESPNowInstance& getInstance() {
+            static ESPNowInstance instance;
+            return instance;
+        }
+        std::function<void(String)> messageCallback;
+    private:
+        ESPNowInstance() {}
+    };
+
     extern const uint8_t broadcastAddress[6];
     extern uint8_t lastAddress[6];
     extern int maxSendRetries;
     extern int retryDelay;
     extern wifi_interface_t interface;
     extern ESPNowState state;
-    extern std::function<void(String)> messageCallback;
     extern std::vector<String> messageHistory;
     extern int messageHistorySize;
 
@@ -36,7 +47,7 @@ namespace ESPNow {
     void broadcast(const String &message);
     void reply(const String &message);
     void ping(const uint8_t *macAddr);
-    void receiveCallback(const uint8_t *macAddr, const uint8_t *data, int dataLen);
+    void staticReceiveCallback(const uint8_t *macAddr, const uint8_t *data, int dataLen);
     void sentCallback(const uint8_t *macAddr, esp_now_send_status_t status);
     void setup();
     void update(unsigned long now);

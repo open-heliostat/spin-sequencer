@@ -121,7 +121,7 @@
         for (let remote of remotes) {
             if (remote.ip) {
                 postJsonRest(`http://${remote.ip}${restPath}/control`, { run: true })
-                    .catch(error => console.error(`Failed to stop ${remote.hostname}: ${error}`));
+                    .catch(error => console.error(`Failed to start ${remote.hostname}: ${error}`));
             }
         }
     }
