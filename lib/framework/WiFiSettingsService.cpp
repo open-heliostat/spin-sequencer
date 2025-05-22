@@ -110,13 +110,13 @@ String WiFiSettingsService::getHostname()
 void WiFiSettingsService::manageSTA()
 {
     // Abort if already connected, if we have no SSID, or are in offline mode
-    if (WiFi.isConnected() || _state.wifiSettings.empty() || _state.staConnectionMode == (u_int8_t)STAConnectionMode::OFFLINE)
+    if (WiFi.status() == WL_CONNECTED || WiFi.status() == WL_IDLE_STATUS || _state.wifiSettings.empty() || _state.staConnectionMode == (u_int8_t)STAConnectionMode::OFFLINE)
     {
         return;
     }
 
     // Connect or reconnect as required
-    if ((WiFi.getMode() & WIFI_STA) == 0)
+    if (WiFi.getMode())
     {
 #ifdef SERIAL_INFO
         Serial.println("Connecting to WiFi...");
