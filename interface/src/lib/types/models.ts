@@ -304,6 +304,7 @@ export type SpinDiagnostics = {
 		ssid: string;
 		hostname: string;
 		ip: string;
+		channel: number;
 	},
 	encoder: {
 		angle: number;

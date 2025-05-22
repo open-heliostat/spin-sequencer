@@ -52,6 +52,7 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
             wifiDiag["ip"] = WiFi.localIP().toString();
             wifiDiag["hostname"] = WiFi.getHostname();
             wifiDiag["apEnabled"] = WiFi.softAPgetStationNum();
+            wifiDiag["channel"] = WiFi.channel();
             JsonObject encoderDiag = obj["encoder"].to<JsonObject>();
             encoderDiag["angle"] = controller.controller.encoder.getAngle();
             encoderDiag["error"] = controller.controller.encoder.error;

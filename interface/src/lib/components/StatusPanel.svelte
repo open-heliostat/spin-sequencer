@@ -68,6 +68,7 @@
 			<p class="text-sm dark:text-gray-300">IP: <span class="font-mono">{diag.wifi.ip || 'Not Available'}</span></p>
 			<p class="text-sm dark:text-gray-300">AP Enabled: <span class="font-mono">{diag.wifi.apEnabled ? 'Yes' : 'No'}</span></p>
 			<p class="text-sm dark:text-gray-300">RSSI: <span class="font-mono">{diag.wifi.rssi} dBm</span></p>
+			<p class="text-sm dark:text-gray-300">Channel: <span class="font-mono">{diag.wifi.channel}</span></p>
 		</div>
 	</div>
 
