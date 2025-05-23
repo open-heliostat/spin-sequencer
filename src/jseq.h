@@ -182,7 +182,7 @@ public:
             }
         }
         else if (commandRunning && commandDuration > 0 && millis() - commandStart > commandDuration) {
-            if (controller.isMoving) controller.stop();
+            if (controller.isMoving || controller.pingPong) controller.stop();
             commandRunning = false;
         }
     }
