@@ -110,8 +110,9 @@ String WiFiSettingsService::getHostname()
 void WiFiSettingsService::manageSTA()
 {
     // Abort if already connected, if we have no SSID, or are in offline mode
-    if (WiFi.status() == WL_CONNECTED || WiFi.status() == WL_IDLE_STATUS || _state.wifiSettings.empty() || _state.staConnectionMode == (u_int8_t)STAConnectionMode::OFFLINE)
+    if (WiFi.status() == WL_CONNECTED || WiFi.localIP().toString() != "0.0.0.0" || _state.wifiSettings.empty() || _state.staConnectionMode == (u_int8_t)STAConnectionMode::OFFLINE)
     {
+        ESP_LOGI("WiFiSettingsService", "Already connected or no SSID or offline modem, WiFi IP: %s", WiFi.localIP().toString().c_str());
         return;
     }
 
