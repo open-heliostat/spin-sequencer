@@ -352,3 +352,12 @@ export interface SpinRemote {
 export type RemotesSettings = {
 	isMaster: boolean;
 }
+
+export type ESPNowPeer = {
+	mac: string;
+	numPings: number;
+	numSent: number;
+	numReceived: number;
+	numLost: number;
+	pingMeanTime: number;
+};

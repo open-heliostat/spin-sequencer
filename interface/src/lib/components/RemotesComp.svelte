@@ -6,7 +6,7 @@
     import { notifications } from "./toasts/notifications";
     import Button from './Button.svelte';
     import Text from './Text.svelte';
-    import type { RemotesSettings, SpinRemote } from '$lib/types/models';
+    import type { RemotesSettings, SpinRemote, ESPNowPeer } from '$lib/types/models';
     import Remote from '~icons/tabler/network';
     import Firmware from '~icons/tabler/refresh-alert';
     import Spinner from './Spinner.svelte';
@@ -16,6 +16,7 @@
 	import Checkbox from './Checkbox.svelte';
     import { page } from '$app/stores';
     import { compareVersions } from 'compare-versions';
+	import { get } from 'svelte/store';
 
     export let restPath: string;
     
@@ -24,6 +25,7 @@
     let remoteSettings: RemotesSettings = {
         isMaster: false,
     }
+    let espnowPeers: ESPNowPeer[] = [];
     let newRemote = {
         hostname: '',
         ip: '',
@@ -164,6 +166,7 @@
     onMount(() => {
         getRemotesSettings();
         getRemotes().then(refreshAllRemotes);
+        getESPNowPeers();
     });
 
     async function refreshAllRemotes() {
@@ -171,6 +174,13 @@
             remoteComps.map(remote => remote.getDiag())
         ).then(() => {
             checkForUpdates();
+        });
+    }
+
+    async function getESPNowPeers() {
+        return getJsonRest('rest/espnow/peers', espnowPeers).then((data) => {
+            espnowPeers = data;
+            console.log(data)
         });
     }
 </script>
@@ -311,6 +321,7 @@
 {#each remotes as remote, index}
     <RemoteComp
         bind:remote={remote}
+        bind:espnowPeers={espnowPeers}
         bind:this={remoteComps[index]}
         onChange={postRemotes}
     />

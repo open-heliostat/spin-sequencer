@@ -28,7 +28,8 @@ public:
             remotesController.addRemote(rxId);
         };
         jsonSeq.broadcastMessage = [&](String message) {
-            canController.sendMessage(message, uint32_t(0));
+            // canController.sendMessage(message, uint32_t(0));
+            ESPNow::broadcast(message);
         };
         jsonSeq.sendMessage = [&](String message, uint32_t address) {
             canController.sendMessage(message, address);
@@ -42,6 +43,10 @@ public:
     void init() 
     {
         jsonTimer.begin();
+        // add all remotes to espnow hosts list
+        for (auto &remote : remotesController.remotes) {
+            ESPNow::addPeer(remote.macAddress);
+        }
     }
 
     void run()
@@ -49,6 +54,7 @@ public:
         controller.run();
         motorController.tick();
         jsonSeq.tick();
+        ESPNow::update(millis());
     }
 };
 #endif

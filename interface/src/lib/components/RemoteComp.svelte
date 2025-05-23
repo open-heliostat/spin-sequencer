@@ -2,7 +2,7 @@
     import { getJsonRest, postJsonRest } from '$lib/stores/rest';
     import { getJsonRestWithCanFallback, postJsonRestWithCanFallback, getJsonRestWithHostnameFallback } from '$lib/stores/remote';
     import Spinner from './Spinner.svelte';
-    import type { SpinDiagnostics, SpinRemote } from '$lib/types/models';
+    import type { ESPNowPeer, SpinDiagnostics, SpinRemote } from '$lib/types/models';
 	import SettingsCard from './SettingsCard.svelte';
 	import StatusPanel from './StatusPanel.svelte';
 	import Collapsible from './Collapsible.svelte';
@@ -24,6 +24,7 @@
     export let remote: SpinRemote;
     export let diag: SpinDiagnostics = {} as SpinDiagnostics;
     export let onChange: () => void;
+    export let espnowPeers: ESPNowPeer[] = [];
 
     export async function getDiag() {
         return getJsonRestWithHostnameFallback("/spin-seq/diag", diag, remote.ip, remote.hostname).then((data) => {
@@ -103,21 +104,19 @@
 
 <SettingsCard>
     <Remote slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-    <span slot="title" class="h-7">
+    <span slot="title" class="h-7 flex items-center gap-2 w-full">
         <a href={"http://" + (remote.ip ? remote.ip : (remote.hostname + ".local"))} target="_blank" rel="noopener noreferrer">
             {remote.hostname || remote.ip}
         </a>
-        <!-- <button
-            class="btn btn-square btn-ghost h-7 w-7 ml-2"
-            on:click={confirmUpdate}
-        >
-            <div class="h-7 content-center items-center self-start">
-                <span class="indicator-item indicator-top indicator-center badge badge-info badge-xs top-2 scale-75 lg:top-1">
-                    {remote.version}
+        <div class="flex-grow"></div>
+        {#if espnowPeers?.length > 0 && remote.macAddress}
+            {#each espnowPeers.filter(p => p.mac === remote.macAddress) as peer}
+                {@const lossRatio = (peer.numLost / peer.numSent * 100).toFixed(1)}
+                <span class="text-sm text-gray-500">
+                    (ESPNow: {peer.numReceived}/{peer.numSent} msgs, {peer.pingMeanTime.toFixed(1)}ms, {peer.numLost} lost ({lossRatio}%))
                 </span>
-                <Firmware class="h-7 w-7" />
-            </div>
-        </button> -->
+            {/each}
+        {/if}
     </span>
     {#if diag?.sequencer}
     <Checkbox

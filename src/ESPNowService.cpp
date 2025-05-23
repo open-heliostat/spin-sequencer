@@ -58,6 +58,20 @@ JsonRouter<ESPNowState> ESPNowJsonRouter::router = JsonRouter<ESPNowState>(
         }
         return false;
     }},
+    {"channel", [](JsonVariant value, ESPNowState& controller) {
+        if (value.is<int>()) {
+            controller.channel = value.as<int>();
+            return true;
+        }
+        return false;
+    }},
+    {"autoPing", [](JsonVariant value, ESPNowState& controller) {
+        if (value.is<bool>()) {
+            ESPNow::autoPing = value.as<bool>();
+            return true;
+        }
+        return false;
+    }},
     {"messageHistorySize", [](JsonVariant value, ESPNowState& controller) {
         if (value.is<int>()) {
             ESPNow::messageHistorySize = value.as<int>();
@@ -67,16 +81,23 @@ JsonRouter<ESPNowState> ESPNowJsonRouter::router = JsonRouter<ESPNowState>(
     }},
     },
 {
-    {"lastAddress", [](ESPNowState& controller, JsonVariant content) {
-        char macStr[18];
-        ESPNow::formatMacAddress(ESPNow::lastAddress, macStr, 18);
-        content.set(macStr);
-    }},
     {"enabled", [](ESPNowState& controller, JsonVariant content) {
         content.set(controller.enabled);
     }},
+    {"channel", [](ESPNowState& controller, JsonVariant content) {
+        content.set(controller.channel);
+    }},
+    {"autoPing", [](ESPNowState& controller, JsonVariant content) {
+        content.set(ESPNow::autoPing);
+    }},
     {"macAddress", [](ESPNowState& controller, JsonVariant content) {
         content.set(ESPNow::getMacAddress());
+    }},
+    {"numReceived", [](ESPNowState& controller, JsonVariant content) {
+        content.set(ESPNow::numReceived);
+    }},
+    {"messageHistorySize", [](ESPNowState& controller, JsonVariant content) {
+        content.set(ESPNow::messageHistorySize);
     }},
     {"messageHistory", [](ESPNowState& controller, JsonVariant content) {
         JsonArray messages = content.to<JsonArray>();
@@ -99,6 +120,7 @@ JsonRouter<ESPNowState> ESPNowJsonRouter::router = JsonRouter<ESPNowState>(
             peerObj["mac"] = macStr;
             peerObj["numPings"] = peer.numPings;
             peerObj["numSent"] = peer.numSent;
+            peerObj["numReceived"] = peer.numReceived;
             peerObj["numLost"] = peer.numLost;
             peerObj["pingMeanTime"] = peer.pingMeanTime;
         }

@@ -15,8 +15,12 @@ namespace ESPNow
     std::function<void(String)> messageCallback;
     std::vector<String> messageHistory = {};
     std::vector<ESPNowPeer> peerList;
-    uint32_t pingInterval = 5000;
+    uint32_t pingInterval = 1000;
+    uint32_t lastPingTimestamp = 0;
+    uint32_t numReceived = 0;
     int messageHistorySize = 10;
+    int pingID = 0;
+    bool autoPing = false;
 
     // LabelClass *printLabel;
 
@@ -48,7 +52,13 @@ namespace ESPNow
         memcpy(&peerInfo.peer_addr, macAddr, 6);
         peerInfo.channel = 0;
         peerInfo.ifidx = interface;
-        peerList.push_back({peerInfo, 0, 0, 0, 0, 0.0});
+        peerList.push_back({peerInfo, 0, 0, 0, 0, 0, 0.0});
+    }
+
+    void addPeer(const String address) {
+        uint8_t macAddr[6];
+        sscanf(address.c_str(), "%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", &macAddr[0], &macAddr[1], &macAddr[2], &macAddr[3], &macAddr[4], &macAddr[5]);
+        addPeer(macAddr);
     }
 
     ESPNowPeer *getPeer(const uint8_t *macAddr) {
@@ -148,6 +158,9 @@ namespace ESPNow
     {
         // Broadcast a message to every device in range
         sendMessage(message, broadcastAddress);
+        for (auto &peer : peerList) {
+            peer.numSent++;
+        }
     }
 
     void reply(const String &message)
@@ -201,17 +214,18 @@ namespace ESPNow
         uint8_t address[6];
         memcpy(&address, macAddr, 6);
 
+        ESPNowPeer *peer = getPeer(macAddr);
+
         if (stringMsg == "ping")
         {
             sendMessage("pong", address);
         }
         else if (stringMsg == "pong")
         {
-            ESPNowPeer *peer = getPeer(macAddr);
             if (peer)
             {
                 peer->pingMeanTime = (peer->pingMeanTime * peer->numPings + (now - peer->pingTimestamp)) / (peer->numPings + 1);
-                ESP_LOGI("ESP-NOW", "Ping time: %d ms, Mean time: %f ms", now - peer->pingTimestamp, peer->pingMeanTime);
+                // ESP_LOGI("ESP-NOW", "Ping time: %d ms, Mean time: %f ms", now - peer->pingTimestamp, peer->pingMeanTime);
             }
         }
         
@@ -228,7 +242,7 @@ namespace ESPNow
         ESP_LOGI("ESP-NOW", "Received message: %s", stringMsg.c_str());
         auto& instance = ESPNowInstance::getInstance();
         if (instance.messageCallback) {
-            ESP_LOGI("ESP-NOW", "Invoking message callback");
+            // ESP_LOGI("ESP-NOW", "Invoking message callback");
             instance.messageCallback(stringMsg);
         }
 
@@ -258,6 +272,13 @@ namespace ESPNow
             messageHistory.erase(messageHistory.begin());
             messageHistory.push_back(macStr + String(" : ") + stringMsg);
         }
+
+        if (peer)
+        {
+            peer->numReceived++;
+        }
+
+        numReceived++;
 
         // const int numLines = 5;
         // static int lineIdx = 0;
@@ -426,11 +447,14 @@ namespace ESPNow
 
     void update(unsigned long now)
     {
-        if (now - pingInterval > pingInterval) {
-            pingInterval = now;
-            for (auto &peer : peerList)
-            {
-                ping(peer.peerInfo.peer_addr);
+        if (autoPing && now - pingInterval > lastPingTimestamp) {
+            lastPingTimestamp = now;
+            if (peerList.size() > 0) {
+                if (pingID >= peerList.size()) {
+                    pingID = 0;
+                }
+                ping(peerList[pingID].peerInfo.peer_addr);
+                pingID++;
             }
         }   
     }

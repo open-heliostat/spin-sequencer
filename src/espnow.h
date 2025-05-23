@@ -19,6 +19,7 @@ struct ESPNowPeer {
     uint32_t pingTimestamp;
     uint32_t numPings;
     uint32_t numSent;
+    uint32_t numReceived;
     uint32_t numLost;
     double pingMeanTime;
 };
@@ -50,10 +51,16 @@ namespace ESPNow {
     extern std::vector<String> messageHistory;
     extern std::vector<ESPNowPeer> peerList;
     extern int messageHistorySize;
+    extern bool autoPing;
+    extern uint32_t pingInterval;
+    extern uint32_t lastPingTimestamp;
+    extern uint32_t numReceived;
 
     void formatMacAddress(const uint8_t *macAddr, char *buffer, int maxLength);
     void printAddress(const uint8_t *macAddr);
     void deletePeer(String peerName);
+    void addPeer(const uint8_t *macAddr);
+    void addPeer(const String address);
     bool sendMessage(const String &message, const uint8_t *macAddr);
     void broadcast(const String &message);
     void reply(const String &message);

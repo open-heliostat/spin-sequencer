@@ -8,11 +8,13 @@
     import Terminal from '~icons/tabler/terminal';
     import Select from './Select.svelte';
 	import type { SpinRemote } from '$lib/types/models';
+	import Checkbox from './Checkbox.svelte';
 
     export let restPath: string;
 
     let espnowState = {
         enabled: false,
+        autoPing: false,
         messageHistory: [],
         lastAddress: ''
     };
@@ -41,7 +43,14 @@
     async function getEspnowState() {
         return getJsonRest(restPath, espnowState).then((data) => {
             espnowState = data;
-            console.log("ESPNow State: ", espnowState);
+        });
+    }    
+
+    async function postEspnowState() {
+        return postJsonRest(restPath, espnowState).then(() => {
+            getEspnowState();
+        }).catch((error) => {
+            notifications.error(error.message, 500);
         });
     }
 
@@ -104,6 +113,16 @@
             {/if}
         {/each}
     </div>
+    <!-- <Checkbox
+        label="Enable ESPNow"
+        bind:value={espnowState.enabled}
+        onChange={postEspnowState}
+    /> -->
+    <Checkbox
+        label="Auto Ping"
+        bind:value={espnowState.autoPing}
+        onChange={postEspnowState}
+    />
     {/await}
     {#if remoteAddresses.length > 0}
         <Select
