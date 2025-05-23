@@ -9,7 +9,6 @@ namespace ESPNow
     const uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
     uint8_t lastAddress[6];
     int maxSendRetries = 10;
-    int retryDelay = 10;
     wifi_interface_t interface = WIFI_IF_AP;
     ESPNowState state = {};
     std::function<void(String)> messageCallback;
@@ -18,6 +17,7 @@ namespace ESPNow
     uint32_t pingInterval = 1000;
     uint32_t lastPingTimestamp = 0;
     uint32_t numReceived = 0;
+    uint32_t retryDelay = 0;
     int messageHistorySize = 10;
     int pingID = 0;
     bool autoPing = false;
@@ -160,6 +160,13 @@ namespace ESPNow
         sendMessage(message, broadcastAddress);
         for (auto &peer : peerList) {
             peer.numSent++;
+        }
+    }
+
+    void broadcast(const String &message, int numRetries) {
+        for (int i = 0; i < numRetries; i++) {
+            broadcast(message);
+            delay(retryDelay);
         }
     }
 

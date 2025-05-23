@@ -240,15 +240,15 @@
     }
 
     async function disableAllMotors() {
-        return postJsonRest("/rest/espnow", {broadcast: {message:"{p:{en:0,seq:0}}"}, numRetries:5});
+        return postJsonRest("/rest/espnow", {broadcast: {message:"{p:{en:0,seq:0}}", numRetries:5}});
     }
 
     async function stopAllMotors() {
-        return postJsonRest("/rest/espnow", {broadcast: {message:"{c:\"stop\",p:{seq:0}}"}, numRetries:5});
+        return postJsonRest("/rest/espnow", {broadcast: {message:"{c:\"stop\",p:{seq:0}}", numRetries:5}});
     }
 
     async function triggerSequenceOnAll(sequence: number) {
-        return postJsonRest("/rest/espnow", {broadcast: {message:"{t:" + String(sequence) + "}"}, numRetries:5});
+        return postJsonRest("/rest/espnow", {broadcast: {message:"{t:" + String(sequence) + "}", numRetries:5}});
     }
 
 </script>

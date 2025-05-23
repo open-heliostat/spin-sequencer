@@ -31,6 +31,9 @@ public:
             // canController.sendMessage(message, uint32_t(0));
             ESPNow::broadcast(message);
         };
+        jsonSeq.broadcastMessageWithRetry = [&](String message, int numRetries) {
+            ESPNow::broadcast(message, numRetries);
+        };
         jsonSeq.sendMessage = [&](String message, uint32_t address) {
             canController.sendMessage(message, address);
         };

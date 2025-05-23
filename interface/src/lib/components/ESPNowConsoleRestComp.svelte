@@ -9,6 +9,8 @@
     import Select from './Select.svelte';
 	import type { SpinRemote } from '$lib/types/models';
 	import Checkbox from './Checkbox.svelte';
+	import Slider from './Slider.svelte';
+	import Collapsible from './Collapsible.svelte';
 
     export let restPath: string;
 
@@ -16,7 +18,7 @@
         enabled: false,
         autoPing: false,
         messageHistory: [],
-        lastAddress: ''
+        retryDelay: 0
     };
 
     let message: string = '';
@@ -118,11 +120,6 @@
         bind:value={espnowState.enabled}
         onChange={postEspnowState}
     /> -->
-    <Checkbox
-        label="Auto Ping"
-        bind:value={espnowState.autoPing}
-        onChange={postEspnowState}
-    />
     {/await}
     {#if remoteAddresses.length > 0}
         <Select
@@ -146,4 +143,20 @@
         bind:value={message}
         onChange={sendMessage}
     />
+    <Collapsible>
+        <span slot="title">Settings</span>
+        <Checkbox
+            label="Auto Ping"
+            bind:value={espnowState.autoPing}
+            onChange={postEspnowState}
+        />
+        <Slider
+            label="Broadcast Retry Delay"
+            min={0}
+            max={30}
+            step={1}
+            bind:value={espnowState.retryDelay}
+            onChange={postEspnowState}
+        />
+    </Collapsible>
 </SettingsCard>

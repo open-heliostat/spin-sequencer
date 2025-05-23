@@ -35,10 +35,9 @@ JsonRouter<ESPNowState> ESPNowJsonRouter::router = JsonRouter<ESPNowState>(
                 String message = obj["message"].as<String>();
                 if (obj["numRetries"].is<int>()) {
                     int numRetries = obj["numRetries"].as<int>();
-                    for (int i = 0; i < numRetries; i++) {
-                        ESPNow::broadcast(message);
-                    }
+                    ESPNow::broadcast(message, numRetries);
                 }
+                else ESPNow::broadcast(message);
                 return true;
             }
         }
@@ -78,6 +77,13 @@ JsonRouter<ESPNowState> ESPNowJsonRouter::router = JsonRouter<ESPNowState>(
         }
         return false;
     }},
+    {"retryDelay", [](JsonVariant value, ESPNowState& controller) {
+        if (value.is<int>()) {
+            ESPNow::retryDelay = value.as<int>();
+            return true;
+        }
+        return false;
+    }},
     {"autoPing", [](JsonVariant value, ESPNowState& controller) {
         if (value.is<bool>()) {
             ESPNow::autoPing = value.as<bool>();
@@ -99,6 +105,9 @@ JsonRouter<ESPNowState> ESPNowJsonRouter::router = JsonRouter<ESPNowState>(
     }},
     {"channel", [](ESPNowState& controller, JsonVariant content) {
         content.set(controller.channel);
+    }},
+    {"retryDelay", [](ESPNowState& controller, JsonVariant content) {
+        content.set(ESPNow::retryDelay);
     }},
     {"autoPing", [](ESPNowState& controller, JsonVariant content) {
         content.set(ESPNow::autoPing);

@@ -45,7 +45,6 @@ namespace ESPNow {
     extern const uint8_t broadcastAddress[6];
     extern uint8_t lastAddress[6];
     extern int maxSendRetries;
-    extern int retryDelay;
     extern wifi_interface_t interface;
     extern ESPNowState state;
     extern std::vector<String> messageHistory;
@@ -55,6 +54,7 @@ namespace ESPNow {
     extern uint32_t pingInterval;
     extern uint32_t lastPingTimestamp;
     extern uint32_t numReceived;
+    extern uint32_t retryDelay;
 
     void formatMacAddress(const uint8_t *macAddr, char *buffer, int maxLength);
     void printAddress(const uint8_t *macAddr);
@@ -63,6 +63,7 @@ namespace ESPNow {
     void addPeer(const String address);
     bool sendMessage(const String &message, const uint8_t *macAddr);
     void broadcast(const String &message);
+    void broadcast(const String &message, int numRetries);
     void reply(const String &message);
     void ping(const uint8_t *macAddr);
     void staticReceiveCallback(const uint8_t *macAddr, const uint8_t *data, int dataLen);
