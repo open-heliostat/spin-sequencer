@@ -14,6 +14,8 @@ namespace ESPNow
     ESPNowState state = {};
     std::function<void(String)> messageCallback;
     std::vector<String> messageHistory = {};
+    std::vector<ESPNowPeer> peerList;
+    uint32_t pingInterval = 5000;
     int messageHistorySize = 10;
 
     // LabelClass *printLabel;
@@ -33,8 +35,39 @@ namespace ESPNow
         Serial.println(macStr);
     }
 
-    void deletePeer(String peerName) {
-        // remoteESPMap.erase(peerName);
+    bool isPeer(const uint8_t *macAddr) {
+        auto it = std::find_if(peerList.begin(), peerList.end(), [&macAddr](const ESPNowPeer &peer) {
+            return memcmp(peer.peerInfo.peer_addr, macAddr, 6) == 0;
+        });
+        return it != peerList.end();
+    }
+
+    void addPeer(const uint8_t *macAddr) {
+        esp_now_peer_info_t peerInfo = {};
+        peerInfo.encrypt = false;
+        memcpy(&peerInfo.peer_addr, macAddr, 6);
+        peerInfo.channel = 0;
+        peerInfo.ifidx = interface;
+        peerList.push_back({peerInfo, 0, 0, 0, 0, 0.0});
+    }
+
+    ESPNowPeer *getPeer(const uint8_t *macAddr) {
+        auto it = std::find_if(peerList.begin(), peerList.end(), [&macAddr](const ESPNowPeer &peer) {
+            return memcmp(peer.peerInfo.peer_addr, macAddr, 6) == 0;
+        });
+        if (it != peerList.end()) {
+            return &(*it);
+        }
+        return nullptr;
+    }
+
+    void deletePeer(const uint8_t *macAddr) {
+        auto it = std::remove_if(peerList.begin(), peerList.end(), [&macAddr](const ESPNowPeer &peer) {
+            return memcmp(peer.peerInfo.peer_addr, macAddr, 6) == 0;
+        });
+        if (it != peerList.end()) {
+            peerList.erase(it, peerList.end());
+        }
     }
 
     bool sendMessage(const String &message, const uint8_t *macAddr)
@@ -58,6 +91,11 @@ namespace ESPNow
         if (result == ESP_OK)
         {
             // Serial.println("Send message success");
+            ESPNowPeer *peer = getPeer(macAddr);
+            if (peer)
+            {
+                peer->numSent++;
+            }
             return true;
         }
         else if (result == ESP_ERR_ESPNOW_NOT_INIT)
@@ -119,6 +157,17 @@ namespace ESPNow
 
     void ping(const uint8_t *macAddr)
     {
+        if (!isPeer(macAddr)) {
+            addPeer(macAddr);
+            ESPNowPeer *peer = getPeer(macAddr);
+            peer->pingTimestamp = millis();
+            peer->numPings = 0;
+        }
+        else {
+            ESPNowPeer *peer = getPeer(macAddr);
+            peer->pingTimestamp = millis();
+            peer->numPings++;
+        }
         sendMessage("ping", macAddr);
     }
 
@@ -130,7 +179,7 @@ namespace ESPNow
     void staticReceiveCallback(const uint8_t *macAddr, const uint8_t *data, int dataLen)
     // Called when data is received
     {
-        uint32_t now = micros();
+        uint32_t now = millis();
         // bool isRegistered = remoteMap.count(std::string((const char*)macAddr)) != 0;
         esp_now_peer_info_t peerInfo;
         peerInfo.channel = 0;
@@ -155,6 +204,15 @@ namespace ESPNow
         if (stringMsg == "ping")
         {
             sendMessage("pong", address);
+        }
+        else if (stringMsg == "pong")
+        {
+            ESPNowPeer *peer = getPeer(macAddr);
+            if (peer)
+            {
+                peer->pingMeanTime = (peer->pingMeanTime * peer->numPings + (now - peer->pingTimestamp)) / (peer->numPings + 1);
+                ESP_LOGI("ESP-NOW", "Ping time: %d ms, Mean time: %f ms", now - peer->pingTimestamp, peer->pingMeanTime);
+            }
         }
         
         // if (stringMsg == "Creatures?") sendMessage("Yes, master. My name is " + name, macAddr);
@@ -228,10 +286,16 @@ namespace ESPNow
     {
         if (status != ESP_NOW_SEND_SUCCESS)
         {
-            esp_now_peer_info_t peerInfo;
-            peerInfo.channel = 0;
-            peerInfo.encrypt = false;
-            memcpy(&peerInfo.peer_addr, macAddr, 6);
+            ESPNowPeer *peer = getPeer(macAddr);
+            if (peer)
+            {
+                peer->numLost++;
+                ESP_LOGI("ESP-NOW", "Lost packet to %s", macAddr);
+            }
+            // esp_now_peer_info_t peerInfo;
+            // peerInfo.channel = 0;
+            // peerInfo.encrypt = false;
+            // memcpy(&peerInfo.peer_addr, macAddr, 6);
             // for (auto & r : remoteESPMap) {
             //     if (r.first == "Broadcast") continue;
             //     if (std::equal(peerInfo.peer_addr, peerInfo.peer_addr+6, r.second.peerInfo.peer_addr)) {
@@ -362,9 +426,12 @@ namespace ESPNow
 
     void update(unsigned long now)
     {
-        // for (auto & r : remoteESPMap) {
-        //     r.second.update(now);
-        // }
+        if (now - pingInterval > pingInterval) {
+            pingInterval = now;
+            for (auto &peer : peerList)
+            {
+                ping(peer.peerInfo.peer_addr);
+            }
+        }   
     }
-    
 }

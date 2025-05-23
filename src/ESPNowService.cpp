@@ -89,6 +89,19 @@ JsonRouter<ESPNowState> ESPNowJsonRouter::router = JsonRouter<ESPNowState>(
             }
             copyArray(msgs, size, messages);
         }
+    }},
+    {"peers", [](ESPNowState& controller, JsonVariant content) {
+        JsonArray peers = content.to<JsonArray>();
+        for (const auto& peer : ESPNow::peerList) {
+            JsonObject peerObj = peers.createNestedObject();
+            char macStr[18];
+            ESPNow::formatMacAddress(peer.peerInfo.peer_addr, macStr, 18);
+            peerObj["mac"] = macStr;
+            peerObj["numPings"] = peer.numPings;
+            peerObj["numSent"] = peer.numSent;
+            peerObj["numLost"] = peer.numLost;
+            peerObj["pingMeanTime"] = peer.pingMeanTime;
+        }
     }}
 });
 
