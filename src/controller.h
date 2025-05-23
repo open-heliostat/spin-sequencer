@@ -59,11 +59,10 @@ struct MotorController {
     }
     void stop() {
         // controller.stop();
-        if (!isMoving) {
-            pingPong = false;
+        if (!isMoving && !pingPong) {
             return;
         }
-        if (pingPong) {
+        else if (pingPong) {
             speed = 0;
             setPosition(stopPosition);
             pingPong = false;
