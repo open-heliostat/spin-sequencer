@@ -29,6 +29,19 @@ JsonRouter<ESPNowState> ESPNowJsonRouter::router = JsonRouter<ESPNowState>(
             ESPNow::broadcast(message);
             return true;
         }
+        else if (value.is<JsonObject>()) {
+            JsonObject obj = value.as<JsonObject>();
+            if (obj["message"].is<String>()) {
+                String message = obj["message"].as<String>();
+                if (obj["numRetries"].is<int>()) {
+                    int numRetries = obj["numRetries"].as<int>();
+                    for (int i = 0; i < numRetries; i++) {
+                        ESPNow::broadcast(message);
+                    }
+                }
+                return true;
+            }
+        }
         return false;
     }},
     {"reply", [](JsonVariant value, ESPNowState& controller) {
