@@ -7,6 +7,7 @@ struct MotorController {
     Encoder &sensor;
     bool pingPong = false;
     bool isMoving = false;
+    bool isStopping = false;
     double stopPosition = 180;
     bool ping = false;
     bool hasChangedState = false;
@@ -24,6 +25,7 @@ struct MotorController {
             move((ping ? dist : -dist) - offset);
             ping = !ping;
         }
+        if (isStopping && !isMoving) isStopping = false;
     }
     void setPingPong(bool p) {
         pingPong = p;
@@ -59,7 +61,7 @@ struct MotorController {
     }
     void stop() {
         // controller.stop();
-        if (!isMoving && !pingPong) {
+        if ((!isMoving && !pingPong) || (isStopping && isMoving)) {
             return;
         }
         else if (pingPong) {
@@ -79,6 +81,7 @@ struct MotorController {
             }
             move(toGo*(direction ? 1. : -1.));
         }
+        isStopping = true;
     }
     float mod(float a, float N) {return a - N*floor(a/N);}
 };
