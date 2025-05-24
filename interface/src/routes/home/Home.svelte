@@ -1,5 +1,7 @@
 <script lang="ts">
-	import StatusComp from '$lib/components/StatusComp.svelte';
+	import Restore from '$lib/components/RestoreComp.svelte';
+import StatusComp from '$lib/components/StatusComp.svelte';
 </script>
 
 <StatusComp restPath="rest/spin-seq/diag" />
+<Restore></Restore>
