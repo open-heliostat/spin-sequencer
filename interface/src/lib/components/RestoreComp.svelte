@@ -1,13 +1,13 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import SettingsCard from './SettingsCard.svelte';
-    import { getJsonRest } from '$lib/stores/rest';
+    import { getJsonRest, postJsonRest } from '$lib/stores/rest';
     import { notifications } from "$lib/components/toasts/notifications";
     import Button from './Button.svelte';
     import Save from '~icons/tabler/device-floppy';
     import Upload from '~icons/tabler/file-upload';
     import Download from '~icons/tabler/file-download';
-    import type { WifiSettings } from '$lib/types/models';
+    import type { WifiSettings, ApSettings } from '$lib/types/models';
 
 
     interface SequencerState {
@@ -21,6 +21,16 @@
     interface SequencerConfig {
         hostname: string;
         commands: unknown[];
+        apChannel?: number;
+        espnowChannel?: number;
+    }
+
+    interface EspNowSettings {
+        enabled: boolean;
+        channel: number;
+        retryDelay: number;
+        autoPing: boolean;
+        messageHistory: string[];
     }
 
     let hostname: string = "";
@@ -41,9 +51,18 @@
             
             // Get sequencer commands
             sequencerState = await getJsonRest('/rest/spin-seq/sequencer', {} as SequencerState);
+            
+            // Get AP settings for channel
+            const apSettings = await getJsonRest('/rest/apSettings', {} as ApSettings);
+            
+            // Get ESPNow settings for channel
+            const espnowSettings = await getJsonRest('/rest/espnow', {} as EspNowSettings);
+            
             config = {
                 hostname: hostname,
-                commands: sequencerState.config.commands
+                commands: sequencerState.config.commands,
+                apChannel: apSettings?.channel,
+                espnowChannel: espnowSettings?.channel
             };
             const dataStr = JSON.stringify(config, null, 2);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -76,16 +95,37 @@
                 if (!importedConfig.commands || !Array.isArray(importedConfig.commands) || !importedConfig.hostname) {
                     throw new Error('Invalid configuration file format');
                 }
+                else {
+                    await postJsonRest('/rest/spin-seq/sequencer', {config:{commands:importedConfig.commands}});
+                }
 
+                // Update WiFi settings (hostname)
                 wifiSettings = await getJsonRest('/rest/wifiSettings', {} as WifiSettings);
-
                 if (wifiSettings) {
                     wifiSettings.hostname = importedConfig.hostname;
-
                     await postWiFiSettings(wifiSettings);
-
-                    notifications.success('Configuration imported successfully', 3000);
                 }
+
+                // Update AP channel if provided
+                if (typeof importedConfig.apChannel === 'number') {
+                    const apSettings = await getJsonRest('/rest/apSettings', {} as ApSettings);
+                    console.log(apSettings)
+                    if (apSettings) {
+                        apSettings.channel = importedConfig.apChannel;
+                        await fetch('/rest/apSettings', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(apSettings)
+                        });
+                    }
+                }
+
+                // Update ESPNow channel if provided
+                if (typeof importedConfig.espnowChannel === 'number') {
+                    await postJsonRest('/rest/espnow', {channel: importedConfig.espnowChannel});
+                }
+
+                notifications.success('Configuration imported successfully', 3000);
             } catch (err) {
                 const error = err as Error;
                 notifications.error('Failed to import configuration: ' + (error.message || 'Unknown error'), 3000);
