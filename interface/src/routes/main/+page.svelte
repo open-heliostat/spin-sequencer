@@ -7,7 +7,7 @@
 </script>
 
 <div
-    class="fixed inset-0 z-50 flex flex-col space-y-4 bg-white m-0 p-4"
+    class="fixed inset-0 z-50 flex flex-col space-y-4 bg-white dark:bg-stone-800 m-0 p-4"
 >
 	<Home/>
 </div>
