@@ -2,7 +2,7 @@
     import { getJsonRest, postJsonRest } from '$lib/stores/rest';
     import { getJsonRestWithCanFallback, postJsonRestWithCanFallback, getJsonRestWithHostnameFallback } from '$lib/stores/remote';
     import Spinner from './Spinner.svelte';
-    import type { ESPNowPeer, SpinDiagnostics, SpinRemote } from '$lib/types/models';
+    import type { ESPNowPeer, SequencerStatus, SpinDiagnostics, SpinRemote } from '$lib/types/models';
 	import SettingsCard from './SettingsCard.svelte';
 	import StatusPanel from './StatusPanel.svelte';
 	import Collapsible from './Collapsible.svelte';
@@ -20,11 +20,15 @@
     import { compareVersions } from 'compare-versions';
 	import Checkbox from './Checkbox.svelte';
 	import { sequence } from '@sveltejs/kit/hooks';
+	import SequencerProgressBar from './SequencerProgressBar.svelte';
+	import GridForm from './GridForm.svelte';
 
     export let remote: SpinRemote;
     export let diag: SpinDiagnostics = {} as SpinDiagnostics;
     export let onChange: () => void;
     export let espnowPeers: ESPNowPeer[] = [];
+
+    let sequencerStatus: SequencerStatus;
 
     export async function getDiag() {
         return getJsonRestWithHostnameFallback("/spin-seq/diag", diag, remote.ip, remote.hostname).then((data) => {
@@ -44,6 +48,18 @@
                 return diag;
             }).catch((error) => {
                 console.error("Failed to get sequencer data: ", error);
+            });
+        }
+    }
+
+    async function getSequencerStatus() {
+        if (remote.ip) {
+            let path = "http://" + remote.ip + "/rest/spin-seq/sequencer/status";
+            return getJsonRest(path, sequencerStatus, {signal: AbortSignal.timeout(1000)}).then((data) => {
+                sequencerStatus = data;
+                return sequencerStatus;
+            }).catch((error) => {
+                console.error("Failed to get sequencer status: ", error);
             });
         }
     }
@@ -89,9 +105,9 @@
     let intervalID: any;
     onMount(() => {
         intervalID = setInterval(() => {
-            if (diag?.sequencer?.isRunning) getSequencerData();
+            if (diag?.sequencer?.isRunning) getSequencerStatus();
         }, 1278);
-        getSequencerData();
+        getSequencerStatus();
         if (!remote.hostname || !remote.ip || !remote.version) {
             getDiag();
         }
@@ -118,22 +134,25 @@
             {/each}
         {/if}
     </span>
-    {#if diag?.sequencer}
-    <Checkbox
-        label="Sequencer State"
-        bind:value={diag.sequencer.isRunning}
-        onChange={() => setSequencerState(diag.sequencer.isRunning)}
-    />
-    <Slider
-        label="Sequencer Command"
-        min={0}
-        max={diag.sequencer.numCommands - 1}
-        step={1}
-        disabled={diag.sequencer.numCommands == 0}
-        hasNumber
-        onChange={() => runCommand(diag.sequencer.selectedCommand)}
-        bind:value={diag.sequencer.selectedCommand}
-    />
+    {#if sequencerStatus}
+        <GridForm>
+            <Checkbox
+                label="Sequencer State"
+                bind:value={sequencerStatus.isRunning}
+                onChange={() => setSequencerState(sequencerStatus.isRunning)}
+            />
+            <SequencerProgressBar sequencerStatus={sequencerStatus} />
+            <!-- <Slider
+                label="Sequencer Command"
+                min={0}
+                max={diag.sequencer.numCommands - 1}
+                step={1}
+                disabled={diag.sequencer.numCommands == 0}
+                hasNumber
+                onChange={() => runCommand(diag.sequencer.selectedCommand)}
+                bind:value={diag.sequencer.selectedCommand}
+            /> -->
+        </GridForm>
     {/if}
     <Collapsible>
         <span slot="title">Diagnostics</span>
