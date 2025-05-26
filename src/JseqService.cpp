@@ -73,14 +73,6 @@ JsonEventRouter<JsonSeq> JsonSeqJsonRouter::controlRouter = JsonEventRouter<Json
         }
         return false;
     }},
-    {"run", [](JsonVariant content, JsonSeq &sequencer) {
-        if (content.is<bool>()) {
-            sequencer.isRunning = content.as<bool>();
-            if (sequencer.isRunning) sequencer.readCommand();
-            return true;
-        }
-        return false;
-    }},
     {"execute", [](JsonVariant content, JsonSeq &sequencer) {
         if (content.is<String>()) {
             JsonDocument command;
@@ -94,7 +86,15 @@ JsonEventRouter<JsonSeq> JsonSeqJsonRouter::controlRouter = JsonEventRouter<Json
             sequencer.readCommand(content.as<int>());
         }
         return false;
-    }}
+    }},
+    {"run", [](JsonVariant content, JsonSeq &sequencer) {
+        if (content.is<bool>()) {
+            sequencer.isRunning = content.as<bool>();
+            if (sequencer.isRunning) sequencer.readCommand();
+            return true;
+        }
+        return false;
+    }},
 });
 
 // define the edit router
