@@ -46,7 +46,8 @@ JsonRouter<JsonSeq> JsonSeqJsonRouter::router = JsonRouter<JsonSeq>(
         target["selectedCommand"] = sequencer.selectedCommand;
         target["commandRunning"] = sequencer.commandRunning;
         target["nextCommand"] = sequencer.nextCommand;
-        target["lostCommands"] = sequencer.lostCommands;
+        target["commandDuration"] = sequencer.commandDuration;
+        target["commandDurationLeft"] = sequencer.commandDuration > 0 ? sequencer.commandDuration - (millis() - sequencer.commandStart) : 0;
     }},
     {"config", [](JsonSeq &sequencer, const JsonVariant target) {
         JsonArray commands = target["commands"].to<JsonArray>();
