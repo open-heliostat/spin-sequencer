@@ -403,13 +403,13 @@ namespace ESPNow
     void setup()
     {   
         esp_wifi_set_storage(WIFI_STORAGE_RAM);
-        int channel = 6;
+        int channel = state.channel;
         WiFi.mode(WIFI_AP_STA);
         // esp_wifi_set_protocol(WIFI_IF_STA, uint8_t(WIFI_PROTOCOL_LR));
         // esp_wifi_set_protocol(WIFI_IF_STA, uint8_t(7));
         // preferences.begin("wireless");
         if (WiFi.status() == WL_CONNECTED) {
-            channel = WiFi.channel();
+            // channel = WiFi.channel();
             // preferences.putInt("lastChannel", channel);
             interface = WIFI_IF_AP;
             // esp_wifi_set_protocol( WIFI_IF_AP, WIFI_PROTOCOL_LR );

@@ -49,6 +49,8 @@ public:
     static const void getSaveMap(JsonObject& root)
     {
         root["enabled"] = true;
+        root["channel"] = true;
+        root["retryDelay"] = true;
     }
 
     static JsonRouter<ESPNowState> router;

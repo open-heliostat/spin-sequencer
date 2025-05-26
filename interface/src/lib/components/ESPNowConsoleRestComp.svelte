@@ -18,7 +18,8 @@
         enabled: false,
         autoPing: false,
         messageHistory: [],
-        retryDelay: 0
+        retryDelay: 0,
+        channel: 0
     };
 
     let message: string = '';
@@ -156,6 +157,14 @@
             max={30}
             step={1}
             bind:value={espnowState.retryDelay}
+            onChange={postEspnowState}
+        />
+        <Slider
+            label="ESPNow Channel"
+            min={0}
+            max={14}
+            step={1}
+            bind:value={espnowState.channel}
             onChange={postEspnowState}
         />
     </Collapsible>
