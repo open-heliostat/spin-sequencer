@@ -17,6 +17,7 @@ public:
     PsychicHttpServer *server;
     RemotesController remotesController = {};
     JsonTimer jsonTimer = {jsonSeq};
+    String welcomeText = "";
 
     SpinSequencerController(MotorController &motorController, ClosedLoopController &controller, CanIsoTPController<CanIsoTPMessage> &canController, PsychicHttpServer *server) :
             motorController(motorController), controller(controller), jsonSeq(motorController), canController(canController), server(server) 

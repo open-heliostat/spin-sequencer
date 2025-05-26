@@ -4,6 +4,8 @@
 	import SequencerProgressBar from "$lib/components/SequencerProgressBar.svelte";
 	import SettingsCard from "$lib/components/SettingsCard.svelte";
 	import { notifications } from "$lib/components/toasts/notifications";
+	import WelcomeTextComp from "$lib/components/WelcomeTextComp.svelte";
+	import WelcomeTextDisplayComp from "$lib/components/WelcomeTextDisplayComp.svelte";
 	import { getJsonRest, postJsonRest } from "$lib/stores/rest";
 	import type { SequencerStatus } from "$lib/types/models";
 	import { onMount } from "svelte";
@@ -32,6 +34,7 @@
 	});
 
 </script>
+<WelcomeTextDisplayComp/>
 
 {#if sequencerStatus}
 	<SettingsCard>

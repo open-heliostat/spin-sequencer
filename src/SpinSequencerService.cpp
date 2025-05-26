@@ -14,6 +14,16 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
     {"timers", [&](JsonVariant content, SpinSequencerController &controller) {
         return JsonTimerRouter::router.parse(content, controller.jsonTimer);
     }},
+    {"welcome", [&](JsonVariant content, SpinSequencerController &controller) {
+        if (content.is<JsonObject>()) {
+            JsonObject obj = content.as<JsonObject>();
+            if (obj["text"].is<String>()) {
+                controller.welcomeText = obj["text"].as<String>();
+            }
+            return true;
+        }
+        return false;
+    }},
 },
 {
     {"controller", [&](SpinSequencerController &controller, JsonVariant content) {
@@ -27,6 +37,12 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
     }},
     {"timers", [&](SpinSequencerController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) JsonTimerRouter::router.serialize(controller.jsonTimer, content);
+    }},
+    {"welcome", [&](SpinSequencerController &controller, JsonVariant content) {
+        if (content.is<JsonObject>()) {
+            JsonObject obj = content.as<JsonObject>();
+            obj["text"] = controller.welcomeText;
+        }
     }},
     {"diag", [&](SpinSequencerController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) {
