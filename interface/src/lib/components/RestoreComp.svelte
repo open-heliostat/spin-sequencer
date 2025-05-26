@@ -7,7 +7,7 @@
     import Save from '~icons/tabler/device-floppy';
     import Upload from '~icons/tabler/file-upload';
     import Download from '~icons/tabler/file-download';
-    import type { WifiSettings, ApSettings } from '$lib/types/models';
+    import type { WifiSettings, ApSettings, StepperConfig } from '$lib/types/models';
 
 
     interface SequencerState {
@@ -23,6 +23,11 @@
         commands: unknown[];
         apChannel?: number;
         espnowChannel?: number;
+        motorCurrent?: {
+            irun: number;
+            ihold: number;
+            iscale: number;
+        }
     }
 
     interface EspNowSettings {
@@ -57,12 +62,22 @@
             
             // Get ESPNow settings for channel
             const espnowSettings = await getJsonRest('/rest/espnow', {} as EspNowSettings);
+
+            // Get stepper config
+            const stepperConfig = await getJsonRest('/rest/spin-seq/controller/stepper/config', {} as StepperConfig);
+
+            console.log(stepperConfig)
             
             config = {
                 hostname: hostname,
                 commands: sequencerState.config.commands,
                 apChannel: apSettings?.channel,
-                espnowChannel: espnowSettings?.channel
+                espnowChannel: espnowSettings?.channel,
+                motorCurrent: {
+                    irun: stepperConfig?.irun || 30,
+                    ihold: stepperConfig?.ihold || 3,
+                    iscale: stepperConfig?.iscale || 128
+                }
             };
             const dataStr = JSON.stringify(config, null, 2);
             const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -123,6 +138,17 @@
                 // Update ESPNow channel if provided
                 if (typeof importedConfig.espnowChannel === 'number') {
                     await postJsonRest('/rest/espnow', {channel: importedConfig.espnowChannel});
+                }
+
+                // Update motor current settings if provided
+                if (importedConfig.motorCurrent) {
+                    const stepperConfig = await getJsonRest('/rest/spin-seq/controller/stepper/config', {} as StepperConfig);
+                    if (stepperConfig) {
+                        stepperConfig.irun = importedConfig.motorCurrent.irun || stepperConfig.irun;
+                        stepperConfig.ihold = importedConfig.motorCurrent.ihold || stepperConfig.ihold;
+                        stepperConfig.iscale = importedConfig.motorCurrent.iscale || stepperConfig.iscale;
+                        await postJsonRest('/rest/spin-seq/controller/stepper/config', stepperConfig);
+                    }
                 }
 
                 notifications.success('Configuration imported successfully', 3000);
