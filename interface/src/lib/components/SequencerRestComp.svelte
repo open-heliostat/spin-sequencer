@@ -6,6 +6,7 @@
     import Collapsible from '$lib/components/Collapsible.svelte';
     import { getJsonRest, postJsonRest } from '$lib/stores/rest';
     import { notifications } from "$lib/components/toasts/notifications";
+    import type { SequencerState } from '$lib/types/models';
     import StopButton from './StopButton.svelte';
 	import Text from './Text.svelte';
 	import Slider from './Slider.svelte';
@@ -13,23 +14,9 @@
 	import Checkbox from './Checkbox.svelte';
 
 	import Thrash from '~icons/tabler/trash';
+	import SequencerProgressBar from './SequencerProgressBar.svelte';
 
     export let restPath: string;
-
-    interface SequencerState {
-        status: {
-            isRunning: boolean;
-            selectedCommand: number;
-            commandRunning: boolean;
-            nextCommand: number;
-            lostCommands: number;
-        };
-        config: {
-            commands: Object[];
-            selectedCommand: number;
-            isRunning: boolean;
-        };
-    }
 
     let sequencerState: SequencerState;
     // let commandInput = '';
@@ -157,6 +144,7 @@
                     bind:value={sequencerState.status.isRunning}
                     onChange={() => postJsonRest(restPath + '/control', { run: sequencerState.status.isRunning })}>
                 </Checkbox>
+                <SequencerProgressBar sequencerStatus={sequencerState.status}/>
                 <!-- <Slider
                     label="Select"
                     bind:value={sequencerState.config.selectedCommand}
@@ -245,7 +233,6 @@
                     <div>Selected: {sequencerState?.status.selectedCommand}</div>
                     <div>Command Running: {sequencerState?.status.commandRunning ? 'Yes' : 'No'}</div>
                     <div>Next: {sequencerState?.status.nextCommand}</div>
-                    <div>Lost Commands: {sequencerState?.status.lostCommands}</div>
                 </div>
 
                 <textarea

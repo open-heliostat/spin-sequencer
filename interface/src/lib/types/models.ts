@@ -361,3 +361,22 @@ export type ESPNowPeer = {
 	numLost: number;
 	pingMeanTime: number;
 };
+
+export interface SequencerStatus {
+	isRunning: boolean;
+	selectedCommand: number;
+	commandRunning: boolean;
+	nextCommand: number;
+	numCommands: number;
+	commandDuration: number;
+	commandDurationLeft: number;
+}
+
+export interface SequencerState {
+	status: SequencerStatus;
+	config: {
+		commands: Object[];
+		selectedCommand: number;
+		isRunning: boolean;
+	};
+}
