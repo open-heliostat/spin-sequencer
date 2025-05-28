@@ -29,10 +29,14 @@
     export let espnowPeers: ESPNowPeer[] = [];
 
     let sequencerStatus: SequencerStatus;
+    let httpLatency: number = 0;
+    let lastHttpRequestTime: number = 0;
 
     export async function getDiag() {
+        lastHttpRequestTime = Date.now();
         return getJsonRestWithHostnameFallback("/spin-seq/diag", diag, remote.ip, remote.hostname).then((data) => {
             diag = data;
+            httpLatency = Date.now() - lastHttpRequestTime;
             updateRemote();
             return diag;
         }).catch((error) => {
@@ -54,9 +58,11 @@
 
     async function getSequencerStatus() {
         if (remote.ip) {
+            lastHttpRequestTime = Date.now();
             let path = "http://" + remote.ip + "/rest/spin-seq/sequencer/status";
             return getJsonRest(path, sequencerStatus, {signal: AbortSignal.timeout(1000)}).then((data) => {
                 sequencerStatus = data;
+                httpLatency = Date.now() - lastHttpRequestTime;
                 return sequencerStatus;
             }).catch((error) => {
                 console.error("Failed to get sequencer status: ", error);
@@ -129,7 +135,7 @@
             {#each espnowPeers.filter(p => p && p.mac === remote.macAddress) as peer}
                 {@const lossRatio = (peer.numLost / peer.numSent * 100).toFixed(1)}
                 <span class="text-sm text-gray-500">
-                    (ESPNow: {peer.numReceived}/{peer.numSent} msgs, {peer.pingMeanTime.toFixed(1)}ms, {peer.numLost} lost ({lossRatio}%))
+                    (ESPNow: {peer.numReceived}/{peer.numSent} msgs, {peer.pingMeanTime.toFixed(1)}ms, {peer.numLost} lost ({lossRatio}%){httpLatency ? ", HTTP: " + httpLatency + "ms" : ""})
                 </span>
             {/each}
         {/if}
