@@ -91,8 +91,8 @@
         const path = hostname === 'master' ? restPath : `http://${remotes.find(r => r.hostname === hostname)?.ip}${restPath}`;
         return postJsonRest(path + '/control', { 
             execute: JSON.stringify(command)
-        }).then((data) => {
-            if (data.execute?.error) {
+        }).then((data) => { // @ts-ignore
+            if (data.execute?.error) { // @ts-ignore
                 commandError = data.execute.error;
                 notifications.error(`Error on ${hostname}: ${commandError}`, 3000);
             } else {
@@ -212,7 +212,7 @@
         if (remoteStates.length > 0) {
             const commands = {};
             remoteStates.forEach(state => {
-                if (state.config && state.hostname) {
+                if (state.config && state.hostname) { // @ts-ignore
                     commands[state.hostname] = state.config.commands;
                 }
             });
@@ -296,7 +296,9 @@
                                 value={state.config.commands[index] ? 
                                     stringifyCommand(state.config.commands[index]) : 
                                     '{}'}
-                                on:change={(e) => updateCommand(index, state, e.target.value)}
+                                on:change={(e) => { // @ts-ignore
+                                    updateCommand(index, state, e.target?.value)
+                                }}
                             />
                             {/if}
                         </div>
