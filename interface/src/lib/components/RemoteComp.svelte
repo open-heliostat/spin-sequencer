@@ -126,7 +126,7 @@
         </a>
         <div class="flex-grow"></div>
         {#if espnowPeers?.length > 0 && remote.macAddress}
-            {#each espnowPeers.filter(p => p.mac === remote.macAddress) as peer}
+            {#each espnowPeers.filter(p => p && p.mac === remote.macAddress) as peer}
                 {@const lossRatio = (peer.numLost / peer.numSent * 100).toFixed(1)}
                 <span class="text-sm text-gray-500">
                     (ESPNow: {peer.numReceived}/{peer.numSent} msgs, {peer.pingMeanTime.toFixed(1)}ms, {peer.numLost} lost ({lossRatio}%))
