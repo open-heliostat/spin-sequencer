@@ -4,8 +4,6 @@
 	import SequencerProgressBar from "$lib/components/SequencerProgressBar.svelte";
 	import SettingsCard from "$lib/components/SettingsCard.svelte";
 	import { notifications } from "$lib/components/toasts/notifications";
-	import WelcomeTextComp from "$lib/components/WelcomeTextComp.svelte";
-	import WelcomeTextDisplayComp from "$lib/components/WelcomeTextDisplayComp.svelte";
 	import { getJsonRest, postJsonRest } from "$lib/stores/rest";
 	import type { SequencerStatus } from "$lib/types/models";
 	import { onMount } from "svelte";
@@ -20,11 +18,19 @@
     }
 
 	async function startSequencer() {
-        return postJsonRest("/rest/spin-seq/sequencer", {control:{execute:1,run:true}});
+        return postJsonRest("/rest/spin-seq/sequencer", {control:{execute:1,run:true}}).then(() => {
+            notifications.success("Sequencer started successfully.", 2000);
+        }).catch((error) => {
+            notifications.error("Failed to start sequencer: " + error.message, 3000);
+        });
 	}
 
 	async function stopSequencer() {
-		return postJsonRest("/rest/spin-seq/sequencer", {control:{execute:0,run:false}});
+		return postJsonRest("/rest/spin-seq/sequencer", {control:{execute:0,run:false}}).then(() => {
+            notifications.success("Sequencer stopped successfully.", 2000);
+        }).catch((error) => {
+            notifications.error("Failed to stop sequencer: " + error.message, 3000);
+        });
 	}
 
 	onMount(() => {
@@ -34,7 +40,6 @@
 	});
 
 </script>
-<WelcomeTextDisplayComp/>
 
 {#if sequencerStatus}
 	<SettingsCard>
