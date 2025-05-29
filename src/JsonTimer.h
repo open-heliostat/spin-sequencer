@@ -12,9 +12,21 @@ class JsonTimer;
 // FreeRTOS task function declaration 
 void timerTask(void* parameter);
 
+// Add days of week bitfield definition
+typedef uint8_t DaysOfWeek;
+#define DOW_SUNDAY    0x01
+#define DOW_MONDAY    0x02
+#define DOW_TUESDAY   0x04
+#define DOW_WEDNESDAY 0x08
+#define DOW_THURSDAY  0x10
+#define DOW_FRIDAY    0x20
+#define DOW_SATURDAY  0x40
+#define DOW_ALL       0x7F
+
 struct JsonDailyTimer {
     uint8_t hour;      // 0-23
     uint8_t minute;    // 0-59
+    DaysOfWeek days;   // Bitfield for days of week
     String jsonCommand; // Store the actual JSON command
     bool executed;     // Track if timer was executed today
 };
@@ -41,7 +53,7 @@ public:
         }
     }
 
-    void addJsonDailyTimer(uint8_t hour, uint8_t minute, const String& jsonCommand) {
+    void addJsonDailyTimer(uint8_t hour, uint8_t minute, DaysOfWeek days, const String& jsonCommand) {
         if (hour > 23 || minute > 59) return;
         
         // Create a test parse to validate JSON
@@ -55,6 +67,7 @@ public:
         JsonDailyTimer timer = {
             .hour = hour,
             .minute = minute,
+            .days = days,
             .jsonCommand = jsonCommand,
             .executed = false
         };
@@ -63,10 +76,10 @@ public:
     }
 
     // Overload to accept JsonDocument directly
-    void addJsonDailyTimer(uint8_t hour, uint8_t minute, const JsonDocument& command) {
+    void addJsonDailyTimer(uint8_t hour, uint8_t minute, DaysOfWeek days, const JsonDocument& command) {
         String jsonString;
         serializeJson(command, jsonString);
-        addJsonDailyTimer(hour, minute, jsonString);
+        addJsonDailyTimer(hour, minute, days, jsonString);
     }
 
     // Get a list of all timers
@@ -91,13 +104,13 @@ public:
         return false;
     }
 
-    // Remove timer by time
-    bool removeDailyTimer(uint8_t hour, uint8_t minute) {
+    // Remove timer by time and days
+    bool removeDailyTimer(uint8_t hour, uint8_t minute, DaysOfWeek days) {
         auto it = std::find_if(
             _timers.begin(),
             _timers.end(),
-            [hour, minute](const JsonDailyTimer& timer) {
-                return timer.hour == hour && timer.minute == minute;
+            [hour, minute, days](const JsonDailyTimer& timer) {
+                return timer.hour == hour && timer.minute == minute && timer.days == days;
             }
         );
         

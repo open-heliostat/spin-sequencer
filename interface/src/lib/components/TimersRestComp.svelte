@@ -14,6 +14,7 @@
     interface Timer {
         hour: number;
         minute: number;
+        days: number;
         command: string;
         executed: boolean;
     }
@@ -22,6 +23,16 @@
         timers: Timer[];
     }
 
+    const DAYS = [
+        { value: 0x01, label: 'Sun' },
+        { value: 0x02, label: 'Mon' },
+        { value: 0x04, label: 'Tue' },
+        { value: 0x08, label: 'Wed' },
+        { value: 0x10, label: 'Thu' },
+        { value: 0x20, label: 'Fri' },
+        { value: 0x40, label: 'Sat' }
+    ];
+
     let timersState: TimersState = {
         timers: []
     };
@@ -29,8 +40,18 @@
     let newTimer = {
         hour: 0,
         minute: 0,
+        days: 0x7F, // All days by default
         command: ""
     };
+
+    function getDayString(days: number): string {
+        if (days === 0x7F) return 'Every day';
+        if (days === 0x3E) return 'Weekdays';
+        if (days === 0x41) return 'Weekends';
+        return DAYS.filter(d => days & d.value)
+                  .map(d => d.label)
+                  .join(', ');
+    }
 
     async function getTimers() {
         return getJsonRest(restPath, timersState).then((data) => {
@@ -49,6 +70,7 @@
             add: {
                 hour: newTimer.hour,
                 minute: newTimer.minute,
+                days: newTimer.days,
                 command: newTimer.command
             }
         }).then(() => {
@@ -58,11 +80,12 @@
         });
     }
 
-    function removeTimer(hour: number, minute: number) {
+    function removeTimer(hour: number, minute: number, days: number) {
         postJsonRest(restPath, {
             remove: {
                 hour: hour,
-                minute: minute
+                minute: minute,
+                days: days
             }
         }).then(() => {
             notifications.success("Timer removed", 3000);
@@ -108,6 +131,30 @@
                             bind:value={newTimer.minute}
                         />
                     </div>
+                    <div class="flex flex-col w-48"> <!-- Added fixed width -->
+                        <label class="label">
+                            <span class="label-text">Days</span>
+                        </label>
+                        <div class="grid grid-cols-4 gap-1"> <!-- Changed to grid layout -->
+                            {#each DAYS as day}
+                                <label class="label cursor-pointer justify-start p-1">
+                                    <input 
+                                        type="checkbox" 
+                                        class="checkbox checkbox-xs"
+                                        checked={newTimer.days & day.value}
+                                        on:change={(e) => {
+                                            if (e.target.checked) {
+                                                newTimer.days |= day.value;
+                                            } else {
+                                                newTimer.days &= ~day.value;
+                                            }
+                                        }}
+                                    />
+                                    <span class="label-text text-sm ml-1">{day.label}</span> <!-- Made text smaller -->
+                                </label>
+                            {/each}
+                        </div>
+                    </div>
                     <div class="flex-grow">
                         <label class="label">
                             <span class="label-text">Command</span>
@@ -119,10 +166,12 @@
                             bind:value={newTimer.command}
                         />
                     </div>
-                    <div class="self-end">
-                        <Button label="Add Timer" onClick={addTimer} />
-                    </div>
                 </div>
+        </div>
+
+        <div class="w-full flex-row flex">
+            <div class="flex-grow flex"></div>
+            <Button label="Add Timer" onClick={addTimer} />
         </div>
 
         <div class="overflow-x-auto">
@@ -130,6 +179,7 @@
                 <thead>
                     <tr>
                         <th>Time</th>
+                        <th>Days</th>
                         <th class="w-full">Command</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -138,19 +188,20 @@
                 <tbody>
                     {#await getTimers()}
                         <tr>
-                            <td colspan="4" class="text-center">
+                            <td colspan="5" class="text-center">
                                 <Spinner />
                             </td>
                         </tr>
                     {:then data}
                         {#if timersState.timers.length === 0}
                             <tr>
-                                <td colspan="4" class="text-center">No timers configured</td>
+                                <td colspan="5" class="text-center">No timers configured</td>
                             </tr>
                         {:else}
                             {#each timersState.timers as timer}
                                 <tr>
                                     <td>{timer.hour.toString().padStart(2, '0')}:{timer.minute.toString().padStart(2, '0')}</td>
+                                    <td>{getDayString(timer.days)}</td>
                                     <td>{timer.command}</td>
                                     <td>
                                         {#if timer.executed}
@@ -162,7 +213,7 @@
                                     <td>
                                         <button 
                                             class="btn btn-error btn-sm"
-                                            on:click={() => removeTimer(timer.hour, timer.minute)}
+                                            on:click={() => removeTimer(timer.hour, timer.minute, timer.days)}
                                         >
                                             Remove
                                         </button>

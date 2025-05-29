@@ -8,10 +8,14 @@ void JsonTimer::checkTimers() {
 
     // Only process if we have valid time
     if (timeinfo.tm_year > (2023 - 1900)) {
+        // Convert tm_wday (0-6, Sunday = 0) to our DOW bitmask
+        DaysOfWeek currentDay = (1 << timeinfo.tm_wday);
+        
         for (auto& timer : _timers) {
-            // Check if it's time to execute and hasn't been executed today
+            // Check if it's time to execute, matches day of week, and hasn't been executed today
             if (timeinfo.tm_hour == timer.hour && 
                 timeinfo.tm_min == timer.minute && 
+                (timer.days & currentDay) && 
                 !timer.executed) {
                 _sequencer.readCommand(timer.jsonCommand);
                 timer.executed = true;
