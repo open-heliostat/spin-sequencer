@@ -48,6 +48,9 @@ public:
     static const void getSaveMap(JsonObject& root)
     {
         root["timers"] = true;
+        root["add"] = true;
+        root["remove"] = true;
+        root["clear"] = true;
     }
 
     static JsonRouter<JsonTimer> router;

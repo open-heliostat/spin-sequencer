@@ -39,8 +39,8 @@ public:
     }
     static const void getSaveMap(JsonObject &root) 
     {
-        root["calibration"]["enabled"] = true;
-        root["calibration"]["offsets"] = true;
+        // root["calibration"]["enabled"] = true;
+        // root["calibration"]["offsets"] = true;
         root["limits"]["enabled"] = true;
         root["limits"]["begin"] = true;
         root["limits"]["end"] = true;

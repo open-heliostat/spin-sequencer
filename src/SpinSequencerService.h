@@ -28,7 +28,8 @@ public:
         getSaveMap(root);
         router.serialize(state, root);
         JsonDocument ref = root;
-        Serial.println(ref.as<String>());
+        // Serial.println(ref.as<String>());
+        // ESP_LOGI("Spin Seq", "%s", ref.as<String>().c_str());
         ref = getSaveMap();
         JsonSaveManager::filterFieldsRecursively(ref.as<JsonObject>(), root);
     }
@@ -50,6 +51,7 @@ public:
         root["sequencer"] = JsonSeqJsonRouter::getSaveMap();
         root["remotes"] = RemoteJsonRouter::getSaveMap();
         root["welcome"] = true;
+        root["timers"] = JsonTimerRouter::getSaveMap();
     }
     static JsonRouter<SpinSequencerController> router;
 };
