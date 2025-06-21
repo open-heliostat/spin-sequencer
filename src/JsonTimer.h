@@ -29,11 +29,12 @@ struct JsonDailyTimer {
     DaysOfWeek days;   // Bitfield for days of week
     String jsonCommand; // Store the actual JSON command
     bool executed;     // Track if timer was executed today
+    time_t lastExecuted; // Unix timestamp of last execution (0 if never executed)
 };
 
 class JsonTimer {
 public:
-    JsonTimer(JsonSeq& sequencer) : _sequencer(sequencer), _timerTaskHandle(nullptr) {}
+    JsonTimer(JsonSeq& sequencer) : _sequencer(sequencer), _timerTaskHandle(nullptr), _ntpSynced(false), _lastCheckTime(0) {}
     
     void begin() {
         xTaskCreate(
@@ -69,7 +70,8 @@ public:
             .minute = minute,
             .days = days,
             .jsonCommand = jsonCommand,
-            .executed = false
+            .executed = false,
+            .lastExecuted = 0
         };
         
         _timers.push_back(timer);
@@ -84,6 +86,11 @@ public:
 
     // Get a list of all timers
     std::vector<JsonDailyTimer> getTimers() const {
+        return _timers;
+    }
+    
+    // Get mutable reference to timers vector for modification
+    std::vector<JsonDailyTimer>& getTimersRef() {
         return _timers;
     }
 
@@ -122,11 +129,16 @@ public:
     }
 
     void checkTimers();
+    
+    // Check for missed timers after reboot and execute the latest one
+    void checkMissedTimers();
 
 private:
     JsonSeq& _sequencer;
     std::vector<JsonDailyTimer> _timers;
     TaskHandle_t _timerTaskHandle;
+    bool _ntpSynced;
+    time_t _lastCheckTime;
     friend void timerTask(void* parameter);
 };
 

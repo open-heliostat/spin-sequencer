@@ -58,12 +58,25 @@ JsonRouter<JsonTimer> JsonTimerRouter::router = JsonRouter<JsonTimer>(
                         DaysOfWeek days = obj["days"].is<uint8_t>() ? 
                             obj["days"].as<uint8_t>() : DOW_ALL;
 
+                        // Create timer and restore state
                         timer.addJsonDailyTimer(
                             obj["hour"].as<uint8_t>(),
                             obj["minute"].as<uint8_t>(),
                             days,
                             obj["command"].as<String>()
                         );
+                        
+                        // Restore executed state and lastExecuted timestamp if available
+                        auto& timers = timer.getTimersRef();
+                        if (!timers.empty()) {
+                            auto& lastTimer = timers.back();
+                            if (obj["executed"].is<bool>()) {
+                                lastTimer.executed = obj["executed"].as<bool>();
+                            }
+                            if (obj["lastExecuted"].is<time_t>()) {
+                                lastTimer.lastExecuted = obj["lastExecuted"].as<time_t>();
+                            }
+                        }
                     }
                 }
             }
@@ -72,7 +85,7 @@ JsonRouter<JsonTimer> JsonTimerRouter::router = JsonRouter<JsonTimer>(
         return false;
     }},
     {"clear", [](JsonVariant content, JsonTimer &timer) {
-        timer.getTimers().clear();
+        timer.getTimersRef().clear();
         return true;
     }}
 },
@@ -86,6 +99,7 @@ JsonRouter<JsonTimer> JsonTimerRouter::router = JsonRouter<JsonTimer>(
             timerObj["days"] = t.days;
             timerObj["command"] = t.jsonCommand;
             timerObj["executed"] = t.executed;
+            timerObj["lastExecuted"] = t.lastExecuted;
         }
     }}
 });
