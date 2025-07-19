@@ -74,7 +74,14 @@ JsonRouter<JsonTimer> JsonTimerRouter::router = JsonRouter<JsonTimer>(
     {"clear", [](JsonVariant content, JsonTimer &timer) {
         timer.getTimers().clear();
         return true;
-    }}
+    }},
+    {"executeLatestOnStart", [](JsonVariant content, JsonTimer &timer) {
+        if (content.is<bool>()) {
+            timer.executeLatestOnStart = content.as<bool>();
+            return true;
+        }
+        return false;
+    }},
 },
 {
     {"timers", [](JsonTimer &timer, JsonVariant target) {
@@ -87,7 +94,10 @@ JsonRouter<JsonTimer> JsonTimerRouter::router = JsonRouter<JsonTimer>(
             timerObj["command"] = t.jsonCommand;
             timerObj["executed"] = t.executed;
         }
-    }}
+    }},
+    {"executeLatestOnStart", [](JsonTimer &timer, JsonVariant target) {
+        target.set<bool>(timer.executeLatestOnStart);
+    }},
 });
 
 void JsonTimerService::begin() {

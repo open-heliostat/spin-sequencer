@@ -8,6 +8,7 @@
     import Button from './Button.svelte';
     import Text from './Text.svelte';
     import Clock from '~icons/tabler/clock';
+	import Checkbox from './Checkbox.svelte';
 
     export let restPath: string;
 
@@ -21,6 +22,7 @@
 
     interface TimersState {
         timers: Timer[];
+        executeLatestOnStart: boolean;
     }
 
     const DAYS = [
@@ -34,7 +36,8 @@
     ];
 
     let timersState: TimersState = {
-        timers: []
+        timers: [],
+        executeLatestOnStart: false
     };
 
     let newTimer = {
@@ -225,5 +228,15 @@
                 </tbody>
             </table>
         </div>
+
+        <GridForm>
+            <Checkbox
+                label="Execute latest timer on start"
+                bind:value={timersState.executeLatestOnStart}
+                onChange={() => {
+                    postJsonRest(restPath, { executeLatestOnStart: timersState.executeLatestOnStart });
+                }}
+            />
+        </GridForm>
     </div>
 </SettingsCard>

@@ -5,6 +5,8 @@
 #include <ArduinoJson.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include <vector>
+#include <algorithm>
 
 // Forward declare JsonTimer class for use in timerTask
 class JsonTimer;
@@ -122,12 +124,18 @@ public:
     }
 
     void checkTimers();
+    
+    // Execute the latest timer that should have been executed (useful after reboot)
+    bool executeLatestMissedTimer();
+
+    bool executeLatestOnStart = false; // Flag to execute latest timer on start
 
 private:
     JsonSeq& _sequencer;
     std::vector<JsonDailyTimer> _timers;
     TaskHandle_t _timerTaskHandle;
     friend void timerTask(void* parameter);
+    bool latestExecuted = false; // Track if the latest timer was executed
 };
 
 #endif

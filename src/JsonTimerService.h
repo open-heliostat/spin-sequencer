@@ -51,6 +51,7 @@ public:
         root["add"] = true;
         root["remove"] = true;
         root["clear"] = true;
+        root["executeLatestOnStart"] = true;
     }
 
     static JsonRouter<JsonTimer> router;
