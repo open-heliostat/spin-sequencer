@@ -151,6 +151,11 @@
                         bind:value={driverSettings.pwmConfig.pwm_autograd}
                         {onChange}
                     />
+                    <Checkbox
+                        label="StealthChop Mode"
+                        bind:value={driverSettings.pwmConfig.en_pwm_mode}
+                        {onChange}
+                    />
                 </div>
             </Collapsible>
 

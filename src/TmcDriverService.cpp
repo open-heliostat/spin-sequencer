@@ -39,6 +39,7 @@ JsonRouter<TMC5160Stepper> TMC5160StepperJsonRouter::router = JsonRouter<TMC5160
         target["pwm_freq"] = driver.pwm_freq();
         target["pwm_autoscale"] = driver.pwm_autoscale();
         target["pwm_autograd"] = driver.pwm_autograd();
+        target["en_pwm_mode"] = driver.en_pwm_mode();
     }},
     {"stallConfig", [](TMC5160Stepper &driver, const JsonVariant target) {
         target["sg_stop"] = driver.sg_stop();
@@ -175,6 +176,13 @@ JsonEventRouter<TMC5160Stepper> TMC5160StepperJsonRouter::pwmConfigRouter = Json
     {"pwm_autograd", [](JsonVariant content, TMC5160Stepper &driver) {
         if (content.is<bool>()) {
             driver.pwm_autograd(content.as<bool>());
+            return true;
+        }
+        return false;
+    }},
+    {"en_pwm_mode", [](JsonVariant content, TMC5160Stepper &driver) {
+        if (content.is<bool>()) {
+            driver.en_pwm_mode(content.as<bool>());
             return true;
         }
         return false;

@@ -272,6 +272,7 @@ export type StepperDriver = {
     pwm_freq: number;
     pwm_autoscale: boolean;
     pwm_autograd: boolean;
+    en_pwm_mode: boolean;
   };
   currentConfig: CurrentConfig;
 };
