@@ -52,6 +52,11 @@ public:
         root["remotes"] = RemoteJsonRouter::getSaveMap();
         root["welcome"] = true;
         root["timers"] = JsonTimerRouter::getSaveMap();
+        root["io"]["startButtonPin"] = true;
+        root["io"]["startButtonActiveLow"] = true;
+        root["io"]["startButtonDebounceMs"] = true;
+        root["io"]["statusLedPin"] = true;
+        root["io"]["statusLedActiveHigh"] = true;
     }
     static JsonRouter<SpinSequencerController> router;
 };

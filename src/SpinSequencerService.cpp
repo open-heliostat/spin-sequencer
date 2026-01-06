@@ -14,6 +14,47 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
     {"timers", [&](JsonVariant content, SpinSequencerController &controller) {
         return JsonTimerRouter::router.parse(content, controller.jsonTimer);
     }},
+    {"io", [&](JsonVariant content, SpinSequencerController &controller) {
+        if (!content.is<JsonObject>()) return false;
+        JsonObject obj = content.as<JsonObject>();
+        bool changed = false;
+
+        auto updateInt = [&](const char *key, int &target) {
+            if (obj[key].is<int>()) {
+                int val = obj[key].as<int>();
+                if (val != target) {
+                    target = val;
+                    changed = true;
+                }
+            }
+        };
+
+        auto updateBool = [&](const char *key, bool &target) {
+            if (obj[key].is<bool>()) {
+                bool val = obj[key].as<bool>();
+                if (val != target) {
+                    target = val;
+                    changed = true;
+                }
+            }
+        };
+
+        if (obj["startButtonDebounceMs"].is<int>()) {
+            uint16_t val = obj["startButtonDebounceMs"].as<uint16_t>();
+            if (val != controller.hardwareConfig.startButtonDebounceMs) {
+                controller.hardwareConfig.startButtonDebounceMs = val;
+                changed = true;
+            }
+        }
+
+        updateInt("startButtonPin", controller.hardwareConfig.startButtonPin);
+        updateBool("startButtonActiveLow", controller.hardwareConfig.startButtonActiveLow);
+        updateInt("statusLedPin", controller.hardwareConfig.statusLedPin);
+        updateBool("statusLedActiveHigh", controller.hardwareConfig.statusLedActiveHigh);
+
+        if (changed) controller.configureHardwarePins();
+        return changed;
+    }},
     {"welcome", [&](JsonVariant content, SpinSequencerController &controller) {
         if (content.is<JsonObject>()) {
             JsonObject obj = content.as<JsonObject>();
@@ -37,6 +78,16 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
     }},
     {"timers", [&](SpinSequencerController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) JsonTimerRouter::router.serialize(controller.jsonTimer, content);
+    }},
+    {"io", [&](SpinSequencerController &controller, JsonVariant content) {
+        if (content.is<JsonObject>()) {
+            JsonObject obj = content.as<JsonObject>();
+            obj["startButtonPin"] = controller.hardwareConfig.startButtonPin;
+            obj["startButtonActiveLow"] = controller.hardwareConfig.startButtonActiveLow;
+            obj["startButtonDebounceMs"] = controller.hardwareConfig.startButtonDebounceMs;
+            obj["statusLedPin"] = controller.hardwareConfig.statusLedPin;
+            obj["statusLedActiveHigh"] = controller.hardwareConfig.statusLedActiveHigh;
+        }
     }},
     {"welcome", [&](SpinSequencerController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) {
