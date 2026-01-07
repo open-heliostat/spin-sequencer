@@ -156,8 +156,8 @@ public:
     void scanMDNS() {
         int nrOfServices = MDNS.queryService("http", "tcp");
         for (int i = 0; i < nrOfServices; i++) {
-            if (MDNS.hasTxt(i, "Mac Address")) addRemote(MDNS.hostname(i), MDNS.IP(i).toString(), MDNS.txt(i, "Mac Address"));
-            else if (MDNS.hasTxt(i, "Firmware Version")) addRemote(MDNS.hostname(i), MDNS.IP(i).toString());
+            if (MDNS.hasTxt(i, "Mac Address")) addRemote(MDNS.hostname(i), MDNS.address(i).toString(), MDNS.txt(i, "Mac Address"));
+            else if (MDNS.hasTxt(i, "Firmware Version")) addRemote(MDNS.hostname(i), MDNS.address(i).toString());
         }
     }
 };

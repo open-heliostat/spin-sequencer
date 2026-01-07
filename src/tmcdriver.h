@@ -40,7 +40,7 @@ struct TMC5160Controller {
         Serial.println(driver.DRV_STATUS(), BIN);
         initDriver();
 
-        stepper = engine.stepperConnectToPin(STEP, 1);
+        stepper = engine.stepperConnectToPin(STEP);
         if (stepper) {
             stepper->setDirectionPin(DIR);
             stepper->setSpeedInHz(maxSpeed*microsteps);       // 200 steps/s
@@ -101,6 +101,7 @@ struct TMC5160Controller {
     }
 
     int32_t getSpeed() {
+        if (!stepper) return 0;
         return stepper->getCurrentSpeedInMilliHz()/(1000*microsteps);
     }
 
@@ -109,14 +110,17 @@ struct TMC5160Controller {
     }
 
     int32_t move() {
+        if (!stepper) return 0;
         return (stepper->targetPos()-stepper->getCurrentPosition())/microsteps;
     }
 
     void moveR(int32_t move) {
+        if (!stepper) return;
         stepper->moveTo(stepper->getCurrentPosition() + move * microsteps);
     }
 
     void moveR(double angle) {
+        if (!stepper) return;
         stepper->moveTo(stepper->getCurrentPosition() + angle*stepsPerRotation/360. * microsteps);
         // ESP_LOGI("Driver", "MoveR %f", angle);
         // Serial.println(driver.XACTUAL());
@@ -133,10 +137,12 @@ struct TMC5160Controller {
     }
 
     void move(double angle) {
+        if (!stepper) return;
         stepper->move((angle*stepsPerRotation/360.-double(this->move()))*microsteps);
     }
 
     void move(int32_t move) {
+        if (!stepper) return;
         stepper->move((move-this->move())*microsteps);
     }
 
@@ -148,10 +154,12 @@ struct TMC5160Controller {
     }
 
     double getAngle() {
+        if (!stepper) return 0.0;
         return mod(stepper->getCurrentPosition()*360./double(microsteps*stepsPerRotation), 360.);
     }
 
     double getTargetAngle() {
+        if (!stepper) return 0.0;
         return mod(stepper->targetPos()*360./double(microsteps), 360.);
     }
 
@@ -203,10 +211,12 @@ struct TMC5160Controller {
     // }
 
     void setAcceleration(uint32_t acc) {
+        if (!stepper) return;
         stepper->setAcceleration(acc*microsteps);
     }
 
     uint32_t getAcceleration() {
+        if (!stepper) return 0;
         return uint32_t(stepper->getAcceleration())/uint32_t(microsteps);
     }
 

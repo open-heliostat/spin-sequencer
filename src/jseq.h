@@ -48,7 +48,7 @@ public:
             }
             else {
                 if (lastCommandID != 0) {
-                    lostCommands += max(int32_t(command["id"]) - int32_t(lastCommandID) - 1, 0);
+                    lostCommands += max(int32_t(command["id"]) - int32_t(lastCommandID) - 1, int32_t(0));
                 }
                 lastCommandID = command["id"];
             }

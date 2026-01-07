@@ -5,7 +5,7 @@
 namespace ESPNow
 {
     // Forward declaration of callback
-    void staticReceiveCallback(const uint8_t *macAddr, const uint8_t *data, int dataLen);
+    void staticReceiveCallback(const esp_now_recv_info *recvInfo, const uint8_t *data, int dataLen);
     const uint8_t broadcastAddress[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
     uint8_t lastAddress[6];
     int maxSendRetries = 10;
@@ -196,9 +196,10 @@ namespace ESPNow
     //     printLabel = label;
     // }
 
-    void staticReceiveCallback(const uint8_t *macAddr, const uint8_t *data, int dataLen)
+    void staticReceiveCallback(const esp_now_recv_info *recvInfo, const uint8_t *data, int dataLen)
     // Called when data is received
     {
+        const uint8_t *macAddr = recvInfo->src_addr;
         uint32_t now = millis();
         // bool isRegistered = remoteMap.count(std::string((const char*)macAddr)) != 0;
         esp_now_peer_info_t peerInfo;
@@ -309,16 +310,18 @@ namespace ESPNow
         // }
     }
 
-    void sentCallback(const uint8_t *macAddr, esp_now_send_status_t status)
+    void sentCallback(const wifi_tx_info_t *txInfo, esp_now_send_status_t status)
     // Called when data is sent
     {
+        // Note: wifi_tx_info_t doesn't contain destination MAC in new ESP-IDF
+        // Using lastAddress which is set when sending messages
         if (status != ESP_NOW_SEND_SUCCESS)
         {
-            ESPNowPeer *peer = getPeer(macAddr);
+            ESPNowPeer *peer = getPeer(lastAddress);
             if (peer)
             {
                 peer->numLost++;
-                ESP_LOGI("ESP-NOW", "Lost packet to %s", macAddr);
+                ESP_LOGI("ESP-NOW", "Lost packet");
             }
             // esp_now_peer_info_t peerInfo;
             // peerInfo.channel = 0;

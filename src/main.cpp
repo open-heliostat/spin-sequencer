@@ -28,7 +28,12 @@ ESP32SvelteKit esp32sveltekit(&server, 200);
 
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 
-TMC5160Stepper driver1(D3, R_SENSE, D10, D9, D8);
+// Create dedicated SPI bus for TMC driver on HSPI to avoid conflict with Ethernet
+// Ethernet uses default SPI (VSPI), TMC uses HSPI
+SPIClass SPI_TMC(HSPI);
+
+// TMC driver uses dedicated HSPI bus
+TMC5160Stepper driver1(D3, R_SENSE, -1, &SPI_TMC);
 
 TMC5160Controller stepper1 = {driver1, engine, D1, D0};
 
@@ -63,7 +68,11 @@ void setup()
     server.config.max_open_sockets = 11;
     server.config.lru_purge_enable = true;
 
-    // start ESP32-SvelteKit
+    // Initialize HSPI bus for TMC driver on separate bus from Ethernet
+    // SCK, MISO, MOSI pins for TMC stepper driver
+    SPI_TMC.begin(D8, D9, D10);
+    
+    // start ESP32-SvelteKit (Ethernet uses default VSPI bus)
     esp32sveltekit.begin();
 
     engine.init();
@@ -75,8 +84,8 @@ void setup()
     // canControllerService.begin();
 
     // Pull pin 42 high to disable SPI on the LORA module
-    pinMode(41, OUTPUT);
-    digitalWrite(41, HIGH);
+    // pinMode(41, OUTPUT);
+    // digitalWrite(41, HIGH);
 
     // start LoRa controller
     // loraController.begin();
@@ -92,7 +101,7 @@ void loop()
     // Delete Arduino loop task, as it is not needed in this example
     // vTaskDelete(NULL);
     spinSequencerService.loop();
-    unsigned long now = millis();
+    // unsigned long now = millis();
 
     // canControllerService.loop();
 

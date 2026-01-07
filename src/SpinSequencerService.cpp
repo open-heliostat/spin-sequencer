@@ -2,19 +2,19 @@
 
 JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = JsonRouter<SpinSequencerController>(
 {
-    {"controller", [&](JsonVariant content, SpinSequencerController &controller) {
+    {"controller", [](JsonVariant content, SpinSequencerController &controller) {
         return ClosedLoopControllerJsonRouter::router.parse(content, controller.controller);
     }},
-    {"sequencer", [&](JsonVariant content, SpinSequencerController &controller) {
+    {"sequencer", [](JsonVariant content, SpinSequencerController &controller) {
         return JsonSeqJsonRouter::router.parse(content, controller.jsonSeq);
     }},
-    {"remotes", [&](JsonVariant content, SpinSequencerController &controller) {
+    {"remotes", [](JsonVariant content, SpinSequencerController &controller) {
         return RemoteJsonRouter::router.parse(content, controller.remotesController);
     }},
-    {"timers", [&](JsonVariant content, SpinSequencerController &controller) {
+    {"timers", [](JsonVariant content, SpinSequencerController &controller) {
         return JsonTimerRouter::router.parse(content, controller.jsonTimer);
     }},
-    {"io", [&](JsonVariant content, SpinSequencerController &controller) {
+    {"io", [](JsonVariant content, SpinSequencerController &controller) {
         if (!content.is<JsonObject>()) return false;
         JsonObject obj = content.as<JsonObject>();
         bool changed = false;
@@ -55,7 +55,7 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
         if (changed) controller.configureHardwarePins();
         return changed;
     }},
-    {"welcome", [&](JsonVariant content, SpinSequencerController &controller) {
+    {"welcome", [](JsonVariant content, SpinSequencerController &controller) {
         if (content.is<JsonObject>()) {
             JsonObject obj = content.as<JsonObject>();
             if (obj["text"].is<String>()) {
@@ -67,19 +67,19 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
     }},
 },
 {
-    {"controller", [&](SpinSequencerController &controller, JsonVariant content) {
+    {"controller", [](SpinSequencerController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) ClosedLoopControllerJsonRouter::router.serialize(controller.controller, content);
     }},
-    {"sequencer", [&](SpinSequencerController &controller, JsonVariant content) {
+    {"sequencer", [](SpinSequencerController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) JsonSeqJsonRouter::router.serialize(controller.jsonSeq, content);
     }},
-    {"remotes", [&](SpinSequencerController &controller, JsonVariant content) {
+    {"remotes", [](SpinSequencerController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) RemoteJsonRouter::router.serialize(controller.remotesController, content);
     }},
-    {"timers", [&](SpinSequencerController &controller, JsonVariant content) {
+    {"timers", [](SpinSequencerController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) JsonTimerRouter::router.serialize(controller.jsonTimer, content);
     }},
-    {"io", [&](SpinSequencerController &controller, JsonVariant content) {
+    {"io", [](SpinSequencerController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) {
             JsonObject obj = content.as<JsonObject>();
             obj["startButtonPin"] = controller.hardwareConfig.startButtonPin;
@@ -89,13 +89,13 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
             obj["statusLedActiveHigh"] = controller.hardwareConfig.statusLedActiveHigh;
         }
     }},
-    {"welcome", [&](SpinSequencerController &controller, JsonVariant content) {
+    {"welcome", [](SpinSequencerController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) {
             JsonObject obj = content.as<JsonObject>();
             obj["text"] = controller.welcomeText;
         }
     }},
-    {"diag", [&](SpinSequencerController &controller, JsonVariant content) {
+    {"diag", [](SpinSequencerController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) {
             JsonObject obj = content.as<JsonObject>();
             JsonObject stepperDiag = obj["stepper"].to<JsonObject>();
