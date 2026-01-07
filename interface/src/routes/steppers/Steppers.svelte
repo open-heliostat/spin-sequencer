@@ -15,5 +15,5 @@
 	{#snippet title()}
 		<span>Stepper</span>
 	{/snippet}
-	<StepperRestComp restPath={"/rest/spin-seq/controller/stepper"}></StepperRestComp>
+	<StepperRestComp restPath={"/rest/spin-seq/controller/stepper/"}></StepperRestComp>
 </SettingsCard>

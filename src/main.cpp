@@ -28,14 +28,13 @@ ESP32SvelteKit esp32sveltekit(&server, 200);
 
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 
-// Create dedicated SPI bus for TMC driver on HSPI to avoid conflict with Ethernet
-// Ethernet uses default SPI (VSPI), TMC uses HSPI
-SPIClass SPI_TMC(HSPI);
+// TMC driver and Ethernet share the same SPI bus with different CS pins
+// Ethernet: CS=D1, TMC: CS=D3
+// Both use the same SPI pins: SCK=D8, MISO=D9, MOSI=D10
+// TMC Stepper uses STEP=D2, DIR=D0
+TMC5160Stepper driver1(D3, R_SENSE, -1, &SPI);
 
-// TMC driver uses dedicated HSPI bus
-TMC5160Stepper driver1(D3, R_SENSE, -1, &SPI_TMC);
-
-TMC5160Controller stepper1 = {driver1, engine, D1, D0};
+TMC5160Controller stepper1 = {driver1, engine, D2, D0};
 
 Encoder encoder1 = Encoder(D4, D5);
 
@@ -60,7 +59,7 @@ ESPNowService espnowService = ESPNowService(&server, &esp32sveltekit, ESPNow::st
 void setup()
 {
     // start serial and filesystem
-    // Serial.begin(SERIAL_BAUD_RATE);
+    Serial.begin(SERIAL_BAUD_RATE);
 
     // increase httpd stack for HttpJsonRouter
     server.config.stack_size = 8192;
@@ -68,13 +67,9 @@ void setup()
     server.config.max_open_sockets = 11;
     server.config.lru_purge_enable = true;
 
-    // Initialize HSPI bus for TMC driver on separate bus from Ethernet
-    // SCK, MISO, MOSI pins for TMC stepper driver
-    SPI_TMC.begin(D8, D9, D10);
-    
-    // start ESP32-SvelteKit (Ethernet uses default VSPI bus)
+    // start ESP32-SvelteKit (Ethernet will initialize shared SPI bus)
     esp32sveltekit.begin();
-
+    
     engine.init();
     stepper1.init();
     spinSequencerService.begin();

@@ -11,14 +11,14 @@
 	let sequencerStatus: SequencerStatus;
 
     async function getSequencerStatus() {
-        return getJsonRest("/rest/spin-seq/sequencer/status", sequencerStatus)
+        return getJsonRest("/rest/spin-seq/sequencer/status/", sequencerStatus)
             .then((data) => {
                 sequencerStatus = data;
             });
     }
 
 	async function startSequencer() {
-        return postJsonRest("/rest/spin-seq/sequencer", {control:{execute:1,run:true}}).then(() => {
+        return postJsonRest("/rest/spin-seq/sequencer/", {control:{execute:1,run:true}}).then(() => {
             notifications.success("Sequencer started successfully.", 2000);
         }).catch((error) => {
             notifications.error("Failed to start sequencer: " + error.message, 3000);
@@ -26,7 +26,7 @@
 	}
 
 	async function stopSequencer() {
-		return postJsonRest("/rest/spin-seq/sequencer", {control:{execute:0,run:false}}).then(() => {
+		return postJsonRest("/rest/spin-seq/sequencer/", {control:{execute:0,run:false}}).then(() => {
             notifications.success("Sequencer stopped successfully.", 2000);
         }).catch((error) => {
             notifications.error("Failed to stop sequencer: " + error.message, 3000);

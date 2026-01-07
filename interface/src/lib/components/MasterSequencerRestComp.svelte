@@ -13,7 +13,7 @@
     
 
     export let restPath: string;
-    export let remotesPath: string = '/rest/spin-seq/remotes';
+    export let remotesPath: string = '/rest/spin-seq/remotes/';
 
     interface SequencerState {
         status?: {

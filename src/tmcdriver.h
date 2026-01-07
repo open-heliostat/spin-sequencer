@@ -45,8 +45,11 @@ struct TMC5160Controller {
             stepper->setDirectionPin(DIR);
             stepper->setSpeedInHz(maxSpeed*microsteps);       // 200 steps/s
             stepper->setAcceleration(maxAccel*microsteps);    // 40 steps/s²
+            ESP_LOGI("TMC", "Init: Stepper configured");
         }
-        else Serial.println("Stepper ERROR");
+        else {
+            ESP_LOGE("TMC", "Init: Stepper connection failed");
+        }
     }
 
     bool isConnected() {

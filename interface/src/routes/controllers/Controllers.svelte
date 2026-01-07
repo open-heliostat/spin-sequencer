@@ -4,6 +4,6 @@
 
 <ControllerRestComp
 	label="Controller"
-	restPath="/rest/spin-seq/controller"
+	restPath="/rest/spin-seq/controller/"
 	>
 </ControllerRestComp>

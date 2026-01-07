@@ -17,7 +17,7 @@
 
 {#await getRemotesSettings() then data}
 {#if data.isMaster}
-	<MasterSequencerRestComp restPath={'/rest/spin-seq/sequencer'} />
+	<MasterSequencerRestComp restPath={'/rest/spin-seq/sequencer/'} />
 {/if}
 {/await}
 
@@ -25,6 +25,6 @@
 	class="mx-0 my-1 flex flex-col space-y-4
      sm:mx-8 sm:my-8"
 >
-	<SequencerRestComp restPath={'/rest/spin-seq/sequencer'} />
-	<ClassicControllerRestComp restPath={'/rest/spin-seq/sequencer/controller'} />
+	<SequencerRestComp restPath={'/rest/spin-seq/sequencer/'} />
+	<ClassicControllerRestComp restPath={'/rest/spin-seq/sequencer/controller/'} />
 </div>

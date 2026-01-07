@@ -5,6 +5,6 @@
 	import WelcomeTextComp from '$lib/components/WelcomeTextComp.svelte';
 </script>
 <SequencerControl />
-<StatusComp restPath="rest/spin-seq/diag" />
+<StatusComp restPath="rest/spin-seq/diag/" />
 <WelcomeTextComp />
 <Restore></Restore>

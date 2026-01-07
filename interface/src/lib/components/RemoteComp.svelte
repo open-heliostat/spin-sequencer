@@ -46,7 +46,7 @@
 
     async function getSequencerData() {
         if (remote.ip) {
-            let path = "http://" + remote.ip + "/rest/spin-seq/diag/sequencer";
+            let path = "http://" + remote.ip + "/rest/spin-seq/diag/sequencer/";
             return getJsonRest(path, diag.sequencer, {signal: AbortSignal.timeout(1000)}).then((data) => {
                 diag.sequencer = data;
                 return diag;
@@ -59,7 +59,7 @@
     async function getSequencerStatus() {
         if (remote.ip) {
             lastHttpRequestTime = Date.now();
-            let path = "http://" + remote.ip + "/rest/spin-seq/sequencer/status";
+            let path = "http://" + remote.ip + "/rest/spin-seq/sequencer/status/";
             return getJsonRest(path, sequencerStatus, {signal: AbortSignal.timeout(1000)}).then((data) => {
                 sequencerStatus = data;
                 httpLatency = Date.now() - lastHttpRequestTime;
@@ -71,13 +71,13 @@
     }
 
     export async function runCommand(command: number, enableSeq = false) {
-        let path = "http://" + (remote.ip || remote.hostname) + "/rest/spin-seq/sequencer";
+        let path = "http://" + (remote.ip || remote.hostname) + "/rest/spin-seq/sequencer/";
         return postJsonRest(path, {control:{execute:command}})
             .then(() => {if (enableSeq && !diag?.sequencer?.isRunning) {setSequencerState(true); diag.sequencer.isRunning = true;}});
     }
 
     export async function setSequencerState(state: boolean) {
-        let path = "http://" + (remote.ip || remote.hostname) + "/rest/spin-seq/sequencer";
+        let path = "http://" + (remote.ip || remote.hostname) + "/rest/spin-seq/sequencer/";
         return postJsonRest(path, {control:{run:state}});
     }
 

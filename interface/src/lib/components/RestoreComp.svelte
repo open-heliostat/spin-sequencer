@@ -55,7 +55,7 @@
             }
             
             // Get sequencer commands
-            sequencerState = await getJsonRest('/rest/spin-seq/sequencer', {} as SequencerState);
+            sequencerState = await getJsonRest('/rest/spin-seq/sequencer/', {} as SequencerState);
             
             // Get AP settings for channel
             const apSettings = await getJsonRest('/rest/apSettings', {} as ApSettings);
@@ -64,7 +64,7 @@
             const espnowSettings = await getJsonRest('/rest/espnow', {} as EspNowSettings);
 
             // Get stepper config
-            const stepperConfig = await getJsonRest('/rest/spin-seq/controller/stepper/config', {} as StepperConfig);
+            const stepperConfig = await getJsonRest('/rest/spin-seq/controller/stepper/config/', {} as StepperConfig);
 
             console.log(stepperConfig)
             
@@ -111,7 +111,7 @@
                     throw new Error('Invalid configuration file format');
                 }
                 else {
-                    await postJsonRest('/rest/spin-seq/sequencer', {config:{commands:importedConfig.commands}});
+                    await postJsonRest('/rest/spin-seq/sequencer/', {config:{commands:importedConfig.commands}});
                 }
 
                 // Update WiFi settings (hostname)
@@ -142,12 +142,12 @@
 
                 // Update motor current settings if provided
                 if (importedConfig.motorCurrent) {
-                    const stepperConfig = await getJsonRest('/rest/spin-seq/controller/stepper/config', {} as StepperConfig);
+                    const stepperConfig = await getJsonRest('/rest/spin-seq/controller/stepper/config/', {} as StepperConfig);
                     if (stepperConfig) {
                         stepperConfig.irun = importedConfig.motorCurrent.irun || stepperConfig.irun;
                         stepperConfig.ihold = importedConfig.motorCurrent.ihold || stepperConfig.ihold;
                         stepperConfig.iscale = importedConfig.motorCurrent.iscale || stepperConfig.iscale;
-                        await postJsonRest('/rest/spin-seq/controller/stepper/config', stepperConfig);
+                        await postJsonRest('/rest/spin-seq/controller/stepper/config/', stepperConfig);
                     }
                 }
 
