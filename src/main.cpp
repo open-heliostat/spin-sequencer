@@ -32,9 +32,9 @@ FastAccelStepperEngine engine = FastAccelStepperEngine();
 // Ethernet: CS=D1, TMC: CS=D3
 // Both use the same SPI pins: SCK=D8, MISO=D9, MOSI=D10
 // TMC Stepper uses STEP=D2, DIR=D0
-TMC5160Stepper driver1(D3, R_SENSE, -1, &SPI);
+TMC5160Stepper driver1(STEPPER_CS_PIN, R_SENSE, -1, &SPI);
 
-TMC5160Controller stepper1 = {driver1, engine, D2, D0};
+TMC5160Controller stepper1 = {driver1, engine, STEPPER_STEP_PIN, STEPPER_DIR_PIN};
 
 Encoder encoder1 = Encoder(D4, D5);
 
@@ -69,7 +69,7 @@ void setup()
 
     // start ESP32-SvelteKit (Ethernet will initialize shared SPI bus)
     esp32sveltekit.begin();
-    
+
     engine.init();
     stepper1.init();
     spinSequencerService.begin();
