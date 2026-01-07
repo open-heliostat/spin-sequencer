@@ -22,7 +22,7 @@ Import("env")
 import hashlib
 
 
-OUTPUT_DIR = "build{}".format(os.path.sep)
+OUTPUT_DIR = "build{}release{}".format(os.path.sep, os.path.sep)
 
 def readFlag(flag):
     buildFlags = env.ParseFlags(env["BUILD_FLAGS"])
@@ -55,14 +55,9 @@ def bin_copy(source, target, env):
     if not os.path.isdir(OUTPUT_DIR):
         os.mkdir(OUTPUT_DIR)
 
-    for d in ['firmware']:
-        if not os.path.isdir("{}{}".format(OUTPUT_DIR, d)):
-            os.mkdir("{}{}".format(OUTPUT_DIR, d))
-
     # create string with location and file names based on variant
-    bin_file = "{}firmware{}{}.bin".format(OUTPUT_DIR, os.path.sep, variant)
-    md5_file = "{}firmware{}{}.md5".format(OUTPUT_DIR, os.path.sep, variant)
-    merged_file = "{}firmware{}{}_merged.bin".format(OUTPUT_DIR, os.path.sep, variant)
+    bin_file = "{}{}.bin".format(OUTPUT_DIR, variant)
+    md5_file = "{}{}.md5".format(OUTPUT_DIR, variant)
 
     # check if new target files exist and remove if necessary
     for f in [bin_file]:
@@ -73,17 +68,11 @@ def bin_copy(source, target, env):
     for f in [md5_file]:
         if os.path.isfile(f):
             os.remove(f)
-    
-    # check if new target files exist and remove if necessary
-    for f in [merged_file]:
-        if os.path.isfile(f):
-            os.remove(f)
 
     print("Renaming file to "+bin_file)
 
     # copy firmware.bin to firmware/<variant>.bin
     shutil.copy(str(target[0]), bin_file)
-    shutil.copy(str(target[0])[:-4] + "_merged.bin", merged_file)
 
     with open(bin_file,"rb") as f:
         result = hashlib.md5(f.read())

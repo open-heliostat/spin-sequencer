@@ -58,15 +58,13 @@ export type ApSettings = {
 
 export type LightState = {
 	led_on: boolean;
-	red: number;
-	green: number;
-	blue: number;
 };
 
 export type BrokerSettings = {
 	mqtt_path: string;
 	name: string;
 	unique_id: string;
+	status_topic: string;
 };
 
 export type NTPStatus = {
@@ -84,26 +82,13 @@ export type NTPSettings = {
 	tz_format: string;
 };
 
-export type GPSSettings = {
-	enabled: boolean;
-}
-
-export type GPSStatus = {
-	latitude: number;
-	longitude: number;
-	altitude: number;
-	numSats: number;
-	timeStr: string;
-	dateStr: string;
-	fixQuality: number;
-	hasSerial: boolean;
-}
-
 export type Analytics = {
 	max_alloc_heap: number;
 	psram_size: number;
 	free_psram: number;
+	used_psram: number;
 	free_heap: number;
+	used_heap: number;
 	total_heap: number;
 	min_free_heap: number;
 	core_temp: number;
@@ -161,223 +146,31 @@ export type MQTTSettings = {
 	client_id: string;
 	keep_alive: number;
 	clean_session: boolean;
+	message_interval_ms: number;
 };
 
-export type StepperSettings = {
-	name: string;
-	enableOnStart: boolean;
-	invertDirection: boolean;
-	maxSpeed: number;
-	maxAcceleration: number;
-	current: number;
-	stepsPerRot: number;
+
+export type Ethernet = {
+	connected: boolean;
 };
 
-export type MultiStepperSettings = {
-	steppers: StepperSettings[]
-}
-
-export type StepperControl = {
-	isEnabled: boolean;
-	direction: boolean;
-	speed: number;
-	move: number;
-	acceleration: number;
-	status: number;
-	version: number;
+export type EthernetStatus = {
+	connected: boolean;
+	local_ip: string;
+	mac_address: string;
+	subnet_mask: string;
+	gateway_ip?: string;
+	dns_ip_1?: string;
+	dns_ip_2?: string;
+	link_speed?: number;
 };
 
-export type StepperControlState = {
-	speed: number;
-	move: number;
-	accel: number;
-}
-
-export type StepperConfig = {
-	enabled: boolean;
-	maxSpeed: number;
-	maxAccel: number;
-	invertDirection: boolean;
-	driverCurrent: number;
-	stepsPerRot: number;
-	microsteps: number;
-	ihold: number;
-	irun: number;
-	iscale: number;
-}
-
-export type StepperDiag = {
-	status: number;
-	version: number;
-	isEnabled: boolean;
-}
-
-export type MultiStepperControl = {
-	steppers: StepperControl[];
+export type EthernetSettings = {
+	hostname: string;
+	static_ip_config: boolean;
+	local_ip?: string;
+	subnet_mask?: string;
+	gateway_ip?: string;
+	dns_ip_1?: string;
+	dns_ip_2?: string;
 };
-
-export type ControllerState = {
-	position: number;
-	target: number;
-	tolerance: number;
-	offset: number;
-	enabled: boolean;
-	invert: boolean;
-	encoderError: boolean;
-	limits: {
-		enabled: boolean;
-		begin: number;
-		end: number;
-	};
-	calibration: {
-		enabled: boolean;
-		running: boolean;
-		steps: number;
-		speed: number;
-		decay: number;
-	};
-}
-
-export interface CurrentConfig {
-    ihold: number;
-    irun: number;
-}
-
-export type StepperDriver = {
-  status: {
-    enabled: boolean;
-    stallguard: boolean;
-    overtemp: boolean;
-    overtemp_warning: boolean; 
-    cs_actual: number;
-    current_scale: number;
-  };
-  chopConfig: {
-    toff: number;
-    hstrt: number;
-    hend: number;
-    tbl: number;
-    microsteps: number;
-  };
-  stallConfig: {
-    sg_stop: boolean;
-    semin: number;
-    semax: number;
-    sedn: number;
-    sgt: number;
-  };
-  pwmConfig: {
-    pwm_ofs: number;
-    pwm_grad: number;
-    pwm_freq: number;
-    pwm_autoscale: boolean;
-    pwm_autograd: boolean;
-    en_pwm_mode: boolean;
-  };
-  currentConfig: CurrentConfig;
-};
-
-export type CanSettings = {
-	enabled: boolean;
-	txId: number;
-	rxId: number;
-	messageHistory: string[];
-	speed: number;
-	messagePack: boolean;
-	sendMessage?: string;
-};
-
-export type SpinDiagnostics = {
-	mcu: {
-		version: string;
-		freeHeap: number;
-		freeSketchSpace: number;
-		cpuFreq: number;
-	},
-	stepper: {
-		isEnabled: boolean;
-		version: number;
-		status: number;
-	},
-	wifi: {
-		apEnabled: number;
-		rssi: number;
-		ssid: string;
-		hostname: string;
-		ip: string;
-		channel: number;
-	},
-	encoder: {
-		angle: number;
-		error: boolean;
-		invert: boolean;
-		newData: boolean;
-	},
-	can: {
-		enabled: boolean;
-		rxId: number;
-		speed: number;
-		messagePack: boolean;
-	},
-	http: {
-		numClients: number;
-		maxClients: number;
-		maxUriHandlers: number;
-		lruPurgeEnable:	boolean;
-	},
-	sequencer: {
-		isRunning: boolean;
-		numCommands: number;
-		selectedCommand: number;
-		nextCommand: number;
-	},
-	remotes: {
-		numRemotes: number;
-		isMaster: boolean;
-	},
-	espnow: {
-		enabled: boolean;
-		macAddress: string;
-	},
-}
-
-export interface SpinRemote {
-    hostname: string;
-    ip: string;
-    rxId: number;
-	macAddress: string;
-	version?: string;
-    needsUpdate?: boolean;
-}
-
-export type RemotesSettings = {
-	isMaster: boolean;
-}
-
-export type ESPNowPeer = {
-	mac: string;
-	numPings: number;
-	numSent: number;
-	numReceived: number;
-	numLost: number;
-	pingMeanTime: number;
-};
-
-export interface SequencerStatus {
-	isRunning: boolean;
-	selectedCommand: number;
-	commandRunning: boolean;
-	nextCommand: number;
-	numCommands: number;
-	commandDuration: number;
-	commandDurationLeft: number;
-}
-
-export interface SequencerState {
-	status: SequencerStatus;
-	config: {
-		commands: Object[];
-		selectedCommand: number;
-		isRunning: boolean;
-	};
-}

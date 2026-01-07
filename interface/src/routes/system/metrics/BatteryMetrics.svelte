@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import { slide } from 'svelte/transition';
 	import { cubicOut } from 'svelte/easing';
@@ -13,7 +13,7 @@
 	Chart.register(...registerables);
 	Chart.register(LuxonAdapter);
 
-	let heapChartElement: HTMLCanvasElement;
+	let heapChartElement: HTMLCanvasElement = $state();
 	let heapChart: Chart;
 
 	onMount(() => {
@@ -24,16 +24,16 @@
 				datasets: [
 					{
 						label: 'SOC',
-						borderColor: daisyColor('--p'),
-						backgroundColor: daisyColor('--p', 50),
+						borderColor: daisyColor('--color-primary'),
+						backgroundColor: daisyColor('--color-primary', 50),
 						borderWidth: 2,
 						data: $batteryHistory.soc,
 						yAxisID: 'y1'
 					},
 					{
 						label: 'Charging',
-						borderColor: daisyColor('--s', 25),
-						backgroundColor: daisyColor('--s', 25),
+						borderColor: daisyColor('--color-secondary', 25),
+						backgroundColor: daisyColor('--color-secondary', 25),
 						borderWidth: 0,
 						data: $batteryHistory.charging,
 						fill: true,
@@ -63,10 +63,10 @@
 					x: {
 						type: 'time',
 						grid: {
-							color: daisyColor('--bc', 10)
+							color: daisyColor('--color-base-content', 10)
 						},
 						ticks: {
-							color: daisyColor('--bc')
+							color: daisyColor('--color-base-content')
 						},
 						display: true
 					},
@@ -75,7 +75,7 @@
 						title: {
 							display: true,
 							text: 'State of Charge [%]',
-							color: daisyColor('--bc'),
+							color: daisyColor('--color-base-content'),
 							font: {
 								size: 16,
 								weight: 'bold'
@@ -84,11 +84,11 @@
 						position: 'left',
 						min: 0,
 						suggestedMax: 100,
-						grid: { color: daisyColor('--bc', 10) },
+						grid: { color: daisyColor('--color-base-content', 10) },
 						ticks: {
-							color: daisyColor('--bc')
+							color: daisyColor('--color-base-content')
 						},
-						border: { color: daisyColor('--bc', 10) }
+						border: { color: daisyColor('--color-base-content', 10) }
 					},
 					y2: {
 						type: 'linear',
@@ -142,15 +142,19 @@
 </script>
 
 <SettingsCard collapsible={false}>
-	<Battery slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">Battery History</span>
+	{#snippet icon()}
+		<Battery class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+	{/snippet}
+	{#snippet title()}
+		<span>Battery History</span>
+	{/snippet}
 
 	<div class="w-full overflow-x-auto">
 		<div
 			class="flex w-full flex-col space-y-1 h-60"
 			transition:slide|local={{ duration: 300, easing: cubicOut }}
 		>
-			<canvas bind:this={heapChartElement} />
+			<canvas bind:this={heapChartElement}></canvas>
 		</div>
 	</div>
 </SettingsCard>

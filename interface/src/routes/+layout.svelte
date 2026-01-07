@@ -7,8 +7,8 @@
 	import { batteryHistory } from '$lib/stores/battery';
 	import { socket } from '$lib/stores/socket';
 	import type { userProfile } from '$lib/stores/user';
-	import { page } from '$app/stores';
-	import { Modals, closeModal } from 'svelte-modals';
+	import { page } from '$app/state';
+	import { Modals, modals } from 'svelte-modals';
 	import Toast from '$lib/components/toasts/Toast.svelte';
 	import { notifications } from '$lib/components/toasts/notifications';
 	import { fade } from 'svelte/transition';
@@ -20,24 +20,30 @@
 	import type { RSSI } from '$lib/types/models';
 	import type { Battery } from '$lib/types/models';
 	import type { DownloadOTA } from '$lib/types/models';
+	import type { Ethernet } from '$lib/types/models';
 
-	// export let data: LayoutData;
+	interface Props {
+		data: LayoutData;
+		children?: import('svelte').Snippet;
+	}
+
+	let { data, children }: Props = $props();
 
 	onMount(async () => {
 		if ($user.bearer_token !== '') {
 			await validateUser($user);
 		}
+		if (!(page.data.features.security && $user.bearer_token === '')) {
+			initSocket();
+		}
 	});
 
-	$: if (!($page.data.features.security && $user.bearer_token === '')) {
-		initSocket();
-	}
-
 	const initSocket = () => {
-		const ws_token = $page.data.features.security ? '?access_token=' + $user.bearer_token : '';
+		const ws_token = page.data.features.security ? '?access_token=' + $user.bearer_token : '';
+		const ws_protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
 		socket.init(
-			`ws://${window.location.host}/ws/events${ws_token}`,
-			$page.data.features.event_use_json
+			`${ws_protocol}://${window.location.host}/ws/events${ws_token}`,
+			page.data.features.event_use_json
 		);
 		addEventListeners();
 	};
@@ -52,9 +58,10 @@
 		socket.on('error', handleError);
 		socket.on('rssi', handleNetworkStatus);
 		socket.on('notification', handleNotification);
-		if ($page.data.features.analytics) socket.on('analytics', handleAnalytics);
-		if ($page.data.features.battery) socket.on('battery', handleBattery);
-		if ($page.data.features.download_firmware) socket.on('otastatus', handleOAT);
+		if (page.data.features.analytics) socket.on('analytics', handleAnalytics);
+		if (page.data.features.battery) socket.on('battery', handleBattery);
+		if (page.data.features.download_firmware) socket.on('otastatus', handleOAT);
+		if (page.data.features.ethernet) socket.on('ethernet', handleEthernet);
 	};
 
 	const removeEventListeners = () => {
@@ -65,6 +72,7 @@
 		socket.off('notification', handleNotification);
 		socket.off('battery', handleBattery);
 		socket.off('otastatus', handleOAT);
+		socket.off('ethernet', handleEthernet);
 	};
 
 	async function validateUser(userdata: userProfile) {
@@ -125,15 +133,19 @@
 
 	const handleOAT = (data: DownloadOTA) => telemetry.setDownloadOTA(data);
 
-	let menuOpen = false;
+	const handleEthernet = (data: Ethernet) => {
+		telemetry.setEthernet(data);
+	};
+
+	let menuOpen = $state(false);
 </script>
 
 <svelte:head>
-	<title>{$page.data.appName}</title>
+	<title>{page.data.title}</title>
 </svelte:head>
 
-{#if $page.data.features.security && $user.bearer_token === ''}
-	<Login />
+{#if page.data.features.security && $user.bearer_token === ''}
+	<Login signIn={initSocket} />
 {:else}
 	<div class="drawer lg:drawer-open">
 		<input id="main-menu" type="checkbox" class="drawer-toggle" bind:checked={menuOpen} />
@@ -142,13 +154,13 @@
 			<Statusbar />
 
 			<!-- Main page content here -->
-			<slot />
+			{@render children?.()}
 		</div>
 		<!-- Side Navigation -->
 		<div class="drawer-side z-30 shadow-lg">
-			<label for="main-menu" class="drawer-overlay" />
+			<label for="main-menu" class="drawer-overlay"></label>
 			<Menu
-				on:menuClicked={() => {
+				closeMenu={() => {
 					menuOpen = false;
 				}}
 			/>
@@ -157,15 +169,17 @@
 {/if}
 
 <Modals>
-	<!-- svelte-ignore a11y-click-events-have-key-events -->
-	<div
-		role="button"
-		tabindex="0"
-		slot="backdrop"
-		class="fixed inset-0 z-40 max-h-full max-w-full bg-black/20 backdrop-blur"
-		transition:fade
-		on:click={closeModal}
-	/>
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	{#snippet backdrop({ close })}
+		<div
+			class="fixed inset-0 z-40 max-h-full max-w-full bg-black/20 backdrop-blur-sm"
+			transition:fade|global
+			onclick={() => close()}
+			role="button"
+			tabindex="0"
+			aria-label="Close modal"
+		></div>
+	{/snippet}
 </Modals>
 
 <Toast />

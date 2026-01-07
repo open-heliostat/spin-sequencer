@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { page } from '$app/stores';
-	import { openModal, closeAllModals } from 'svelte-modals';
+	import { page } from '$app/state';
+	import { modals } from 'svelte-modals';
 	import { user } from '$lib/stores/user';
 	import { notifications } from '$lib/components/toasts/notifications';
 	import ConfirmDialog from '$lib/components/ConfirmDialog.svelte';
@@ -11,25 +11,27 @@
 	import { compareVersions } from 'compare-versions';
 	import { onMount } from 'svelte';
 
-	export let update = false;
+	interface Props {
+		update?: boolean;
+	}
 
-	let firmwareVersion: string;
+	let { update = $bindable(false) }: Props = $props();
+
+	let firmwareVersion: string = $state('');
 	let firmwareDownloadLink: string;
 
 	async function getGithubAPI() {
-		const githubUrl = `https://api.github.com/repos/${$page.data.github}/releases/latest`;
+		const githubUrl = `https://api.github.com/repos/${page.data.github}/releases/latest`;
 		try {
-			const response = await fetch(
-				githubUrl,
-				{
-					method: 'GET',
-					headers: {
-						accept: 'application/vnd.github+json',
-						'X-GitHub-Api-Version': '2022-11-28'
-					}
+			const response = await fetch(githubUrl, {
+				method: 'GET',
+				headers: {
+					accept: 'application/vnd.github+json',
+					'X-GitHub-Api-Version': '2022-11-28'
 				}
-			);
+			});
 			if (response.status !== 200) {
+				notifications.error('Failed to fetch latest release from GitHub.', 5000);
 				throw new Error(`Failed to fetch latest release from ${githubUrl}`);
 			}
 			const results = await response.json();
@@ -37,14 +39,13 @@
 			update = false;
 			firmwareVersion = '';
 
-			if (compareVersions(results.tag_name, $page.data.features.firmware_version) === 1) {
+			if (compareVersions(results.tag_name, page.data.features.firmware_version) === 1) {
 				// iterate over assets and find the correct one
 				for (let i = 0; i < results.assets.length; i++) {
 					// check if the asset is of type *.bin
 					if (
 						results.assets[i].name.includes('.bin') &&
-						results.assets[i].name.includes($page.data.features.firmware_built_target) &&
-						!results.assets[i].name.includes('merged.bin')
+						results.assets[i].name.includes(page.data.features.firmware_built_target)
 					) {
 						update = true;
 						firmwareVersion = results.tag_name;
@@ -54,7 +55,7 @@
 				}
 			}
 		} catch (error) {
-			console.error('Error:', error);
+			console.warn(error);
 		}
 	}
 
@@ -63,7 +64,7 @@
 			const apiResponse = await fetch('/rest/downloadUpdate', {
 				method: 'POST',
 				headers: {
-					Authorization: $page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
+					Authorization: page.data.features.security ? 'Bearer ' + $user.bearer_token : 'Basic',
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({ download_url: url })
@@ -74,7 +75,7 @@
 	}
 
 	onMount(() => {
-		if ($page.data.features.download_firmware && (!$page.data.features.security || $user.admin)) {
+		if (page.data.features.download_firmware && (!page.data.features.security || $user.admin)) {
 			getGithubAPI();
 			const interval = setInterval(
 				async () => {
@@ -86,7 +87,7 @@
 	});
 
 	function confirmGithubUpdate(url: string) {
-		openModal(ConfirmDialog, {
+		modals.open(ConfirmDialog, {
 			title: 'Confirm flashing new firmware to the device',
 			message: 'Are you sure you want to overwrite the existing firmware with a new one?',
 			labels: {
@@ -95,8 +96,8 @@
 			},
 			onConfirm: () => {
 				postGithubDownload(url);
-				openModal(GithubUpdateDialog, {
-					onConfirm: () => closeAllModals()
+				modals.open(GithubUpdateDialog, {
+					onConfirm: () => modals.closeAll()
 				});
 			}
 		});
@@ -106,7 +107,7 @@
 {#if update}
 	<button
 		class="btn btn-square btn-ghost h-9 w-9"
-		on:click={() => confirmGithubUpdate(firmwareDownloadLink)}
+		onclick={() => confirmGithubUpdate(firmwareDownloadLink)}
 	>
 		<span
 			class="indicator-item indicator-top indicator-center badge badge-info badge-xs top-2 scale-75 lg:top-1"

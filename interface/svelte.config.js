@@ -15,12 +15,12 @@ const config = {
 			precompress: false,
 			strict: true
 		}),
-        csp: {
-			directives: {
-				'frame-ancestors': ['self', 'https://maps.google.com']
-			}
-		}
-		//prerender: { default: true },
+		alias: {
+			$src: './src'
+		},
+        output: {
+            bundleStrategy: 'single'
+        }
 	}
 };
 
