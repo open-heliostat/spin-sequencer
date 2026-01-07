@@ -133,7 +133,9 @@
 </script>
 
 <SettingsCard>
-    <span slot="title">Sequencer</span>
+    {#snippet title()}
+        <span>Sequencer</span>
+    {/snippet}
     {#await getSequencerState()}
         <Spinner></Spinner>
     {:then nothing}
@@ -223,7 +225,9 @@
                 </table>
             </div>
             <Collapsible> 
-                <span slot="title">Status</span>
+                {#snippet title()}
+                    <span>Status</span>
+                {/snippet}
                 <div class="status-grid">
                     <div>Running: 
                         <span class={sequencerState?.status.isRunning ? 'active' : ''}>

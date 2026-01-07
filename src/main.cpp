@@ -16,7 +16,7 @@
 #include <PsychicHttpServer.h>
 #include <SpinSequencerService.h>
 #include <controller.h>
-#include <CanControllerService.h>
+// #include <CanControllerService.h>
 #include <ESPNowService.h>
 // #include <lora.h>
 
@@ -37,12 +37,12 @@ Encoder encoder1 = Encoder(D4, D5);
 ClosedLoopController closedLoopController1 = {stepper1, encoder1};
 MotorController motorController = {stepper1, encoder1};
 
-CanIsoTPController<CanIsoTPMessage> canController = CanIsoTPController<CanIsoTPMessage>();
-CanControllerService canControllerService = CanControllerService{&server, 
-                                                                    &esp32sveltekit, 
-                                                                    canController};
+// CanIsoTPController<CanIsoTPMessage> canController = CanIsoTPController<CanIsoTPMessage>();
+// CanControllerService canControllerService = CanControllerService{&server, 
+//                                                                     &esp32sveltekit, 
+//                                                                     canController};
 
-SpinSequencerController spinSequencer = SpinSequencerController{motorController, closedLoopController1, canController, &server};
+SpinSequencerController spinSequencer = SpinSequencerController{motorController, closedLoopController1, &server};
 
 SpinSequencerService spinSequencerService = SpinSequencerService{&server, 
                                                                  &esp32sveltekit, 
@@ -72,7 +72,7 @@ void setup()
     stepper1.disable();
     
     // start CAN controller
-    canControllerService.begin();
+    // canControllerService.begin();
 
     // Pull pin 42 high to disable SPI on the LORA module
     pinMode(41, OUTPUT);
@@ -94,7 +94,7 @@ void loop()
     spinSequencerService.loop();
     unsigned long now = millis();
 
-    canControllerService.loop();
+    // canControllerService.loop();
 
     // if (now - lastTick > 1000) {
     //     ESP_LOGI("CAN", "Sending packet ... ");

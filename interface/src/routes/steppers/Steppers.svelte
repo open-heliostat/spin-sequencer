@@ -12,6 +12,8 @@
 </script>
 
 <SettingsCard>
-	<span slot="title">Stepper</span>
+	{#snippet title()}
+		<span>Stepper</span>
+	{/snippet}
 	<StepperRestComp restPath={"/rest/spin-seq/controller/stepper"}></StepperRestComp>
 </SettingsCard>

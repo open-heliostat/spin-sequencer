@@ -181,7 +181,9 @@
 </script>
 
 <SettingsCard>
-    <span slot="title">Backup & Restore</span>
+    {#snippet title()}
+        <span>Backup & Restore</span>
+    {/snippet}
     <div class="flex flex-col space-y-4">
         <div class="flex flex-row gap-4">
             <Button label="Export Configuration" onClick={downloadConfig}>

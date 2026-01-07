@@ -102,8 +102,12 @@
 </script>
 
 <SettingsCard>
-    <Clock slot="icon" class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
-    <span slot="title">Daily Timers</span>
+    {#snippet icon()}
+        <Clock class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
+    {/snippet}
+    {#snippet title()}
+        <span>Daily Timers</span>
+    {/snippet}
 
     <div class="w-full overflow-x-auto">
         <div class="mb-4">

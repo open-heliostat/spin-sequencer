@@ -73,7 +73,7 @@
 	</div>
 
 	<!-- CAN Section -->
-	<div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+	<!-- <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
 		<h3 class="text-lg font-semibold mb-2 dark:text-gray-200">CAN</h3>
 		<div class="space-y-2">
 			<p class="text-sm dark:text-gray-300">Enabled: <span class="font-mono">{diag.can.enabled ? 'Yes' : 'No'}</span></p>
@@ -81,7 +81,7 @@
 			<p class="text-sm dark:text-gray-300">Speed: <span class="font-mono">{diag.can.speed} kBps</span></p>
 			<p class="text-sm dark:text-gray-300">Messagepack: <span class="font-mono">{diag.can.messagePack ? 'Yes' : 'No'}</span></p>
 		</div>
-	</div>
+	</div> -->
 
 	<!-- HTTP Section -->
 	<div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">

@@ -41,8 +41,12 @@
 </script>
 
 <SettingsCard>
-	<CANTopology slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-    <span slot="title">Can Settings</span>
+	{#snippet icon()}
+		<CANTopology class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+	{/snippet}
+	{#snippet title()}
+		<span>Can Settings</span>
+	{/snippet}
     {#await getCanSettings()}
     <Spinner></Spinner>
     {:then nothing}

@@ -112,7 +112,9 @@
 </script>
 
 <SettingsCard>
-	<span slot="title">{label} Controller</span>
+	{#snippet title()}
+		<span>{label} Controller</span>
+	{/snippet}
     {#await getControllerState()}
     <Spinner></Spinner>
     {:then nothing}

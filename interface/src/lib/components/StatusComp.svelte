@@ -27,8 +27,12 @@
 </script>
 
 <SettingsCard>
-	<Info slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-	<span slot="title">Status</span>
+	{#snippet icon()}
+		<Info class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+	{/snippet}
+	{#snippet title()}
+		<span>Status</span>
+	{/snippet}
 	{#await getDiag()}
 	<Spinner></Spinner>
 	{:then diag}

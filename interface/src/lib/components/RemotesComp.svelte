@@ -186,8 +186,12 @@
 </script>
 
 <SettingsCard>
-    <Remote slot="icon" class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
-    <span slot="title">Remotes Manager</span>
+    {#snippet icon()}
+        <Remote class="flex-shrink-0 mr-2 h-6 w-6 self-end" />
+    {/snippet}
+    {#snippet title()}
+        <span>Remotes Manager</span>
+    {/snippet}
 
         <Slider
             label="Select Command"
@@ -205,7 +209,9 @@
 
     <!-- Remotes list -->
     <Collapsible open={remotes.length > 0}>
-        <span slot="title">Registered Remotes ({remotes.length})</span>
+        {#snippet title()}
+            <span>Registered Remotes ({remotes.length})</span>
+        {/snippet}
         {#if remotes.length === 0}
             <p class="text-gray-500 dark:text-gray-400">No remotes configured</p>
         {:else}
@@ -269,7 +275,9 @@
 
     <!-- Add new remote form -->
     <Collapsible>
-        <span slot="title">Import Remotes</span>
+        {#snippet title()}
+            <span>Import Remotes</span>
+        {/snippet}
         <GridForm>
             <Checkbox
                 label="Is Master"

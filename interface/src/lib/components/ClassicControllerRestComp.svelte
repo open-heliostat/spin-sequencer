@@ -73,7 +73,9 @@
 </script>
 
 <SettingsCard>
-    <span slot="title">Classic Controller</span>
+    {#snippet title()}
+        <span>Classic Controller</span>
+    {/snippet}
     {#await getState()}
         <Spinner />
     {:then nothing}
@@ -127,7 +129,9 @@
             </GridForm>
 
             <Collapsible>
-                <span slot="title">Status</span>
+                {#snippet title()}
+                    <span>Status</span>
+                {/snippet}
                 <GridForm>
                     <div class="status-grid">
                         <div>Position: {controllerState?.position.toFixed(2)}°</div>

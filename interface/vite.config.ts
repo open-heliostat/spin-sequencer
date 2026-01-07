@@ -1,8 +1,8 @@
-import { sveltekit } from '@sveltejs/kit/vite';
-import type { UserConfig } from 'vite';
 import Icons from 'unplugin-icons/vite';
-import viteLittleFS from './vite-plugin-littlefs';
+import type { UserConfig } from 'vite';
+import { sveltekit } from '@sveltejs/kit/vite';
 import tailwindcss from '@tailwindcss/vite';
+import viteLittleFS from './vite-plugin-littlefs';
 
 const config: UserConfig = {
 	plugins: [
@@ -12,7 +12,7 @@ const config: UserConfig = {
 		}),
 		tailwindcss(),
 		// Shorten file names for LittleFS 32 char limit
-		viteLittleFS()
+		// viteLittleFS()
 	],
 	server: {
 		proxy: {

@@ -125,21 +125,25 @@
 </script>
 
 <SettingsCard>
-    <Remote slot="icon" class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
-    <span slot="title" class="h-7 flex items-center gap-2 w-full">
-        <a href={"http://" + (remote.ip ? remote.ip : (remote.hostname + ".local"))} target="_blank" rel="noopener noreferrer">
-            {remote.hostname || remote.ip}
-        </a>
-        <div class="flex-grow"></div>
-        {#if espnowPeers?.length > 0 && remote.macAddress}
-            {#each espnowPeers.filter(p => p && p.mac === remote.macAddress) as peer}
-                {@const lossRatio = (peer.numLost / peer.numSent * 100).toFixed(1)}
-                <span class="text-sm text-gray-500">
-                    (ESPNow: {peer.numReceived}/{peer.numSent} msgs, {peer.pingMeanTime.toFixed(1)}ms, {peer.numLost} lost ({lossRatio}%){httpLatency ? ", HTTP: " + httpLatency + "ms" : ""})
-                </span>
-            {/each}
-        {/if}
-    </span>
+    {#snippet icon()}
+        <Remote class="lex-shrink-0 mr-2 h-6 w-6 self-end" />
+    {/snippet}
+    {#snippet title()}
+        <span class="h-7 flex items-center gap-2 w-full">
+            <a href={"http://" + (remote.ip ? remote.ip : (remote.hostname + ".local"))} target="_blank" rel="noopener noreferrer">
+                {remote.hostname || remote.ip}
+            </a>
+            <div class="flex-grow"></div>
+            {#if espnowPeers?.length > 0 && remote.macAddress}
+                {#each espnowPeers.filter(p => p && p.mac === remote.macAddress) as peer}
+                    {@const lossRatio = (peer.numLost / peer.numSent * 100).toFixed(1)}
+                    <span class="text-sm text-gray-500">
+                        (ESPNow: {peer.numReceived}/{peer.numSent} msgs, {peer.pingMeanTime.toFixed(1)}ms, {peer.numLost} lost ({lossRatio}%){httpLatency ? ", HTTP: " + httpLatency + "ms" : ""})
+                    </span>
+                {/each}
+            {/if}
+        </span>
+    {/snippet}
     {#if sequencerStatus}
         <GridForm>
             <Checkbox
@@ -161,7 +165,9 @@
         </GridForm>
     {/if}
     <Collapsible>
-        <span slot="title">Diagnostics</span>
+        {#snippet title()}
+            <span>Diagnostics</span>
+        {/snippet}
         {#await getDiag()}
             <Spinner></Spinner>
         {:then diag}

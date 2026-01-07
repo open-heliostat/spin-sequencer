@@ -24,7 +24,9 @@
         <form>
             <!-- Chopper Configuration -->
             <Collapsible>
-                <span slot="title">Chopper Configuration</span>
+                {#snippet title()}
+                    <span>Chopper Configuration</span>
+                {/snippet}
                 <div class="w-full grid grid-flow-row grid-form items-center">
                     <Slider
                         label="TOFF"
@@ -71,7 +73,9 @@
 
             <!-- Stallguard Configuration -->
             <Collapsible>
-                <span slot="title">StallGuard Configuration</span>
+                {#snippet title()}
+                    <span>StallGuard Configuration</span>
+                {/snippet}
                 <div class="w-full grid grid-flow-row grid-form items-center">
                     <Checkbox
                         label="StallGuard Enable"
@@ -115,7 +119,9 @@
 
             <!-- PWM Configuration -->
             <Collapsible>
-                <span slot="title">PWM Configuration</span>
+                {#snippet title()}
+                    <span>PWM Configuration</span>
+                {/snippet}
                 <div class="w-full grid grid-flow-row grid-form items-center">
                     <Slider
                         label="PWM Offset"
@@ -161,7 +167,9 @@
 
             <!-- Current Configuration -->
             <Collapsible>
-                <span slot="title">Current Configuration</span>
+                {#snippet title()}
+                    <span>Current Configuration</span>
+                {/snippet}
                 <div class="w-full grid grid-flow-row grid-form items-center">
                     <Slider
                         label="Hold Current"

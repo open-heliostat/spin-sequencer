@@ -19,6 +19,13 @@
 	import Metrics from '~icons/tabler/report-analytics';
 	import Bug from '~icons/tabler/bug';
 	import PlugConnected from '~icons/tabler/plug-connected';
+	import GPS from '~icons/tabler/satellite';
+	import CAN from '~icons/tabler/topology-bus';
+	import Rotation from '~icons/tabler/rotate-dot'
+	import Sequencer from '~icons/tabler/mist';
+	import Home from '~icons/tabler/home';
+	import Clock from '~icons/tabler/clock';
+	import ESPNow from '~icons/tabler/broadcast';
 	import { page } from '$app/state';
 	import { user } from '$lib/stores/user';
 
@@ -47,9 +54,39 @@
 
 	let menuItems = $state([
 		{
-			title: 'Demo App',
+			title: 'Home',
+			icon: Home,
+			href: '/home',
+			feature: true,
+		},
+		{
+			title: 'Sequencer',
+			icon: Sequencer,
+			href: '/sequencer',
+			feature: true,
+		},
+		{
+			title: 'Timers',
+			icon: Clock,
+			href: '/timers', 
+			feature: true,
+		},
+		{
+			title: 'Controllers',
+			icon: Rotation,
+			href: '/controllers',
+			feature: false,
+		},
+		{
+			title: 'Remote',
+			icon: Remote,
+			href: '/remote',
+			feature: true,
+		},
+		{
+			title: 'Steppers',
 			icon: Control,
-			href: '/demo',
+			href: '/steppers',
 			feature: true
 		},
 		{
@@ -68,6 +105,25 @@
 					icon: NTP,
 					href: '/connections/ntp',
 					feature: page.data.features.ntp
+				},
+				{
+					title: 'GPS',
+					icon: GPS,
+					href: '/connections/gps',
+					feature: page.data.features.gps,
+					
+				},
+				{
+					title: "CAN",
+					icon: CAN,
+					href: "/connections/can",
+					feature: page.data.features.can,
+					},
+				{
+					title: "ESPNow",
+					icon: ESPNow,
+					href: "/connections/espnow",
+					feature: true,
 				}
 			]
 		},

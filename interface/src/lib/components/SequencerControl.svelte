@@ -43,7 +43,9 @@
 
 {#if sequencerStatus}
 	<SettingsCard>
-		<span slot="title" class={sequencerStatus?.isRunning ? "text-green-500" : "text-red-500"}>Installation {sequencerStatus?.isRunning ? "Running" : "Stopped"}</span>
+		{#snippet title()}
+			<span class={sequencerStatus?.isRunning ? "text-green-500" : "text-red-500"}>Installation {sequencerStatus?.isRunning ? "Running" : "Stopped"}</span>
+		{/snippet}
 		<GridForm>
 			<SequencerProgressBar
 				{sequencerStatus}

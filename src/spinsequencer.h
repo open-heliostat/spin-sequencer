@@ -4,7 +4,7 @@
 #include <closedloopcontroller.h>
 #include <controller.h>
 #include <jseq.h>
-#include <CanControllerService.h>
+// #include <CanControllerService.h>
 #include <RemoteService.h>
 #include <JsonTimerService.h>
 #include <ESPNowService.h>
@@ -48,7 +48,7 @@ public:
     MotorController &motorController;
     ClosedLoopController &controller;
     JsonSeq jsonSeq;
-    CanIsoTPController<CanIsoTPMessage> &canController;
+    // CanIsoTPController<CanIsoTPMessage> &canController;
     PsychicHttpServer *server;
     RemotesController remotesController = {};
     JsonTimer jsonTimer = {jsonSeq};
@@ -56,8 +56,8 @@ public:
     SequencerHardwareConfig hardwareConfig = {};
     SequencerHardwareState hardwareState = {};
 
-    SpinSequencerController(MotorController &motorController, ClosedLoopController &controller, CanIsoTPController<CanIsoTPMessage> &canController, PsychicHttpServer *server) :
-            motorController(motorController), controller(controller), jsonSeq(motorController), canController(canController), server(server) 
+    SpinSequencerController(MotorController &motorController, ClosedLoopController &controller, PsychicHttpServer *server) :
+            motorController(motorController), controller(controller), jsonSeq(motorController), server(server) 
     {
         hardwareConfig.startButtonPin = FACTORY_SEQ_START_BUTTON_PIN;
         hardwareConfig.startButtonActiveLow = FACTORY_SEQ_START_BUTTON_ACTIVE_LOW;
@@ -65,12 +65,12 @@ public:
         hardwareConfig.statusLedPin = FACTORY_SEQ_STATUS_LED_PIN;
         hardwareConfig.statusLedActiveHigh = FACTORY_SEQ_STATUS_LED_ACTIVE_HIGH;
 
-        canController.messageCallback = [this](String message) {
-            jsonSeq.readCommand(message);
-        };
-        canController.clientMappingCallback = [this](uint32_t rxId) {
-            remotesController.addRemote(rxId);
-        };
+        // canController.messageCallback = [this](String message) {
+        //     jsonSeq.readCommand(message);
+        // };
+        // canController.clientMappingCallback = [this](uint32_t rxId) {
+        //     remotesController.addRemote(rxId);
+        // };
         jsonSeq.broadcastMessage = [&](String message) {
             // canController.sendMessage(message, uint32_t(0));
             ESPNow::broadcast(message);
@@ -78,9 +78,9 @@ public:
         jsonSeq.broadcastMessageWithRetry = [&](String message, int numRetries) {
             ESPNow::broadcast(message, numRetries);
         };
-        jsonSeq.sendMessage = [&](String message, uint32_t address) {
-            canController.sendMessage(message, address);
-        };
+        // jsonSeq.sendMessage = [&](String message, uint32_t address) {
+        //     canController.sendMessage(message, address);
+        // };
         ESPNow::setMessageCallback([&](String message) {
             ESP_LOGI("ESPNow", "Message: %s", message.c_str());
             jsonSeq.readCommand(message);
