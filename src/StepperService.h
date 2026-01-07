@@ -27,8 +27,9 @@ public:
         JsonDocument ref = getSaveMap();
         JsonSaveManager::filterFieldsRecursively(ref.as<JsonObject>(), root);
     }
-    static StateUpdateResult update(JsonObject &root, TMC5160Controller &state)
+    static StateUpdateResult update(JsonObject &root, TMC5160Controller &state, const String &originId)
     { 
+        (void)originId; // origin unused for stepper updates
         if (router.parse(root, state) && JsonSaveManager::needsToSave(root, getSaveMap())) return StateUpdateResult::CHANGED;
         else return StateUpdateResult::UNCHANGED;
     }

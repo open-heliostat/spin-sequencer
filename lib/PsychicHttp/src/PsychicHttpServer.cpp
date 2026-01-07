@@ -25,16 +25,6 @@ PsychicHttpServer::PsychicHttpServer() :
   config.global_user_ctx = this;
   config.global_user_ctx_free_fn = destroy;
   config.max_uri_handlers = 20;
-
-  #ifdef ENABLE_ASYNC
-    // It is advisable that httpd_config_t->max_open_sockets > MAX_ASYNC_REQUESTS
-    // Why? This leaves at least one socket still available to handle
-    // quick synchronous requests. Otherwise, all the sockets will
-    // get taken by the long async handlers, and your server will no
-    // longer be responsive.
-    config.max_open_sockets = ASYNC_WORKER_COUNT + 1;
-    config.lru_purge_enable = true;
-  #endif
 }
 
 PsychicHttpServer::~PsychicHttpServer()
@@ -56,8 +46,7 @@ PsychicHttpServer::~PsychicHttpServer()
 
 void PsychicHttpServer::destroy(void *ctx)
 {
-  PsychicHttpServer *temp = (PsychicHttpServer *)ctx;
-  delete temp;
+  // do not release any resource for PsychicHttpServer in order to be able to restart it after stopping
 }
 
 esp_err_t PsychicHttpServer::listen(uint16_t port)
@@ -71,11 +60,6 @@ esp_err_t PsychicHttpServer::listen(uint16_t port)
 esp_err_t PsychicHttpServer::_start()
 {
   esp_err_t ret;
-
-  #ifdef ENABLE_ASYNC
-    // start workers
-    start_async_req_workers();
-  #endif
 
   //fire it up.
   ret = _startServer();
@@ -141,7 +125,8 @@ PsychicEndpoint* PsychicHttpServer::on(const char* uri, http_method method, Psyc
     .method   = method,
     .handler  = PsychicEndpoint::requestCallback,
     .user_ctx = endpoint,
-    .is_websocket = handler->isWebSocket()
+    .is_websocket = handler->isWebSocket(),
+    .supported_subprotocol = handler->getSubprotocol()
   };
   
   // Register endpoint with ESP-IDF server
@@ -186,7 +171,7 @@ PsychicEndpoint* PsychicHttpServer::on(const char* uri, http_method method, Psyc
 void PsychicHttpServer::onNotFound(PsychicHttpRequestCallback fn)
 {
   PsychicWebHandler *handler = new PsychicWebHandler();
-  handler->onRequest(fn);
+  handler->onRequest(fn == nullptr ? PsychicHttpServer::defaultNotFoundHandler : fn);
 
   this->defaultEndpoint->setHandler(handler);
 }
@@ -232,7 +217,7 @@ void PsychicHttpServer::onOpen(PsychicClientCallback handler) {
 
 esp_err_t PsychicHttpServer::openCallback(httpd_handle_t hd, int sockfd)
 {
-  ESP_LOGI(PH_TAG, "New client connected %d", sockfd);
+  ESP_LOGD(PH_TAG, "New client connected %d", sockfd);
 
   //get our global server reference
   PsychicHttpServer *server = (PsychicHttpServer*)httpd_get_global_user_ctx(hd);
@@ -258,7 +243,7 @@ void PsychicHttpServer::onClose(PsychicClientCallback handler) {
 
 void PsychicHttpServer::closeCallback(httpd_handle_t hd, int sockfd)
 {
-  ESP_LOGI(PH_TAG, "Client disconnected %d", sockfd);
+  ESP_LOGD(PH_TAG, "Client disconnected %d", sockfd);
 
   PsychicHttpServer *server = (PsychicHttpServer*)httpd_get_global_user_ctx(hd);
 

@@ -29,8 +29,9 @@ public:
         JsonSaveManager::filterFieldsRecursively(ref.as<JsonObject>(), root);
     }
 
-    static StateUpdateResult update(JsonObject &root, JsonSeq &state)
+    static StateUpdateResult update(JsonObject &root, JsonSeq &state, const String &originId)
     { 
+        (void)originId; // origin unused for sequencer updates
         if (router.parse(root, state) && JsonSaveManager::needsToSave(root, getSaveMap())) 
             return StateUpdateResult::CHANGED;
         else 

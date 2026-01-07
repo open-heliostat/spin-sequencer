@@ -29,8 +29,9 @@ public:
         root["current"] = settings.current;
     }
 
-    static StateUpdateResult update(JsonObject &root, StepperSettings &settings)
+    static StateUpdateResult update(JsonObject &root, StepperSettings &settings, const String &originId)
     {   
+        (void)originId; // origin unused for stepper settings updates
         settings.name = root["name"] | "Stepper";
         settings.enableOnStart = root["enableOnStart"] | false;
         settings.invertDirection = root["invertDirection"] | false;
@@ -61,13 +62,14 @@ public:
             stepper.read(stepper, obj);
         }
     }
-    static StateUpdateResult update(JsonObject &root, MultiStepperSettings &settings)
+    static StateUpdateResult update(JsonObject &root, MultiStepperSettings &settings, const String &originId)
     {
+        (void)originId; // origin unused for multi-stepper updates
         JsonArray jsonArray = root["steppers"].as<JsonArray>();
         bool hasChanged = false;
         for (int i = 0; i < min(jsonArray.size(), settings.settings.size()); i++) {
             JsonObject obj = jsonArray[i];
-            if (settings.settings[i].update(obj, settings.settings[i]) == StateUpdateResult::CHANGED) hasChanged = true;
+            if (StepperSettings::update(obj, settings.settings[i], originId) == StateUpdateResult::CHANGED) hasChanged = true;
         }
         return hasChanged ? StateUpdateResult::CHANGED : StateUpdateResult::UNCHANGED;
     }

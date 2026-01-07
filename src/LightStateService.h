@@ -49,8 +49,9 @@ public:
         root["blue"] = settings.blue;
     }
 
-    static StateUpdateResult update(JsonObject &root, LightState &lightState)
+    static StateUpdateResult update(JsonObject &root, LightState &lightState, const String &originId)
     {
+        (void)originId; // origin unused for light state updates
         boolean newState = root["led_on"] | DEFAULT_LED_STATE;
         float red = root["red"] | 0.;
         float green = root["green"] | 0.;
@@ -71,8 +72,9 @@ public:
         root["state"] = settings.ledOn ? ON_STATE : OFF_STATE;
     }
 
-    static StateUpdateResult homeAssistUpdate(JsonObject &root, LightState &lightState)
+    static StateUpdateResult homeAssistUpdate(JsonObject &root, LightState &lightState, const String &originId)
     {
+        (void)originId; // origin unused for home assistant updates
         String state = root["state"];
         // parse new led state
         boolean newState = false;

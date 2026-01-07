@@ -30,8 +30,9 @@ public:
         JsonSaveManager::filterFieldsRecursively(ref.as<JsonObject>(), root);
     }
 
-    static StateUpdateResult update(JsonObject& root, ESPNowState& state)
+    static StateUpdateResult update(JsonObject& root, ESPNowState& state, const String &originId)
     {
+        (void)originId;
         if (router.parse(root, state) && JsonSaveManager::needsToSave(root, getSaveMap())) {
             return StateUpdateResult::CHANGED;
         }

@@ -37,8 +37,9 @@ public:
         root["unique_id"] = settings.uniqueId;
     }
 
-    static StateUpdateResult update(JsonObject &root, LightMqttSettings &settings)
+    static StateUpdateResult update(JsonObject &root, LightMqttSettings &settings, const String &originId)
     {
+        (void)originId; // origin unused for MQTT settings updates
         settings.mqttPath = root["mqtt_path"] | SettingValue::format("homeassistant/light/#{unique_id}");
         settings.name = root["name"] | SettingValue::format("light-#{unique_id}");
         settings.uniqueId = root["unique_id"] | SettingValue::format("light-#{unique_id}");

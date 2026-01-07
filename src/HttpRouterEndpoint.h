@@ -122,7 +122,7 @@ public:
                             JsonObject obj = resolvePath(path, jsonObject);
                             obj.set(json.as<JsonObject>());
 
-                            StateUpdateResult outcome = _statefulService->updateWithoutPropagation(jsonObject, _stateUpdater);
+                            StateUpdateResult outcome = _statefulService->updateWithoutPropagation(jsonObject, _stateUpdater, _servicePath);
 
                             if (outcome == StateUpdateResult::ERROR)
                             {

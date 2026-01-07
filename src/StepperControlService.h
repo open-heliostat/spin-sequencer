@@ -36,8 +36,9 @@ public:
         // Serial.println(settings.status);
     }
 
-    static StateUpdateResult update(JsonObject &root, StepperControl &settings)
+    static StateUpdateResult update(JsonObject &root, StepperControl &settings, const String &originId)
     {
+        (void)originId; // origin unused for stepper control updates
         bool hasChanged = false;
         if (root["isEnabled"].is<bool>() && settings.isEnabled != root["isEnabled"]) {
             settings.isEnabled = root["isEnabled"];
@@ -100,13 +101,14 @@ public:
             stepper.read(stepper, obj);
         }
     }
-    static StateUpdateResult update(JsonObject &root, StepperControllers &steppers)
+    static StateUpdateResult update(JsonObject &root, StepperControllers &steppers, const String &originId)
     {
+        (void)originId; // origin unused for aggregated steppers updates
         JsonArray jsonArray = root["steppers"].as<JsonArray>();
         bool hasChanged = false;
         for (int i = 0; i < min(jsonArray.size(), steppers.steppers.size()); i++) {
             JsonObject obj = jsonArray[i];
-            if (steppers.steppers[i].update(obj, steppers.steppers[i]) == StateUpdateResult::CHANGED) hasChanged = true;
+            if (StepperControl::update(obj, steppers.steppers[i], originId) == StateUpdateResult::CHANGED) hasChanged = true;
         }
         return hasChanged ? StateUpdateResult::CHANGED : StateUpdateResult::UNCHANGED;
     }

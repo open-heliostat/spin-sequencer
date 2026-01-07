@@ -32,8 +32,9 @@ public:
         JsonDocument ref = getSaveMap();
         JsonSaveManager::filterFieldsRecursively(ref.as<JsonObject>(), root);
     }
-    static StateUpdateResult update(JsonObject &root, ClosedLoopController &state)
+    static StateUpdateResult update(JsonObject &root, ClosedLoopController &state, const String &originId)
     { 
+        (void)originId; // origin unused for closed loop controller updates
         if (router.parse(root, state) && JsonSaveManager::needsToSave(root, getSaveMap())) return StateUpdateResult::CHANGED;
         else return StateUpdateResult::UNCHANGED;
     }
@@ -95,7 +96,8 @@ public:
         root["curAngle"] = state.curAngle;
     }
 
-    static StateUpdateResult update(JsonObject &root, ClosedLoopControllerState &state) {
+    static StateUpdateResult update(JsonObject &root, ClosedLoopControllerState &state, const String &originId) {
+        (void)originId; // origin unused for controller state updates
         bool changed = false;
         if (root["targetAngle"].is<double>() & state.targetAngle != root["targetAngle"]) {
             state.targetAngle = root["targetAngle"];
@@ -127,13 +129,14 @@ public:
             controller.read(controller, obj);
         }
     }
-    static StateUpdateResult update(JsonObject &root, ClosedLoopControllerStates &controllers)
+    static StateUpdateResult update(JsonObject &root, ClosedLoopControllerStates &controllers, const String &originId)
     {
+        (void)originId; // origin unused for aggregated controller states
         JsonArray jsonArray = root["controllers"].as<JsonArray>();
         bool hasChanged = false;
         for (int i = 0; i < min(jsonArray.size(), controllers.controllers.size()); i++) {
             JsonObject obj = jsonArray[i];
-            if (controllers.controllers[i].update(obj, controllers.controllers[i]) == StateUpdateResult::CHANGED) hasChanged = true;
+            if (ClosedLoopControllerState::update(obj, controllers.controllers[i], originId) == StateUpdateResult::CHANGED) hasChanged = true;
         }
         return hasChanged ? StateUpdateResult::CHANGED : StateUpdateResult::UNCHANGED;
     }
@@ -179,7 +182,8 @@ public:
         root["limitB"] = state.limitB;
         root["name"] = state.name;
     }
-    static StateUpdateResult update(JsonObject &root, ClosedLoopControllerSettings &state) {
+    static StateUpdateResult update(JsonObject &root, ClosedLoopControllerSettings &state, const String &originId) {
+        (void)originId; // origin unused for controller settings updates
         state.tolerance = root["tolerance"] | 0.2;
         state.enabled = root["enabled"] | false;
         state.hasLimits = root["hasLimits"] | false;
@@ -210,13 +214,14 @@ public:
             controller.read(controller, obj);
         }
     }
-    static StateUpdateResult update(JsonObject &root, MultiClosedLoopControllerSettings &settings)
+    static StateUpdateResult update(JsonObject &root, MultiClosedLoopControllerSettings &settings, const String &originId)
     {
+        (void)originId; // origin unused for aggregated controller settings
         JsonArray jsonArray = root["controllers"].as<JsonArray>();
         bool hasChanged = false;
         for (int i = 0; i < min(jsonArray.size(), settings.settings.size()); i++) {
             JsonObject obj = jsonArray[i];
-            if (settings.settings[i].update(obj, settings.settings[i]) == StateUpdateResult::CHANGED) hasChanged = true;
+            if (ClosedLoopControllerSettings::update(obj, settings.settings[i], originId) == StateUpdateResult::CHANGED) hasChanged = true;
         }
         return hasChanged ? StateUpdateResult::CHANGED : StateUpdateResult::UNCHANGED;
     }

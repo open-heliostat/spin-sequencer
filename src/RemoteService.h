@@ -30,8 +30,9 @@ public:
         JsonSaveManager::filterFieldsRecursively(ref.as<JsonObject>(), root);
     }
 
-    static StateUpdateResult update(JsonObject& root, RemotesController& state)
+    static StateUpdateResult update(JsonObject& root, RemotesController& state, const String &originId)
     {
+        (void)originId; // origin currently unused for remote updates
         if (router.parse(root, state) && JsonSaveManager::needsToSave(root, getSaveMap())) {
             return StateUpdateResult::CHANGED;
         }

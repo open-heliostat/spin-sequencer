@@ -182,8 +182,9 @@ public:
     {
         router.serialize(state, root);
     }
-    static StateUpdateResult update(JsonObject &root, T &state)
+    static StateUpdateResult update(JsonObject &root, T &state, const String &originId)
     { 
+        (void)originId; // origin unused for static router updates
         if (router.parse(root, state)) return StateUpdateResult::CHANGED;
         else return StateUpdateResult::UNCHANGED;
     }

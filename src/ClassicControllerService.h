@@ -32,8 +32,9 @@ public:
         JsonSaveManager::filterFieldsRecursively(ref.as<JsonObject>(), root);
     }
 
-    static StateUpdateResult update(JsonObject &root, MotorController &state)
+    static StateUpdateResult update(JsonObject &root, MotorController &state, const String &originId)
     { 
+        (void)originId; // origin unused for classic controller updates
         if (router.parse(root, state) && JsonSaveManager::needsToSave(root, getSaveMap())) 
             return StateUpdateResult::CHANGED;
         return StateUpdateResult::UNCHANGED;
@@ -71,7 +72,8 @@ public:
         root["pingPong"] = state.pingPong;
     }
 
-    static StateUpdateResult update(JsonObject &root, ClassicControllerState &state) {
+    static StateUpdateResult update(JsonObject &root, ClassicControllerState &state, const String &originId) {
+        (void)originId; // origin unused for classic controller state
         bool changed = false;
         
         if (root["targetPosition"].is<double>() && state.targetPosition != root["targetPosition"]) {

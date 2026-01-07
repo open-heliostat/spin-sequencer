@@ -9,7 +9,7 @@
  *   https://github.com/theelims/ESP32-sveltekit
  *
  *   Copyright (C) 2018 - 2023 rjwats
- *   Copyright (C) 2023 - 2024 theelims
+ *   Copyright (C) 2023 - 2025 theelims
  *
  *   All Rights Reserved. This software may be modified and distributed under
  *   the terms of the LGPL v3 license. See the LICENSE file for details.
@@ -111,7 +111,7 @@ public:
         root["subnet_mask"] = settings.subnetMask.toString();
     }
 
-    static StateUpdateResult update(JsonObject &root, APSettings &settings)
+    static StateUpdateResult update(JsonObject &root, APSettings &settings, const String &originId)
     {
         APSettings newSettings = {};
         newSettings.provisionMode = root["provision_mode"] | FACTORY_AP_PROVISION_MODE;
@@ -130,9 +130,9 @@ public:
         newSettings.ssidHidden = root["ssid_hidden"] | FACTORY_AP_SSID_HIDDEN;
         newSettings.maxClients = root["max_clients"] | FACTORY_AP_MAX_CLIENTS;
 
-        JsonUtils::readIP(root, "local_ip", newSettings.localIP, FACTORY_AP_LOCAL_IP);
-        JsonUtils::readIP(root, "gateway_ip", newSettings.gatewayIP, FACTORY_AP_GATEWAY_IP);
-        JsonUtils::readIP(root, "subnet_mask", newSettings.subnetMask, FACTORY_AP_SUBNET_MASK);
+        JsonUtils::readIPStr(root, "local_ip", newSettings.localIP, FACTORY_AP_LOCAL_IP);
+        JsonUtils::readIPStr(root, "gateway_ip", newSettings.gatewayIP, FACTORY_AP_GATEWAY_IP);
+        JsonUtils::readIPStr(root, "subnet_mask", newSettings.subnetMask, FACTORY_AP_SUBNET_MASK);
 
         if (newSettings == settings)
         {

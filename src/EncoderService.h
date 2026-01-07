@@ -16,7 +16,8 @@ public:
         root["angle"] = state.angle;
     }
 
-    static StateUpdateResult update(JsonObject &root, EncoderState &state) {
+    static StateUpdateResult update(JsonObject &root, EncoderState &state, const String &originId) {
+        (void)originId; // origin unused for encoder updates
         bool changed = false;
         if (root["angle"].is<double>() & state.angle != root["angle"]) {
             state.angle = root["angle"];

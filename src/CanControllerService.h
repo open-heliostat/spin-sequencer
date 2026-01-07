@@ -35,8 +35,9 @@ public:
         JsonSaveManager::filterFieldsRecursively(ref.as<JsonObject>(), root);
     }
 
-    static StateUpdateResult update(JsonObject& root, CanIsoTPController<CanIsoTPMessage>& state)
+    static StateUpdateResult update(JsonObject& root, CanIsoTPController<CanIsoTPMessage>& state, const String &originId)
     {
+        (void)originId; // origin currently unused for CAN updates
         if (router.parse(root, state) && JsonSaveManager::needsToSave(root, getSaveMap())) {
             return StateUpdateResult::CHANGED;
         }
