@@ -154,8 +154,10 @@ inline void SpinSequencerController::handleStartButton()
         if (hardwareState.startButtonStable != hardwareState.startButtonReading) {
             hardwareState.startButtonStable = hardwareState.startButtonReading;
             if (hardwareState.startButtonStable && !jsonSeq.isRunning) {
+                // Mirror the web UI start behavior: always launch command 1 and mark running
+                jsonSeq.selectCommand(1);
                 jsonSeq.isRunning = true;
-                jsonSeq.readCommand();
+                jsonSeq.readCommand(1);
             }
         }
     }
