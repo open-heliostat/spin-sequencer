@@ -159,6 +159,7 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
 
 void SpinSequencerService::begin() 
 {
+    _udpRouterEndpoint.begin();
     _httpRouterEndpoint.begin();
     _fsPersistence.readFromFS();
     _state.init();

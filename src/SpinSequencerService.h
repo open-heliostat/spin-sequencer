@@ -6,6 +6,7 @@
 #include <FSPersistence.h>
 #include <StatelessService.h>
 #include <HttpRouterEndpoint.h>
+#include <UdpRouterEndpoint.h>
 #include <ClosedLoopControllerService.h>
 #include <JseqService.h>
 
@@ -68,6 +69,7 @@ public:
     SpinSequencerService(PsychicHttpServer *server,
                          ESP32SvelteKit *sveltekit,
                          SpinSequencerController &controller) :
+                            _udpRouterEndpoint(_router.read, _router.update, this, "/rest/spin-seq"),
                             _httpRouterEndpoint(_router.read, _router.update, this, server, "/rest/spin-seq", sveltekit->getSecurityManager()),
                             _fsPersistence(_router.readForSave, _router.update, this, sveltekit->getFS(), "/config/spin-seq.json"),
                             StatefulService(controller) {}
@@ -75,6 +77,7 @@ public:
     void loop();
 
 private:
+    UdpRouterEndpoint<SpinSequencerController&> _udpRouterEndpoint;
     HttpRouterEndpoint<SpinSequencerController&> _httpRouterEndpoint;
     FSPersistence<SpinSequencerController&> _fsPersistence;
     SpinSequencerControllerJsonRouter _router;
