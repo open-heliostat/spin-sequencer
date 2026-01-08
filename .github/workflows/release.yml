@@ -12,8 +12,12 @@ permissions:
 
 jobs:
   build:
-    name: Build
+    name: Build ${{ matrix.env }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        env: [seeed_xiao_esp32s3, seeed_xiao_master]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -39,24 +43,23 @@ jobs:
       - name: Install PlatformIO
         run: python3 -m pip install platformio cryptography
 
-      - name: Build seeed_xiao_esp32s3 firmware
-        run: platformio run -e "seeed_xiao_esp32s3"
+      - name: Build firmware (${{ matrix.env }})
+        run: platformio run -e "${{ matrix.env }}"
 
-      - name: Build seeed_xiao_master firmware
-        run: platformio run -e "seeed_xiao_master"
-
-      - name: Archive firmware binaries
+      - name: Archive firmware binaries (${{ matrix.env }})
         uses: actions/upload-artifact@v4
         with:
-          name: firmware
-          path: build/release/*
+          name: firmware-${{ matrix.env }}
+          path: |
+            build/release/*${{ matrix.env }}*
           retention-days: 1
 
-      - name: Archive merged firmware binaries
+      - name: Archive merged firmware binaries (${{ matrix.env }})
         uses: actions/upload-artifact@v4
         with:
-          name: merged-firmware
-          path: build/merged/*
+          name: merged-firmware-${{ matrix.env }}
+          path: |
+            build/merged/*${{ matrix.env }}*
           retention-days: 1
 
   release:
@@ -81,13 +84,15 @@ jobs:
       - name: Download firmware artifacts
         uses: actions/download-artifact@v4
         with:
-          name: firmware
+          pattern: firmware-*
+          merge-multiple: true
           path: firmware
       
       - name: Download merged firmware artifacts
         uses: actions/download-artifact@v4
         with:
-          name: merged-firmware
+          pattern: merged-firmware-*
+          merge-multiple: true
           path: merged-firmware
       
       - uses: softprops/action-gh-release@v2
