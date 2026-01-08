@@ -91,6 +91,19 @@
         });
     }
 
+    function selectGithubAsset(assets: any[]) {
+        const filtered = assets.filter((asset: any) => {
+            const name = asset.name.toLowerCase();
+            return name.endsWith('.bin') &&
+                name.includes($page.data.features.firmware_built_target.toLowerCase()) &&
+                !name.includes('merged') &&
+                !name.includes('webflash');
+        });
+
+        const preferred = filtered.find((asset: any) => asset.name.toLowerCase().includes('ota'));
+        return preferred ?? filtered[0];
+    }
+
     async function checkForUpdates() {
         const githubUrl = `https://api.github.com/repos/${$page.data.github}/releases/latest`;
         try {
@@ -106,19 +119,9 @@
             }
             const results = await response.json();
 
-            // iterate over assets and find the correct one
-            for (let asset of results.assets) {
-                // check if the asset is of type *.bin
-                if (
-                    asset.name.includes('.bin') &&
-                    asset.name.includes($page.data.features.firmware_built_target) &&
-                    !asset.name.includes('merged.bin')
-                ) {
-                    githubUpdate.version = results.tag_name;
-                    githubUpdate.downloadLink = asset.browser_download_url;
-                    break;
-                }
-            }
+            const asset = selectGithubAsset(results.assets);
+            githubUpdate.version = asset ? results.tag_name : '';
+            githubUpdate.downloadLink = asset ? asset.browser_download_url : '';
 
             checkRemotesForUpdates();
         } catch (error) {
@@ -127,6 +130,7 @@
     }
 
     function checkRemotesForUpdates() {
+        if (!githubUpdate.version) return;
         for (const remote of remotes) {
             if (remote.ip && remote.version && compareVersions(githubUpdate.version, remote.version) === 1) {
                 if (!remote.needsUpdate) {

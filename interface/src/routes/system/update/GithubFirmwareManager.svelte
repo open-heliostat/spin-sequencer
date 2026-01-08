@@ -19,6 +19,19 @@
 	import InfoDialog from '$lib/components/InfoDialog.svelte';
 	import Check from '~icons/tabler/check';
 
+	function selectGithubAsset(assets: any[]) {
+		const filtered = assets.filter((asset: any) => {
+			const name = asset.name.toLowerCase();
+			return name.endsWith('.bin') &&
+				name.includes(page.data.features.firmware_built_target.toLowerCase()) &&
+				!name.includes('merged') &&
+				!name.includes('webflash');
+		});
+
+		const preferred = filtered.find((asset: any) => asset.name.toLowerCase().includes('ota'));
+		return preferred ?? filtered[0];
+	}
+
 	async function getGithubAPI() {
 		try {
 			const githubResponse = await fetch(
@@ -55,17 +68,8 @@
 	}
 
 	function confirmGithubUpdate(assets: any) {
-		let url = '';
-		// iterate over assets and find the correct one
-		for (let i = 0; i < assets.length; i++) {
-			// check if the asset is of type *.bin
-			if (
-				assets[i].name.includes('.bin') &&
-				assets[i].name.includes(page.data.features.firmware_built_target)
-			) {
-				url = assets[i].browser_download_url;
-			}
-		}
+		const asset = selectGithubAsset(assets);
+		const url = asset ? asset.browser_download_url : '';
 		if (url === '') {
 			modals.open(InfoDialog as unknown as ModalComponent<any>, {
 				title: 'No matching firmware found',
