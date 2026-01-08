@@ -19,6 +19,7 @@
         {step}
         id={label}
         {disabled}
+        class="input input-bordered h-8 w-20"
         bind:value={value}
         on:change={onChange}
     />

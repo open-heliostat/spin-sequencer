@@ -4,6 +4,7 @@
 	import MasterSequencerRestComp from '$lib/components/MasterSequencerRestComp.svelte';
 	import Select from '$lib/components/Select.svelte';
 	import ClassicControllerRestComp from '$lib/components/ClassicControllerRestComp.svelte';
+	import IOSettingsRestComp from '$lib/components/IOSettingsRestComp.svelte';
 	import { getJsonRest } from '$lib/stores/rest';
 
 	export let data: PageData;
@@ -27,4 +28,5 @@
 >
 	<SequencerRestComp restPath={'/rest/spin-seq/sequencer/'} />
 	<ClassicControllerRestComp restPath={'/rest/spin-seq/sequencer/controller/'} />
+	<IOSettingsRestComp restPath={'/rest/spin-seq/io'} />
 </div>
