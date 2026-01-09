@@ -61,6 +61,9 @@ void setup()
     // start serial and filesystem
     Serial.begin(SERIAL_BAUD_RATE);
 
+    // init I2C encoder after heap/RTOS are up
+    encoder1.begin();
+
     // increase httpd stack for HttpJsonRouter
     server.config.stack_size = 8192;
     server.config.max_resp_headers = 12;

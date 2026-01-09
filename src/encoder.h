@@ -11,11 +11,16 @@ public:
     double offset = 0;
     bool invert = false;
     bool error = false;
-    Encoder(int _SDA = SDA, int _SCL = SCL, TwoWire &I2C_ = Wire) : I2C(I2C_) {
-        I2C.begin(_SDA, _SCL);
-        // I2C.setClock(50000);
+    Encoder(int _SDA = SDA, int _SCL = SCL, TwoWire &I2C_ = Wire) : I2C(I2C_), SDA_pin(_SDA), SCL_pin(_SCL) {}
+    void begin() {
+        if (initialized) return;
+        initialized = true;
+        I2C.begin(SDA_pin, SCL_pin);
+        I2C.setClock(100000);       // keep I2C conservative on newer cores
+        I2C.setTimeOut(50);
     }
     double getAngle() {
+        if (!initialized) begin();
         update();
         return angle;
     }
@@ -44,20 +49,38 @@ public:
         return newData;
     }
     int readEncoder() {
-        int available = I2C.requestFrom(0x06, 3);
-        if (available > 2) {
-            byte buff[3];
-            I2C.beginTransmission(0x06);  
-            I2C.write(0x02);  // set register for read
-            I2C.endTransmission();
-            I2C.readBytes(buff, 3);
-            int value = (256 * buff[1] + buff[2])/4;
-            return value;
+        if (!initialized) begin();
+        byte buff[3];
+
+        // First try: repeated start (preferred on newer cores)
+        I2C.beginTransmission(0x06);
+        I2C.write(0x02);
+        if (I2C.endTransmission(false) == 0) {
+            int available = I2C.requestFrom(0x06, 3, (uint8_t)true);
+            if (available == 3) {
+                I2C.readBytes(buff, 3);
+                return (256 * buff[1] + buff[2]) / 4;
+            }
         }
-        else return -1;
+
+        // Fallback: issue a stop then a fresh read
+        I2C.beginTransmission(0x06);
+        I2C.write(0x02);
+        if (I2C.endTransmission(true) != 0) return -1;
+
+        int available = I2C.requestFrom(0x06, 3, (uint8_t)true);
+        if (available == 3) {
+            I2C.readBytes(buff, 3);
+            return (256 * buff[1] + buff[2]) / 4;
+        }
+
+        return -1;
     }
 private:
     TwoWire &I2C;
+    int SDA_pin;
+    int SCL_pin;
+    bool initialized = false;
     uint32_t maxPollInterval = 20;
     uint32_t lastPoll = 0;
     bool newData = false;
