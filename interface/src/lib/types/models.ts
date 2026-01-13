@@ -174,3 +174,19 @@ export type EthernetSettings = {
 	dns_ip_1?: string;
 	dns_ip_2?: string;
 };
+
+export type UdpSenderState = {
+	target: string;
+	port: number;
+	path: string;
+	method: string;
+	broadcast: boolean;
+	iface: number; // -1 auto, 0 wifi, 2 ethernet
+	lastPayload?: string;
+	lastResult?: string;
+	lastError?: string;
+	lastTarget?: string;
+	lastPort?: number;
+	lastBroadcast?: boolean;
+	lastIface?: number;
+};

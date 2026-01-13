@@ -18,6 +18,8 @@
 #include <controller.h>
 // #include <CanControllerService.h>
 #include <ESPNowService.h>
+// UDP sender for JSON router
+#include <UdpSenderService.h>
 // #include <lora.h>
 
 #define SERIAL_BAUD_RATE 115200
@@ -54,6 +56,9 @@ SpinSequencerService spinSequencerService = SpinSequencerService{&server,
 
 ESPNowService espnowService = ESPNowService(&server, &esp32sveltekit, ESPNow::state);
 
+UdpSenderState udpSenderState = UdpSenderState{};
+UdpSenderService udpSenderService = UdpSenderService(&server, &esp32sveltekit, udpSenderState);
+
 // LoRaController loraController = LoRaController();
 
 void setup()
@@ -77,6 +82,7 @@ void setup()
     stepper1.init();
     spinSequencerService.begin();
     stepper1.disable();
+    udpSenderService.begin();
     
     // start CAN controller
     // canControllerService.begin();

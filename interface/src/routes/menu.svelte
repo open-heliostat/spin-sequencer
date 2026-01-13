@@ -26,6 +26,7 @@
 	import Home from '~icons/tabler/home';
 	import Clock from '~icons/tabler/clock';
 	import ESPNow from '~icons/tabler/broadcast';
+	import Udp from '~icons/tabler/send-2';
 	import { page } from '$app/state';
 	import { user } from '$lib/stores/user';
 
@@ -33,7 +34,7 @@
 
 	const github = { href: 'https://github.com/' + page.data.github, active: true };
 
-	const discord = { href: 'https://discord.gg/MTn9mVUG5n', active: true };
+	const discord = { href: 'https://discord.gg/MTn9mVUG5n', active: false };
 
 	type menuItem = {
 		title: string;
@@ -123,6 +124,12 @@
 					title: "ESPNow",
 					icon: ESPNow,
 					href: "/connections/espnow",
+					feature: true,
+				},
+				{
+					title: "UDP Sender",
+					icon: Udp,
+					href: "/connections/udp",
 					feature: true,
 				}
 			]
