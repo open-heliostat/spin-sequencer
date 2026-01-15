@@ -18,6 +18,8 @@ struct TMC5160Controller {
     uint16_t current = 30;
     uint32_t maxSpeed = 40;
     uint32_t maxAccel = 20;
+    static constexpr uint8_t VIRTUAL_DIR_PIN = PIN_EXTERNAL_FLAG | 1;
+    inline static TMC5160Controller* externalDirOwner = nullptr;
     const char* msteps;
     const char* pwmfr;
     const char* freewh;
@@ -25,6 +27,13 @@ struct TMC5160Controller {
     const int STEP;
 
     TMC5160Controller(TMC5160Stepper &driver, FastAccelStepperEngine &engine, const int STEP, const int DIR) : driver {driver}, engine {engine}, STEP {STEP}, DIR {DIR} {}
+
+    static bool externalDirCallback(uint8_t pin, uint8_t value) {
+        if (!externalDirOwner) return false;
+        if (pin != VIRTUAL_DIR_PIN) return value;
+        externalDirOwner->driver.shaft(value != 0);
+        return value != 0; // return requested state to avoid blocking on readback
+    }
 
     void init() {
         pinMode(STEP, OUTPUT);
@@ -39,10 +48,14 @@ struct TMC5160Controller {
         Serial.print("DRV_STATUS=0b");
         Serial.println(driver.DRV_STATUS(), BIN);
         initDriver();
+        pinMode(DIR, OUTPUT);
+        digitalWrite(DIR, HIGH);
 
         stepper = engine.stepperConnectToPin(STEP);
         if (stepper) {
-            stepper->setDirectionPin(DIR);
+            externalDirOwner = this;
+            engine.setExternalCallForPin(externalDirCallback);
+            stepper->setDirectionPin(VIRTUAL_DIR_PIN);
             stepper->setSpeedInHz(maxSpeed*microsteps);       // 200 steps/s
             stepper->setAcceleration(maxAccel*microsteps);    // 40 steps/s²
             ESP_LOGI("TMC", "Init: Stepper configured");
