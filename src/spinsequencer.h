@@ -86,6 +86,9 @@ public:
             ESPNow::broadcast(message, numRetries);
             sendUdpBroadcast(message);
         };
+        jsonSeq.udpBroadcastMessage = [&](String message) {
+            sendUdpBroadcast(message);
+        };
         // jsonSeq.sendMessage = [&](String message, uint32_t address) {
         //     canController.sendMessage(message, address);
         // };

@@ -31,6 +31,7 @@ public:
 
     std::function<void(String)> broadcastMessage = nullptr;
     std::function<void(String, int)> broadcastMessageWithRetry = nullptr;
+    std::function<void(String)> udpBroadcastMessage = nullptr;
     std::function<void(String, uint32_t)> sendMessage = nullptr;
 
     JsonSeq(MotorController &controller):
@@ -111,6 +112,9 @@ public:
         }
         else if (command["b"].is<JsonObject>() && command["b"]["m"].is<String>() && command["b"]["n"].is<int>() && broadcastMessageWithRetry) {
             broadcastMessageWithRetry(command["b"]["m"].as<String>(), command["b"]["n"].as<int>());
+        }
+        if (command["bu"].is<String>() && udpBroadcastMessage) {
+            udpBroadcastMessage(command["bu"].as<String>());
         }
         if (command["s"].is<String>() && command["a"].is<uint32_t>() && sendMessage) {
             uint32_t address = command["a"];
