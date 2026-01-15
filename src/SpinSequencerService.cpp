@@ -95,6 +95,12 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
             obj["text"] = controller.welcomeText;
         }
     }},
+    {"udpMessages", [](SpinSequencerController &controller, JsonVariant content) {
+        JsonArray arr = content.to<JsonArray>();
+        for (auto &msg : controller.udpMessageHistory) {
+            arr.add(msg);
+        }
+    }},
     {"diag", [](SpinSequencerController &controller, JsonVariant content) {
         if (content.is<JsonObject>()) {
             JsonObject obj = content.as<JsonObject>();

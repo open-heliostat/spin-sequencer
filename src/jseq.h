@@ -109,12 +109,16 @@ public:
         }
         if (command["b"].is<String>() && broadcastMessage) {
             broadcastMessage(command["b"].as<String>());
+            udpBroadcastMessage(command["b"].as<String>());
         }
         else if (command["b"].is<JsonObject>() && command["b"]["m"].is<String>() && command["b"]["n"].is<int>() && broadcastMessageWithRetry) {
             broadcastMessageWithRetry(command["b"]["m"].as<String>(), command["b"]["n"].as<int>());
         }
         if (command["bu"].is<String>() && udpBroadcastMessage) {
             udpBroadcastMessage(command["bu"].as<String>());
+        }
+        if (command["be"].is<String>() && udpBroadcastMessage) {
+            broadcastMessage(command["b"].as<String>());
         }
         if (command["s"].is<String>() && command["a"].is<uint32_t>() && sendMessage) {
             uint32_t address = command["a"];

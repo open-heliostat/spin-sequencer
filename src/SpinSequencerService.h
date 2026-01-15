@@ -69,7 +69,9 @@ public:
     SpinSequencerService(PsychicHttpServer *server,
                          ESP32SvelteKit *sveltekit,
                          SpinSequencerController &controller) :
-                            _udpRouterEndpoint(_router.read, _router.update, this, "/rest/spin-seq"),
+                            _udpRouterEndpoint(_router.read, _router.update, this, "/rest/spin-seq", JSON_ROUTER_UDP_PORT, [this](const String &msg) {
+                                _state.appendUdpMessage(msg);
+                            }),
                             _httpRouterEndpoint(_router.read, _router.update, this, server, "/rest/spin-seq", sveltekit->getSecurityManager()),
                             _fsPersistence(_router.readForSave, _router.update, this, sveltekit->getFS(), "/config/spin-seq.json"),
                             StatefulService(controller) {}

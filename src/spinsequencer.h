@@ -5,6 +5,7 @@
 #include <controller.h>
 #include <jseq.h>
 #include <ArduinoJson.h>
+#include <deque>
 // #include <CanControllerService.h>
 #include <RemoteService.h>
 #include <JsonTimerService.h>
@@ -61,6 +62,7 @@ public:
     String welcomeText = "";
     SequencerHardwareConfig hardwareConfig = {};
     SequencerHardwareState hardwareState = {};
+    std::deque<String> udpMessageHistory = {};
 
     SpinSequencerController(MotorController &motorController, ClosedLoopController &controller, PsychicHttpServer *server) :
             motorController(motorController), controller(controller), jsonSeq(motorController), server(server) 
@@ -80,11 +82,9 @@ public:
         jsonSeq.broadcastMessage = [&](String message) {
             // canController.sendMessage(message, uint32_t(0));
             ESPNow::broadcast(message);
-            sendUdpBroadcast(message);
         };
         jsonSeq.broadcastMessageWithRetry = [&](String message, int numRetries) {
             ESPNow::broadcast(message, numRetries);
-            sendUdpBroadcast(message);
         };
         jsonSeq.udpBroadcastMessage = [&](String message) {
             sendUdpBroadcast(message);
@@ -116,6 +116,8 @@ public:
         jsonSeq.tick();
         ESPNow::update(millis());
     }
+
+    void appendUdpMessage(const String &message);
 
 private:
     friend class SpinSequencerControllerJsonRouter;
@@ -223,5 +225,13 @@ inline void SpinSequencerController::sendUdpBroadcast(const String &message)
     udp.write(reinterpret_cast<const uint8_t *>(payload.c_str()), payload.length());
     udp.endPacket();
     udp.stop();
+}
+
+inline void SpinSequencerController::appendUdpMessage(const String &message)
+{
+    udpMessageHistory.push_back(message);
+    while (udpMessageHistory.size() > 50) {
+        udpMessageHistory.pop_front();
+    }
 }
 #endif

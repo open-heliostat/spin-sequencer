@@ -6,6 +6,7 @@
 #include <AsyncUDP.h>
 #include <StatefulService.h>
 #include <esp_log.h>
+#include <functional>
 
 #define UDP_ENDPOINT_ORIGIN_ID "udp"
 #ifndef JSON_ROUTER_UDP_PORT
@@ -24,19 +25,22 @@ protected:
     const int _pathLength;
     const uint16_t _port;
     bool _listening;
+    std::function<void(const String &)> _packetCallback;
 
 public:
     UdpRouterEndpoint(JsonStateReader<T> stateReader,
                       JsonStateUpdater<T> stateUpdater,
                       StatefulService<T> *statefulService,
                       const char *servicePath,
-                      uint16_t port = JSON_ROUTER_UDP_PORT) : _stateReader(stateReader),
+                      uint16_t port = JSON_ROUTER_UDP_PORT,
+                      std::function<void(const String &)> packetCallback = nullptr) : _stateReader(stateReader),
                                                             _stateUpdater(stateUpdater),
                                                             _statefulService(statefulService),
                                                             _servicePath(servicePath),
                                                             _pathLength(String(servicePath).length()),
                                                             _port(port),
-                                                            _listening(false) {}
+                                                            _listening(false),
+                                                            _packetCallback(packetCallback) {}
 
     bool begin()
     {
@@ -74,6 +78,12 @@ private:
 
     void handlePacket(AsyncUDPPacket packet)
     {
+        if (_packetCallback)
+        {
+            String raw(reinterpret_cast<const char *>(packet.data()), packet.length());
+            _packetCallback(raw);
+        }
+
         JsonDocument requestDoc;
         DeserializationError err = deserializeJson(requestDoc, packet.data(), packet.length());
         if (err)

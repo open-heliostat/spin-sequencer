@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import SettingsCard from '$lib/components/SettingsCard.svelte';
 	import Spinner from '$lib/components/Spinner.svelte';
 	import { notifications } from '$lib/components/toasts/notifications';
@@ -31,6 +31,8 @@
 	let loading = $state(true);
 	let sending = $state(false);
 	let formError = $state('');
+	let udpMessages: string[] = $state([]);
+	let pollTimer: ReturnType<typeof setInterval> | null = null;
 
 	const methods = ['GET', 'POST'];
 	const ifaceOptions = [
@@ -41,6 +43,14 @@
 
 	onMount(() => {
 		loadSender();
+		startPolling();
+	});
+
+	onDestroy(() => {
+		if (pollTimer) {
+			clearInterval(pollTimer);
+			pollTimer = null;
+		}
 	});
 
 	function normalizeMethod(value: string): string {
@@ -52,11 +62,23 @@
 		try {
 			sender = await getJsonRest('/rest/udp-sender', sender);
 			sender.method = normalizeMethod(sender.method);
+			udpMessages = await getJsonRest('/rest/spin-seq/udpMessages', []);
 		} catch (err) {
 			notifications.error('Failed to load UDP sender state', 3000);
 		} finally {
 			loading = false;
 		}
+	}
+
+	function startPolling() {
+		if (pollTimer) return;
+		pollTimer = setInterval(async () => {
+			try {
+				udpMessages = await getJsonRest('/rest/spin-seq/udpMessages', udpMessages);
+			} catch (err) {
+				// swallow; UI already has data
+			}
+		}, 1200);
 	}
 
 	function parseBody() {
@@ -112,6 +134,7 @@
 			});
 			sender = { ...sender, ...updated };
 			notifications.success('UDP packet sent.', 2000);
+			udpMessages = await getJsonRest('/rest/spin-seq/udpMessages', udpMessages);
 		} catch (err) {
 			notifications.error('UDP send failed', 2500);
 		} finally {
@@ -120,7 +143,6 @@
 	}
 </script>
 
-<div class="shadow-xl rounded-box">
 <SettingsCard collapsible={false}>
 	{#snippet icon()}
 		<Send class="h-6 w-6" />
@@ -134,8 +156,8 @@
 			<Spinner />
 		</div>
 	{:else}
-		<div class="grid w-full grid-cols-1 gap-4 lg:grid-cols-3">
-			<div class="space-y-4 lg:col-span-2">
+		<div class="w-full flex justify-center">
+			<div class="w-full max-w-5xl space-y-4">
 				<div class="rounded-box bg-base-200 border border-base-300 p-4">
 					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
 						<label class="form-control w-full">
@@ -199,26 +221,44 @@
 						<span>Save Defaults</span>
 					</button>
 				</div>
-			</div>
 
-			<div class="rounded-box bg-base-200 border border-base-300 p-4 space-y-2">
-				<div class="font-semibold">Last send</div>
-				<div class="text-sm opacity-80">Target: {sender.lastTarget || '—'}</div>
-				<div class="text-sm opacity-80">Port: {sender.lastPort}</div>
-				<div class="text-sm opacity-80">Broadcast: {sender.lastBroadcast ? 'Yes' : 'No'}</div>
-				<div class="text-sm opacity-80">Interface: {sender.lastIface === 2 ? 'Ethernet' : sender.lastIface === 0 ? 'WiFi' : 'Auto'}</div>
-				<div class="text-sm opacity-80">Result: {sender.lastResult || 'n/a'}</div>
-				{#if sender.lastError}
-					<div class="text-sm text-error">Error: {sender.lastError}</div>
-				{/if}
-				{#if sender.lastPayload}
-					<div>
-						<div class="text-sm font-semibold mt-2">Last payload</div>
-						<pre class="bg-base-300 text-xs p-2 rounded-box overflow-x-auto">{sender.lastPayload}</pre>
+				<div class="rounded-box bg-base-200 border border-base-300 p-4 space-y-2">
+					<div class="font-semibold">Last send</div>
+					<div class="text-sm opacity-80">Target: {sender.lastTarget || '—'}</div>
+					<div class="text-sm opacity-80">Port: {sender.lastPort}</div>
+					<div class="text-sm opacity-80">Broadcast: {sender.lastBroadcast ? 'Yes' : 'No'}</div>
+					<div class="text-sm opacity-80">Interface: {sender.lastIface === 2 ? 'Ethernet' : sender.lastIface === 0 ? 'WiFi' : 'Auto'}</div>
+					<div class="text-sm opacity-80">Result: {sender.lastResult || 'n/a'}</div>
+					{#if sender.lastError}
+						<div class="text-sm text-error">Error: {sender.lastError}</div>
+					{/if}
+					{#if sender.lastPayload}
+						<div>
+							<div class="text-sm font-semibold mt-2">Last payload</div>
+							<pre class="bg-base-300 text-xs p-2 rounded-box overflow-x-auto">{sender.lastPayload}</pre>
+						</div>
+					{/if}
+				</div>
+
+				<div class="rounded-box bg-base-200 border border-base-300 p-4 space-y-2">
+					<div class="flex items-center justify-between">
+						<div class="font-semibold">UDP Console</div>
+						<button class="btn btn-ghost btn-xs" type="button" onclick={async () => udpMessages = await getJsonRest('/rest/spin-seq/udpMessages', udpMessages)}>
+							Refresh
+						</button>
 					</div>
-				{/if}
+					<div class="text-sm opacity-70">Live view of payloads received on /rest/spin-seq via UDP.</div>
+					<div class="bg-base-300 rounded-box p-2 h-64 overflow-y-auto space-y-1 text-xs font-mono">
+						{#if udpMessages.length === 0}
+							<div class="opacity-60">No UDP messages received yet.</div>
+						{:else}
+							{#each [...udpMessages].reverse() as msg, idx}
+								<div class="whitespace-pre-wrap break-words">{msg}</div>
+							{/each}
+						{/if}
+					</div>
+				</div>
 			</div>
 		</div>
 	{/if}
 </SettingsCard>
-</div>
