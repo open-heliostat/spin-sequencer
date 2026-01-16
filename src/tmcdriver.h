@@ -49,13 +49,14 @@ struct TMC5160Controller {
         Serial.println(driver.DRV_STATUS(), BIN);
         initDriver();
         pinMode(DIR, OUTPUT);
-        digitalWrite(DIR, HIGH);
+        // digitalWrite(DIR, HIGH);
 
         stepper = engine.stepperConnectToPin(STEP);
         if (stepper) {
-            externalDirOwner = this;
-            engine.setExternalCallForPin(externalDirCallback);
-            stepper->setDirectionPin(VIRTUAL_DIR_PIN);
+            // externalDirOwner = this;
+            // engine.setExternalCallForPin(externalDirCallback);
+            // stepper->setDirectionPin(VIRTUAL_DIR_PIN);
+            stepper->setDirectionPin(DIR);
             stepper->setSpeedInHz(maxSpeed*microsteps);       // 200 steps/s
             stepper->setAcceleration(maxAccel*microsteps);    // 40 steps/s²
             ESP_LOGI("TMC", "Init: Stepper configured");
