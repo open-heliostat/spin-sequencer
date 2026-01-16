@@ -213,7 +213,7 @@ inline void SpinSequencerController::sendUdpBroadcast(const String &message)
     JsonDocument outbound;
     JsonObject root = outbound.to<JsonObject>();
     root["method"] = "POST";
-    root["path"] = "/rest/spin-seq/sequencer/control/execute/";
+    root["path"] = "/rest/spin-seq/sequencer/control/";
     root["body"]["execute"] = message;
 
     String payload;
