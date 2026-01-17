@@ -7,11 +7,13 @@ export const ssr = false;
 export const load = (async ({ fetch }) => {
 	const result = await fetch('/rest/features');
 	const item = await result.json();
+	const res = await fetch('/rest/wifiSettings');
+	const wifiSettings = await res.json();
 	return {
 		features: item,
-		title: 'Spin-Sequencer',
+		title: wifiSettings.hostname || 'Spin Sequencer',
 		github: 'open-heliostat/spin-sequencer',
 		copyright: '2026 leokeba',
-		appName: 'Spin-Sequencer'
+		appName: wifiSettings.hostname || 'Spin Sequencer'
 	};
 }) satisfies LayoutLoad;

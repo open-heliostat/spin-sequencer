@@ -141,7 +141,7 @@
 </script>
 
 <svelte:head>
-	<title>{page.data.title}</title>
+	<title>{page.data.appName}</title>
 </svelte:head>
 
 {#if page.data.features.security && $user.bearer_token === ''}
