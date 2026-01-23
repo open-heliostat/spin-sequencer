@@ -29,6 +29,7 @@ JsonRouter<TMC5160Stepper> TMC5160StepperJsonRouter::router = JsonRouter<TMC5160
         target["hstrt"] = driver.hstrt();
         target["hend"] = driver.hend();
         target["tbl"] = driver.tbl();
+        target["intpol"] = driver.intpol();
         // target["vsense"] = driver.vsense();
         // target["mres"] = driver.mres();
         // target["microsteps"] = driver.microsteps();
@@ -79,6 +80,13 @@ JsonEventRouter<TMC5160Stepper> TMC5160StepperJsonRouter::chopConfigRouter = Jso
     {"tbl", [](JsonVariant content, TMC5160Stepper &driver) {
         if (content.is<int>()) {
             driver.tbl(content.as<int>());
+            return true;
+        }
+        return false;
+    }},
+    {"intpol", [](JsonVariant content, TMC5160Stepper &driver) {
+        if (content.is<bool>()) {
+            driver.intpol(content.as<bool>());
             return true;
         }
         return false;

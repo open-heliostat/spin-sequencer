@@ -89,6 +89,7 @@ struct TMC5160Controller {
     }
 
     void setMaxSpeed(uint32_t sp) {
+        maxSpeed = sp;
         stepper->setSpeedInHz(sp*microsteps);
     }
 
@@ -209,6 +210,8 @@ struct TMC5160Controller {
         else if (ms > 1) ms = 2;
         else ms = 0;
         microsteps = ms ? ms : 1;
+        setAcceleration(maxAccel);
+        setMaxSpeed(maxSpeed);
         ESP_LOGI("Driver", "Microsteps : %d", microsteps);
         driver.microsteps(ms);
     }
@@ -228,12 +231,13 @@ struct TMC5160Controller {
     // }
 
     void setAcceleration(uint32_t acc) {
+        maxAccel = acc;
         if (!stepper) return;
         stepper->setAcceleration(acc*microsteps);
     }
 
     uint32_t getAcceleration() {
-        if (!stepper) return 0;
+        if (!stepper) return maxAccel;
         return uint32_t(stepper->getAcceleration())/uint32_t(microsteps);
     }
 

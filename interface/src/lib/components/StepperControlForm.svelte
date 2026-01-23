@@ -66,14 +66,14 @@
 		bind:value={stepperControl.move}
 		onChange={()=>{postJsonRest(restPath, {move: stepperControl.move})}}
 	></Slider>
-	<Slider
+	<!-- <Slider
 		label="Acceleration"
 		min={0}
 		max={stepperConfig.maxAccel}
 		step={1}
 		bind:value={stepperControl.accel}
 		onChange={()=>{postStepperControl(stepperControl)}}
-	></Slider>
+	></Slider> -->
 </div>
 {/await}
 <slot></slot>

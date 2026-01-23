@@ -16,7 +16,7 @@ JsonRouter<TMC5160Controller> TMC5160ControllerJsonRouter::router = JsonRouter<T
 {
     {"control", [](TMC5160Controller &controller, const JsonVariant target) {
         target["speed"] = controller.getSpeed();
-        target["accel"] = controller.getAcceleration();
+        // target["accel"] = controller.getAcceleration();
         target["move"] = 0.;
     }},
     {"diag", [](TMC5160Controller &controller, const JsonVariant target) {
@@ -27,7 +27,7 @@ JsonRouter<TMC5160Controller> TMC5160ControllerJsonRouter::router = JsonRouter<T
     {"config", [](TMC5160Controller &controller, const JsonVariant target) {
         target["enabled"] = controller.isEnabled();
         target["maxSpeed"] = controller.maxSpeed;
-        target["maxAccel"] = controller.maxAccel;
+        target["maxAccel"] = controller.getAcceleration();
         target["invertDirection"] = controller.driver.shaft();
         target["driverCurrent"] = controller.driver.rms_current();
         target["stepsPerRot"] = controller.stepsPerRotation;
@@ -50,13 +50,13 @@ JsonEventRouter<TMC5160Controller> TMC5160ControllerJsonRouter::controlRouter = 
         }
         else return false;
     }},
-    {"accel", [](JsonVariant content, TMC5160Controller &controller) {
-        if (content.is<double>()) {
-            controller.setAcceleration(content.as<double>());
-            return true;
-        }
-        else return false;
-    }},
+    // {"accel", [](JsonVariant content, TMC5160Controller &controller) {
+    //     if (content.is<double>()) {
+    //         controller.setAcceleration(content.as<double>());
+    //         return true;
+    //     }
+    //     else return false;
+    // }},
     {"speed", [](JsonVariant content, TMC5160Controller &controller) {
         if (content.is<double>()) {
             controller.setSpeed(content.as<double>());
@@ -88,7 +88,7 @@ JsonEventRouter<TMC5160Controller> TMC5160ControllerJsonRouter::configRouter = J
     }},
     {"maxAccel", [](JsonVariant content, TMC5160Controller &controller) {
         if (content.is<double>()) {
-            controller.maxAccel = content.as<double>();
+            controller.setAcceleration(content.as<double>());
             return true;
         }
         else return false;
@@ -102,7 +102,7 @@ JsonEventRouter<TMC5160Controller> TMC5160ControllerJsonRouter::configRouter = J
     // }},
     {"enabled", [](JsonVariant content, TMC5160Controller &controller) {
         if (content.is<bool>()) {
-            if (content.as<bool>() == true) controller.enable();
+            if (content.as<bool>()) controller.enable();
             else controller.disable();
             return true;
         }

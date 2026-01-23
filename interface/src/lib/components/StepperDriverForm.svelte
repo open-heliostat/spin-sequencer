@@ -28,6 +28,11 @@
                     <span>Chopper Configuration</span>
                 {/snippet}
                 <div class="w-full grid grid-flow-row grid-form items-center">
+                    <Checkbox
+                        label="Interpolate steps"
+                        bind:value={driverSettings.chopConfig.intpol}
+                        {onChange}
+                    />
                     <Slider
                         label="TOFF"
                         min={0}
