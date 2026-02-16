@@ -87,6 +87,9 @@ JsonRouter<SpinSequencerController> SpinSequencerControllerJsonRouter::router = 
             obj["startButtonDebounceMs"] = controller.hardwareConfig.startButtonDebounceMs;
             obj["statusLedPin"] = controller.hardwareConfig.statusLedPin;
             obj["statusLedActiveHigh"] = controller.hardwareConfig.statusLedActiveHigh;
+            obj["startButtonPressed"] = controller.hardwareState.startButtonStable;
+            obj["startButtonReading"] = controller.hardwareState.startButtonReading;
+            obj["statusLedState"] = controller.hardwareState.statusLedState;
         }
     }},
     {"welcome", [](SpinSequencerController &controller, JsonVariant content) {
