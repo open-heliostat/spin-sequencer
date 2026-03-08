@@ -82,6 +82,10 @@ void setup()
     stepper1.init();
     spinSequencerService.begin();
     stepper1.disable();
+
+    pinMode(STEPPER_ENABLE_PIN, OUTPUT);
+    digitalWrite(STEPPER_ENABLE_PIN, LOW); // Enable stepper driver (active low)
+
     udpSenderService.begin();
     
     // start CAN controller
