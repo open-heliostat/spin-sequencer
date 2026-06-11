@@ -18,6 +18,7 @@ extern Preferences preferences;
 class JsonSeq {
 public:
     int selectedCommand = -1;
+    int bootCommandIndex = -1;
     int nextCommand = -1;
     std::vector<JsonDocument> commands{};
     MotorController &controller;
@@ -40,6 +41,9 @@ public:
     void selectCommand(int select) {
         while (select >= commands.size()) commands.push_back(JsonDocument());
         selectedCommand = select;
+    }
+    bool hasCommand(int commandNum) const {
+        return commandNum >= 0 && commandNum < commands.size();
     }
     void readCommand(JsonDocument &command) {
         if (command["id"].is<int>()) {

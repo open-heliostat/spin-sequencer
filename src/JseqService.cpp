@@ -58,6 +58,7 @@ JsonRouter<JsonSeq> JsonSeqJsonRouter::router = JsonRouter<JsonSeq>(
             commands.add(command.as<JsonObject>());
         }
         target["selectedCommand"] = sequencer.selectedCommand;
+        target["bootCommandIndex"] = sequencer.bootCommandIndex;
     }},
     {"controller", [](JsonSeq &sequencer, const JsonVariant target) {
         ClassicControllerJsonRouter::router.serialize(sequencer.controller, target);
@@ -155,6 +156,13 @@ JsonEventRouter<JsonSeq> JsonSeqJsonRouter::configRouter = JsonEventRouter<JsonS
             return true;
         }
         Serial.println("Failed to parse : " + content.as<String>());
+        return false;
+    }},
+    {"bootCommandIndex", [](JsonVariant content, JsonSeq &sequencer) {
+        if (content.is<int>()) {
+            sequencer.bootCommandIndex = content.as<int>();
+            return true;
+        }
         return false;
     }}
 });

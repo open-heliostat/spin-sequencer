@@ -63,6 +63,7 @@ public:
     SequencerHardwareConfig hardwareConfig = {};
     SequencerHardwareState hardwareState = {};
     std::deque<String> udpMessageHistory = {};
+    bool bootCommandPending = false;
 
     SpinSequencerController(MotorController &motorController, ClosedLoopController &controller, PsychicHttpServer *server) :
             motorController(motorController), controller(controller), jsonSeq(motorController), server(server) 
@@ -106,12 +107,17 @@ public:
             ESPNow::addPeer(remote.macAddress);
         }
         configureHardwarePins();
+        bootCommandPending = jsonSeq.hasCommand(jsonSeq.bootCommandIndex);
     }
 
     void run()
     {
         controller.run();
         motorController.tick();
+        if (bootCommandPending) {
+            bootCommandPending = false;
+            jsonSeq.readCommand(jsonSeq.bootCommandIndex);
+        }
         handleHardwareControls();
         jsonSeq.tick();
         ESPNow::update(millis());

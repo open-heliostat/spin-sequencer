@@ -6,9 +6,8 @@
     import Collapsible from '$lib/components/Collapsible.svelte';
     import { getJsonRest, postJsonRest } from '$lib/stores/rest';
     import { notifications } from "$lib/components/toasts/notifications";
-    import type { SequencerState } from '$lib/types/models';
     import StopButton from './StopButton.svelte';
-	import Text from './Text.svelte';
+	import NumberInput from './NumberInput.svelte';
 	import Slider from './Slider.svelte';
 	import Button from './Button.svelte';
 	import Checkbox from './Checkbox.svelte';
@@ -17,6 +16,23 @@
 	import SequencerProgressBar from './SequencerProgressBar.svelte';
 
     export let restPath: string;
+
+    type SequencerState = {
+        status: {
+            isRunning: boolean;
+            selectedCommand: number;
+            commandRunning: boolean;
+            nextCommand: number;
+            commandDuration: number;
+            commandDurationLeft: number;
+            numCommands: number;
+        };
+        config: {
+            commands: object[];
+            selectedCommand: number;
+            bootCommandIndex: number;
+        };
+    };
 
     let sequencerState: SequencerState;
     // let commandInput = '';
@@ -146,6 +162,14 @@
                     bind:value={sequencerState.status.isRunning}
                     onChange={() => postJsonRest(restPath + '/control', { run: sequencerState.status.isRunning })}>
                 </Checkbox>
+                <NumberInput
+                    label="Boot Command Index"
+                    bind:value={sequencerState.config.bootCommandIndex}
+                    min={-1}
+                    max={commandsCount}
+                    step={1}
+                    onChange={() => postJsonRest(restPath + '/config', { bootCommandIndex: Number(sequencerState.config.bootCommandIndex) })}>
+                </NumberInput>
                 <SequencerProgressBar sequencerStatus={sequencerState.status}/>
                 <!-- <Slider
                     label="Select"
@@ -243,7 +267,7 @@
                     class="textarea"
                     bind:value={commandsJsonString}
                     placeholder="Commands JSON"
-                />
+                ></textarea>
             </Collapsible>
             <div class="flex flex-row flex-wrap justify-between gap-x-2">
                 <Button 
